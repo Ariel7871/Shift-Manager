@@ -221,43 +221,36 @@ def get_schedule_data():
         shift_data[key][shift["user_name"]] = shift["shift_type"]
 
     dates = []
-    days = []
+    days = []  # List to store day names
     schedule = []
     
     for i in range(30):
         current_date = start_date + timedelta(days=i)
         if current_date.strftime("%A") not in ["Friday", "Saturday"]:
             dates.append(current_date.strftime("%d/%m/%Y"))
-            days.append(current_date.strftime("%A"))  # Add day names
-
-    return jsonify({"dates": dates, "days": days, "schedule": schedule})
+            days.append(current_date.strftime("%A"))  # Store day name
 
     for user in users:
         user_shifts = []
-        from datetime import datetime  # Ensure this is imported at the top
+        for i, current_date in enumerate(dates):
+            current_date_obj = datetime.strptime(current_date, "%d/%m/%Y").date()
+            week_start = get_week_start(current_date_obj).isoformat()
+            day_name = days[i]
 
-        for current_date in dates:
-            # Convert `current_date` from string to `datetime.date`
-            if isinstance(current_date, str):
-                current_date = datetime.strptime(current_date, "%d/%m/%Y").date()
-
-            week_start = get_week_start(current_date).isoformat()
-            day_name = current_date.strftime("%A")
-
-            shift = shift_data.get((week_start, day_name), {}).get(user["name"], "—")
+            shift = shift_data.get((week_start, day_name), {}).get(user["name"], "Not set")
             
             # Apply "Day" shift default for Sundays
-            if day_name == "Sunday" and shift == "—":
+            if day_name == "Sunday" and shift == "Not set":
                 shift = "Day"
             
             user_shifts.append(shift)
 
         schedule.append({
-            "name": user["name"],
+            "name": user["name"],  # Ensure names are included
             "shifts": user_shifts
         })
 
-    return jsonify({"dates": dates, "schedule": schedule})
+    return jsonify({"dates": dates, "days": days, "schedule": schedule})
 
 
     
