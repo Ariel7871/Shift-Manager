@@ -10,11 +10,11 @@
         <div class="card-body">
             <!-- Toggle Buttons -->
             <div class="text-center mb-3">
-                <button class="btn btn-primary" onclick="switchTable('default')">📋 Standard Table</button>
-                <button class="btn btn-success" onclick="switchTable('styled')">🎨 Colored Table</button>
+                <button class="btn btn-primary animated-button" onclick="switchTable('default')">📋 Standard Table</button>
+                <button class="btn btn-success animated-button" onclick="switchTable('styled')">🎨 Colored Table</button>
             </div>
 
-            <!-- Standard Table (Existing) -->
+            <!-- Standard Table -->
             <div id="defaultTable">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
@@ -43,11 +43,11 @@
                                             <td class="text-center">
                                                 {% set shift = user_schedules[user['name']].get(entry.week_start, {}).get(entry.day_name) %}
                                                 {% if shift == "Day" %}
-                                                    🌞 Day
+                                                    <i class="fas fa-sun text-warning"></i>
                                                 {% elif shift == "Night" %}
-                                                    🌙 Night
+                                                    <i class="fas fa-moon text-secondary"></i>
                                                 {% else %}
-                                                    {{ shift or "Not Set" }}
+                                                    —
                                                 {% endif %}
                                             </td>
                                         {% endfor %}
@@ -59,16 +59,12 @@
                 </div>
             </div>
 
-            <!-- Styled Table (New) -->
+            <!-- Styled Table -->
             <div id="styledTable" style="display: none;">
                 <div class="table-responsive">
-                    <table class="table table-bordered text-center" id="scheduleTable">
-                        <thead id="scheduleHeader">
-                            <!-- Data will be inserted dynamically -->
-                        </thead>
-                        <tbody id="scheduleBody">
-                            <!-- Data will be inserted dynamically -->
-                        </tbody>
+                    <table class="table table-bordered text-center">
+                        <thead id="scheduleHeader"></thead>
+                        <tbody id="scheduleBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -76,7 +72,7 @@
     </div>
 </div>
 
-<!-- JavaScript for Auto-Updating Styled Table -->
+<!-- JavaScript for Tables & Responsiveness -->
 <script>
 function switchTable(view) {
     document.getElementById("defaultTable").style.display = (view === 'default') ? "block" : "none";
@@ -89,31 +85,24 @@ function fetchSchedule() {
     .then(data => {
         let headerRow = document.getElementById("scheduleHeader");
         let tableBody = document.getElementById("scheduleBody");
-        
-        // Clear previous data
+
         headerRow.innerHTML = "";
         tableBody.innerHTML = "";
 
-        // Build the table header with dates
         let headerHTML = `<tr><th>Name</th>`;
-        data.dates.forEach(date => {
-            headerHTML += `<th>${date}</th>`;
+        data.dates.forEach((date, index) => {
+            headerHTML += `<th>${data.days[index]}<br>${date}</th>`;
         });
         headerHTML += "</tr>";
         headerRow.innerHTML = headerHTML;
 
-        // Build the table rows
         data.schedule.forEach(entry => {
             let rowHTML = `<tr><td>${entry.name}</td>`;
             entry.shifts.forEach(shift => {
-                let colorClass = shift === "Day" ? "bg-info text-dark" : 
-                                 shift === "Night" ? "bg-dark text-white" :
-                                 shift === "HOL" ? "bg-light text-dark" :
-                                 shift === "OCI-L" ? "bg-warning text-dark" :
-                                 shift === "OCI-E" ? "bg-success text-white" :
-                                 shift === "OCI-WD" ? "bg-primary text-white" :
-                                 shift === "OP-OOH" ? "bg-danger text-white" : "bg-secondary text-white";
-                rowHTML += `<td class="${colorClass}">${shift || "—"}</td>`;
+                let colorClass = shift === "Day" ? "bg-info text-dark fw-bold" : 
+                                 shift === "Night" ? "bg-dark text-white fw-bold" :
+                                 shift === "Not set" ? "bg-white text-dark border" : "bg-secondary text-white";
+                rowHTML += `<td class="${colorClass}">${shift}</td>`;
             });
             rowHTML += "</tr>";
             tableBody.innerHTML += rowHTML;
@@ -122,9 +111,33 @@ function fetchSchedule() {
     .catch(error => console.error("Error fetching schedule:", error));
 }
 
-// Run fetch on page load and every 30 seconds
 fetchSchedule();
 setInterval(fetchSchedule, 30000);
+
+// Mobile Check
+if (/Mobi|Android/i.test(navigator.userAgent)) {
+    document.body.classList.add("mobile-friendly");
+}
 </script>
 
+<style>
+/* Button animations */
+.animated-button {
+    transition: all 0.2s ease-in-out;
+}
+.animated-button:hover {
+    transform: scale(1.05);
+}
+.animated-button:active {
+    transform: scale(0.95);
+}
+
+/* Mobile Responsiveness */
+.mobile-friendly .table {
+    font-size: 14px;
+}
+.mobile-friendly .table-responsive {
+    overflow-x: auto;
+}
+</style>
 {% endblock %}
