@@ -1,29 +1,35 @@
+/* Global Background & Typography */
 body {
-  background-color: #eef3f7;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* Full-page background image with overlay fallback */
+  background: url('https://source.unsplash.com/1600x900/?modern,abstract') no-repeat center center fixed;
+  background-size: cover;
+  font-family: 'Lato', sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 0;
 }
 
-/* Custom Navbar Styles */
-/* Custom Navbar Styles */
-/* Professional Navbar Styles */
+/* Apply heading font */
+h1, h2, h3, h4, h5, h6, .custom-brand {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Navbar - Professional & Sticky */
 .custom-navbar {
   background: linear-gradient(135deg, #002e5d, #00467f);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   padding: 0.75rem 0;
   transition: background 0.3s ease;
 }
-
 .custom-navbar .custom-brand {
   font-size: 1.9rem;
   font-weight: 700;
   letter-spacing: 0.03rem;
   transition: transform 0.3s ease;
 }
-
 .custom-navbar .custom-brand:hover {
   transform: translateY(-2px);
 }
-
 .custom-navbar .nav-link {
   font-size: 1.1rem;
   margin-right: 1rem;
@@ -31,13 +37,10 @@ body {
   transition: color 0.3s ease;
   font-weight: 500;
 }
-
 .custom-navbar .nav-link:hover,
 .custom-navbar .nav-link:focus {
-  color: #a0d700; /* Subtle accent color */
+  color: #a0d700;  /* Subtle neon accent */
 }
-
-/* Underline animation for nav links */
 .custom-navbar .nav-link::after {
   content: "";
   position: absolute;
@@ -48,60 +51,64 @@ body {
   background-color: #a0d700;
   transition: width 0.3s ease;
 }
-
 .custom-navbar .nav-link:hover::after,
 .custom-navbar .nav-link:focus::after {
   width: 100%;
 }
-
-/* Navbar Toggler */
 .custom-navbar .navbar-toggler {
   border-color: rgba(255, 255, 255, 0.6);
 }
-
 .custom-navbar .navbar-toggler-icon {
   filter: invert(1);
 }
 
-.card {
-  border-radius: 10px;
+/* Container Styling */
+.container {
+  max-width: 800px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
+/* Card Styling */
+.card {
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
 .card-header {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-}
-
-.btn-outline-primary.active,
-.btn-outline-primary.active:hover {
-  background-color: #0d6efd;
+  background: linear-gradient(135deg, #007bff, #0056b3);
   color: #fff;
 }
 
+/* Table */
 .table th, .table td {
   vertical-align: middle !important;
 }
 
+/* Alerts */
 .alert p {
   margin-bottom: 0;
 }
-/* Limit maximum container width and add some custom spacing */
-.container {
-  max-width: 800px;
-}
 
-/* Add a subtle hover effect for the list items */
+/* List Group Items */
+.list-group-item {
+  transition: background-color 0.3s ease;
+}
 .list-group-item:hover {
   background-color: #f7f7f7;
 }
 
-/* Adjust button styling if needed */
+/* Buttons */
 .btn-primary {
   border-radius: 20px;
+  transition: background 0.3s ease;
 }
 
-/* Modern flat button style for shift selection */
-/* Modern flat button style for shift selection */
+/* Shift Buttons */
 .shift-btn {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   margin: 2px;
@@ -115,46 +122,33 @@ body {
   cursor: pointer;
   min-width: 80px;
 }
-
-/* Specific colors for each shift */
 .shift-btn.day {
-  background-color: #007bff; /* Blue */
+  background-color: #007bff;
   color: #fff;
 }
-
 .shift-btn.night {
-  background-color: #6c757d; /* Gray */
+  background-color: #6c757d;
   color: #fff;
 }
-
 .shift-btn.ooo {
-  background-color: #dc3545; /* Red */
+  background-color: #dc3545;
   color: #fff;
 }
-
-/* Hover and active states */
 .shift-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
-
-/* Hide default radio button appearance */
 .btn-check {
   display: none;
 }
-
-/* Checked state styles for visual feedback */
 .btn-check:checked + .shift-btn.day {
   transform: scale(0.95);
-  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 0 0.25rem rgba(0,123,255,0.5);
 }
-
 .btn-check:checked + .shift-btn.night {
   transform: scale(0.95);
-  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5);
+  box-shadow: 0 0 0 0.25rem rgba(108,117,125,0.5);
 }
-
 .btn-check:checked + .shift-btn.ooo {
   transform: scale(0.95);
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5);
-}
+  box-shadow: 0 0
