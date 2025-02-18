@@ -122,29 +122,22 @@ def schedule(user_id):
             prefill[row["day"]] = row["shift_type"]
 
     if request.method == "POST":
-        move_next = request.form.get("nextWeekCheck") == "on"
-
+        action = request.form.get("action")
         for day in days:
             field_name = f"{target_week.isoformat()}_{day}"
             shift_choice = request.form.get(field_name)
-
             if shift_choice in ["Day", "Night", "OOO"]:
                 if day == "Sunday" and shift_choice == "Night":
                     shift_choice = "Day"
-
                 conn.execute("""
                     INSERT OR REPLACE INTO shifts (user_id, week_start, day, shift_type, pending)
                     VALUES (?, ?, ?, ?, ?)
                 """, (user_id, target_week.isoformat(), day, shift_choice, 1))
-
         conn.commit()
         conn.close()
-        
         flash("Your schedule has been submitted.")
-
-        if move_next and week_index < len(upcoming_weeks) - 1:
+        if action == "move_next" and week_index < len(upcoming_weeks) - 1:
             return redirect(url_for("schedule", user_id=user_id, week_index=week_index + 1))
-
         return redirect(url_for("view_schedule", user_id=user_id))
 
     conn.close()
