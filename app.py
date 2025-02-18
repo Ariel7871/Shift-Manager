@@ -133,7 +133,7 @@ def schedule(user_id):
         for day in days:
             field_name = f"{target_week.isoformat()}_{day}"
             shift_choice = request.form.get(field_name)
-            if shift_choice in ["Day", "Night"]:
+                if shift_choice in ["Day", "Night", "OOO"]:
                 # For Sundays, enforce morning (Day) shift.
                 if day == "Sunday" and shift_choice == "Night":
                     shift_choice = "Day"
