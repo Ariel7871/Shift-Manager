@@ -4,7 +4,7 @@
     <div class="card shadow">
         <div class="card-header bg-dark text-white">
             <h4 class="mb-0">
-                <i class="fa-solid fa-calendar-days me-2"></i> Monthly Schedule
+                <i class="fa-solid fa-calendar-days me-2"></i> Monthly Schedule (Next 30 Days)
             </h4>
         </div>
         <div class="card-body">
@@ -16,48 +16,44 @@
 
             <!-- Standard Table -->
             <div id="defaultTable">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th class="text-center text-primary fw-bold">Date</th>
-                                <th class="text-center text-primary fw-bold">Day</th>
-                                {% for user in users %}
-                                    <th class="text-center text-secondary fw-bold">{{ user['name'] }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for month_label, entries in grouped_schedule_data.items() %}
-                                <tr class="table-secondary">
-                                    <td colspan="{{ 2 + users|length }}" class="text-center fw-bold">
-                                        {{ month_label }}
-                                    </td>
+                {% for month, dates in month_dates.items() %}
+                    <h5 class="text-center text-primary fw-bold">{{ month }}</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="text-center text-primary fw-bold">Date</th>
+                                    <th class="text-center text-primary fw-bold">Day</th>
+                                    {% for user in users %}
+                                        <th class="text-center text-secondary fw-bold">{{ user['name'] }}</th>
+                                    {% endfor %}
                                 </tr>
-                                {% for entry in entries %}
-                                    <tr class="{% if entry.date == today %}table-primary{% endif %}">
-                                        <td class="text-center">{{ entry.date.strftime("%d/%m/%Y") }}</td>
-                                        <td class="text-center">{{ entry.day_name }}</td>
-                                        {% for user in users %}
-                                            <td class="text-center">
-                                                {% set shift = user_schedules[user['name']].get(entry.date, 'Not set') %}
-                                                {% if shift == "Day" %}
-                                                    <i class="fa-solid fa-sun text-warning"></i>
-                                                {% elif shift == "Night" %}
-                                                    <i class="fa-solid fa-moon text-muted"></i>
-                                                {% elif shift == "OOO" %}
-                                                    <i class="fa-solid fa-ban text-danger"></i>
-                                                {% else %}
-                                                    —
-                                                {% endif %}
-                                            </td>
-                                        {% endfor %}
-                                    </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in dates %}
+                                <tr class="{% if d == today %}table-primary{% endif %}">
+                                    <td class="text-center">{{ d.strftime("%d/%m/%Y") }}</td>
+                                    <td class="text-center">{{ d.strftime("%A") }}</td>
+                                    {% for user in users %}
+                                        <td class="text-center">
+                                            {% set shift = user_schedules[user['name']][d] %}
+                                            {% if shift == "Day" %}
+                                                <i class="fa-solid fa-sun text-warning"></i>
+                                            {% elif shift == "Night" %}
+                                                <i class="fa-solid fa-moon text-muted"></i>
+                                            {% elif shift == "OOO" %}
+                                                <i class="fa-solid fa-ban text-danger"></i>
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
                                 {% endfor %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
             </div>
 
             <!-- Colored Table -->
@@ -74,13 +70,13 @@
 </div>
 
 <script>
-// Switch between tables
+// Toggle between standard and colored tables
 function switchTable(view) {
     document.getElementById("defaultTable").style.display = (view === 'default') ? "block" : "none";
     document.getElementById("styledTable").style.display = (view === 'styled') ? "block" : "none";
 }
 
-// Fetch schedule data and build colored table
+// Fetch schedule data for colored table (one month ahead)
 function fetchSchedule() {
     fetch("{{ url_for('get_schedule_data') }}")
     .then(response => response.json())
@@ -96,7 +92,7 @@ function fetchSchedule() {
             return;
         }
 
-        // Build the table header using the dates from the API
+        // Build header row
         let headerHTML = `<tr><th>Name</th>`;
         let todayStr = new Date().toLocaleDateString('en-GB');
         data.dates.forEach((date, index) => {
@@ -109,7 +105,7 @@ function fetchSchedule() {
         headerHTML += "</tr>";
         headerRow.innerHTML = headerHTML;
 
-        // Build the table rows for each user
+        // Build rows for each user
         data.schedule.forEach(entry => {
             let rowHTML = `<tr><td class="fw-bold">${entry.name}</td>`;
             entry.shifts.forEach(shift => {
@@ -139,11 +135,10 @@ function fetchSchedule() {
     .catch(error => console.error("Error fetching schedule:", error));
 }
 
-// Mobile adjustments (if needed)
+// Mobile adjustments
 function isMobile() {
     return /Mobi|Android/i.test(navigator.userAgent);
 }
-
 function adjustTableForMobile() {
     if (isMobile()) {
         document.body.classList.add("mobile-friendly");
@@ -158,17 +153,14 @@ function adjustTableForMobile() {
     }
 }
 
-// Run functions when page loads
 fetchSchedule();
 setInterval(fetchSchedule, 30000);
 adjustTableForMobile();
 </script>
 
 <style>
-/* Optional: Additional styling for the colored table */
 .date-text {
     font-size: 0.8rem;
 }
 </style>
-
 {% endblock %}
