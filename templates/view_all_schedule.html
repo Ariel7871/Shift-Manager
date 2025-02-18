@@ -97,22 +97,22 @@ function fetchSchedule() {
             return;
         }
 
-        // Build header row
-		let headerHTML = `<tr class="table-secondary"><th>Name</th>`;
-		let todayStr = new Date().toLocaleDateString('en-GB');
-		data.dates.forEach((date, index) => {
-			let cellClass = "";
-			if (date === todayStr) {
-				cellClass = "table-primary";
-			}
-			headerHTML += `<th class="${cellClass}">${data.days[index]}<br><span class="date-text">${date}</span></th>`;
-		});
-		headerHTML += "</tr>";
-		headerRow.innerHTML = headerHTML;
+        // Build header row with a grey background
+        let headerHTML = `<tr class="table-secondary"><th class="table-secondary">Name</th>`;
+        let todayStr = new Date().toLocaleDateString('en-GB');
+        data.dates.forEach((date, index) => {
+            let cellClass = "";
+            if (date === todayStr) {
+                cellClass = "table-primary";
+            }
+            headerHTML += `<th class="${cellClass}">${data.days[index]}<br><span class="date-text">${date}</span></th>`;
+        });
+        headerHTML += "</tr>";
+        headerRow.innerHTML = headerHTML;
 
-        // Build rows for each user
+        // Build rows for each user; the name cell also has a grey background
         data.schedule.forEach(entry => {
-            let rowHTML = `<tr><td class="fw-bold">${entry.name}</td>`;
+            let rowHTML = `<tr><td class="table-secondary fw-bold">${entry.name}</td>`;
             entry.shifts.forEach(shift => {
                 let colorClass = "";
                 if (shift === "Day") {
@@ -139,6 +139,7 @@ function fetchSchedule() {
     })
     .catch(error => console.error("Error fetching schedule:", error));
 }
+
 
 // Mobile adjustments
 function isMobile() {
