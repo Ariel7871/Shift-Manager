@@ -230,7 +230,13 @@ def get_schedule_data():
 
     for user in users:
         user_shifts = []
+        from datetime import datetime  # Ensure this is imported at the top
+
         for current_date in dates:
+            # Convert `current_date` from string to `datetime.date`
+            if isinstance(current_date, str):
+                current_date = datetime.strptime(current_date, "%d/%m/%Y").date()
+
             week_start = get_week_start(current_date).isoformat()
             day_name = current_date.strftime("%A")
 
