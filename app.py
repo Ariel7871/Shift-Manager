@@ -2,7 +2,7 @@ import sqlite3
 from datetime import date, timedelta
 import calendar
 import holidays  # pip install holidays
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -197,6 +197,46 @@ def view_schedule(user_id):
                            days=days)
 
 # View all users' schedules in a monthly view (30-day period from current week start)
+@app.route('/get_schedule_data')
+def get_schedule_data():
+    start_date = get_current_week_start()
+    end_date = start_date + timedelta(days=30)
+
+    israel_holidays = holidays.Israel(years=[start_date.year, end_date.year])
+
+    conn = get_db_connection()
+    users = conn.execute('SELECT * FROM users').fetchall()
+
+    shifts = conn.execute("""
+        SELECT users.name AS user_name, week_start, day, shift_type
+        FROM shifts 
+        JOIN users ON shifts.user_id = users.id
+        WHERE week_start BETWEEN ? AND ?
+    """, (start_date.isoformat(), end_date.isoformat())).fetchall()
+    conn.close()
+
+    shift_data = {}
+    for shift in shifts:
+        key = (shift["week_start"], shift["day"])
+        if key not in shift_data:
+            shift_data[key] = {}
+        shift_data[key][shift["user_name"]] = shift["shift_type"]
+
+    schedule_data = []
+    current_date = start_date
+    while current_date <= end_date:
+        if current_date.strftime("%A") not in ["Friday", "Saturday"]:  
+            week_start = get_week_start(current_date).isoformat()
+            schedules = [shift_data.get((week_start, current_date.strftime("%A")), {}).get(user['name'], "—") for user in users]
+            schedule_data.append({
+                "date": current_date.strftime("%d/%m/%Y"),
+                "day_name": current_date.strftime("%A"),
+                "schedules": schedules
+            })
+        current_date += timedelta(days=1)
+
+    return jsonify(schedule_data)
+    
 @app.route('/view_all_schedule')
 def view_all_schedule():
     import calendar
