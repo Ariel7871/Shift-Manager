@@ -176,27 +176,44 @@ def view_schedule(user_id):
     conn.close()
     return render_template('view_schedule.html', user=user)
 
+# --- New get_schedule_data route returns real data for one month ahead ---
 @app.route('/get_schedule_data')
 def get_schedule_data():
-    # For demonstration purposes, here's a dummy implementation.
-    # In a real application, you would query the database and format the data accordingly.
-    data = {
-        "dates": ["01/02/2025", "02/02/2025", "03/02/2025"],
-        "days": ["Saturday", "Sunday", "Monday"],
-        "schedule": []
-    }
+    allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+    start = date.today()
+    end = start + timedelta(days=30)
+    dates = []
+    day_names = []
+    current = start
+    while current <= end:
+        if current.strftime("%A") in allowed_days:
+            dates.append(current.strftime("%d/%m/%Y"))
+            day_names.append(current.strftime("%A"))
+        current += timedelta(days=1)
 
     conn = get_db_connection()
     users = conn.execute("SELECT * FROM users").fetchall()
+    
+    schedule_array = []
+    for user in users:
+        shifts_list = []
+        for d_str, d_name in zip(dates, day_names):
+            d_obj = datetime.strptime(d_str, "%d/%m/%Y").date()
+            week_start = get_week_start(d_obj)
+            row = conn.execute(
+                "SELECT shift_type FROM shifts WHERE user_id = ? AND week_start = ? AND day = ?",
+                (user["id"], week_start.isoformat(), d_name)
+            ).fetchone()
+            shift = row["shift_type"] if row else "Not set"
+            shifts_list.append(shift)
+        schedule_array.append({"name": user["name"], "shifts": shifts_list})
     conn.close()
 
-    # Create a dummy schedule for each user
-    for user in users:
-        data["schedule"].append({
-            "name": user["name"],
-            "shifts": ["Not set", "Not set", "Not set"]
-        })
-    
+    data = {
+        "dates": dates,
+        "days": day_names,
+        "schedule": schedule_array
+    }
     return jsonify(data)
 
 @app.route('/view_schedule')
@@ -208,55 +225,49 @@ def logout():
     session.pop('admin', None)
     return redirect(url_for('index'))
 
+# --- Updated view_all_schedule route: only one month ahead ---
 @app.route('/view_all_schedule')
 def view_all_schedule():
+    from collections import defaultdict
+    start = date.today()
+    end = start + timedelta(days=30)
+    allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+    dates = []
+    current = start
+    while current <= end:
+        if current.strftime("%A") in allowed_days:
+            dates.append(current)
+        current += timedelta(days=1)
+    
+    # Build month grouping for the standard table
+    month_dates = defaultdict(list)
+    for d in dates:
+        month_label = d.strftime("%B %Y")
+        month_dates[month_label].append(d)
+    
+    # Build user schedules: for each user, map each date to its shift (or "Not set")
     conn = get_db_connection()
     users = conn.execute('SELECT * FROM users').fetchall()
-    shifts = conn.execute('SELECT * FROM shifts').fetchall()
-    conn.close()
-
-    from collections import defaultdict
-    import datetime
-
-    # Mapping for day offsets (based on week_start)
-    day_offset = {'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4}
-
-    # Group entries by month label (e.g. "February 2025")
-    grouped_schedule_data = defaultdict(list)
-    for shift in shifts:
-        week_start = datetime.datetime.strptime(shift['week_start'], '%Y-%m-%d').date()
-        offset = day_offset.get(shift['day'], 0)
-        shift_date = week_start + timedelta(days=offset)
-        month_label = shift_date.strftime("%B %Y")
-        entry = {
-            "date": shift_date,
-            "day_name": shift['day'],
-            "week_start": shift['week_start'],
-            "user_id": shift['user_id'],
-            "shift_type": shift['shift_type']
-        }
-        grouped_schedule_data[month_label].append(entry)
-
-    # Sort each month’s entries by date
-    for month in grouped_schedule_data:
-        grouped_schedule_data[month] = sorted(grouped_schedule_data[month], key=lambda x: x["date"])
-
-    # Build a mapping of user schedules: user name -> { date: shift }
     user_schedules = { user['name']: {} for user in users }
-    for month, entries in grouped_schedule_data.items():
-        for entry in entries:
-            user_name = next((u['name'] for u in users if u['id'] == entry['user_id']), None)
-            if user_name:
-                user_schedules[user_name][entry['date']] = entry['shift_type']
+    for d in dates:
+        week_start = get_week_start(d)
+        day_name = d.strftime("%A")
+        for user in users:
+            row = conn.execute(
+                "SELECT shift_type FROM shifts WHERE user_id = ? AND week_start = ? AND day = ?",
+                (user['id'], week_start.isoformat(), day_name)
+            ).fetchone()
+            shift = row["shift_type"] if row else "Not set"
+            user_schedules[user['name']][d] = shift
+    conn.close()
 
     return render_template(
         'view_all_schedule.html',
-        grouped_schedule_data=grouped_schedule_data,
         users=users,
         user_schedules=user_schedules,
-        today=date.today()
+        today=date.today(),
+        month_dates=month_dates
     )
-
 
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
 def approve_changes(user_id):
