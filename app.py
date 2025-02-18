@@ -249,6 +249,7 @@ def get_schedule_data():
 
     return jsonify({"dates": dates, "schedule": schedule})
 
+
     
 @app.route('/view_all_schedule')
 def view_all_schedule():
