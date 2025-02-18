@@ -1,23 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
+<!-- Inline styles for animations and transitions -->
+<style>
+  /* Keyframes for fade-in and slide-up animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Apply fadeInUp animation to the card */
+  .animated-card {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  /* Animate each list-group item with a slight delay */
+  .animated-item {
+    animation: fadeInUp 0.5s ease-out;
+    opacity: 0;
+  }
+  .animated-item.visible {
+    opacity: 1;
+  }
+
+  /* Transition for the Schedule button */
+  .btn-schedule {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-schedule:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+</style>
+
 <div class="container my-5">
   <div class="row justify-content-center">
-    <!-- Increase the column width for a larger card -->
+    <!-- Increase column width for a larger, more prominent card -->
     <div class="col-md-10 col-lg-8">
-      <div class="card shadow-lg">
-        <div class="card-header bg-primary text-white text-center py-4">
+      <div class="card shadow-lg border-0 animated-card" style="border-radius: 10px;">
+        <div class="card-header bg-primary text-white text-center py-4" style="border-radius: 10px 10px 0 0;">
           <h2 class="mb-0">
             <i class="fa-solid fa-user me-2"></i>Select Your Name
           </h2>
         </div>
-        <div class="card-body py-4">
+        <div class="card-body py-4" style="font-size: 1.2rem;">
           <ul class="list-group list-group-flush">
             {% for user in users %}
-            <li class="list-group-item d-flex justify-content-between align-items-center" style="font-size: 1.25rem;">
+            <li class="list-group-item d-flex justify-content-between align-items-center animated-item" style="padding: 1rem 1.5rem;">
               <span>
                 <i class="fa-solid fa-user-circle me-2"></i>{{ user['name'] }}
               </span>
-              <a href="{{ url_for('schedule', user_id=user['id'], week_index=0) }}" class="btn btn-primary btn-lg">
+              <a href="{{ url_for('schedule', user_id=user['id'], week_index=0) }}" class="btn btn-primary btn-lg btn-schedule">
                 <i class="fa-solid fa-pencil me-1"></i>Schedule
               </a>
             </li>
@@ -28,4 +66,16 @@
     </div>
   </div>
 </div>
+
+<!-- JavaScript to add staggered animation delays for list items -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const items = document.querySelectorAll('.animated-item');
+    items.forEach((item, index) => {
+      item.style.animationDelay = (index * 0.1) + 's';
+      // Trigger reflow to ensure animation starts
+      item.classList.add('visible');
+    });
+  });
+</script>
 {% endblock %}
