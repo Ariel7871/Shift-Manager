@@ -83,12 +83,20 @@ function fetchSchedule() {
     fetch("{{ url_for('get_schedule_data') }}")
     .then(response => response.json())
     .then(data => {
+        console.log("Received data:", data);  // DEBUG: Print received data
+
         let headerRow = document.getElementById("scheduleHeader");
         let tableBody = document.getElementById("scheduleBody");
 
         headerRow.innerHTML = "";
         tableBody.innerHTML = "";
 
+        if (!data.dates || !data.schedule) {
+            console.error("Error: Missing dates or schedule in API response", data);
+            return;
+        }
+
+        // Build the table header
         let headerHTML = `<tr><th>Name</th>`;
         data.dates.forEach((date, index) => {
             headerHTML += `<th>${data.days[index]}<br>${date}</th>`;
@@ -96,6 +104,7 @@ function fetchSchedule() {
         headerHTML += "</tr>";
         headerRow.innerHTML = headerHTML;
 
+        // Build the table rows
         data.schedule.forEach(entry => {
             let rowHTML = `<tr><td>${entry.name}</td>`;
             entry.shifts.forEach(shift => {
@@ -113,12 +122,8 @@ function fetchSchedule() {
 
 fetchSchedule();
 setInterval(fetchSchedule, 30000);
-
-// Mobile Check
-if (/Mobi|Android/i.test(navigator.userAgent)) {
-    document.body.classList.add("mobile-friendly");
-}
 </script>
+
 
 <style>
 /* Button animations */
