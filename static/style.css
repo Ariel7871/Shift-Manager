@@ -24,36 +24,77 @@ body::before {
 }
 
 /* === Navbar Fix === */
+/* === Full-Width Navbar Fix === */
 .custom-navbar {
+  width: 100vw;  /* Ensures it covers the full width of the screen */
   background: linear-gradient(135deg, #001f3f, #003b70);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  padding: 15px 0;
+  padding: 20px 0;  /* Increased padding for a larger look */
+  height: 80px;  /* Adjusted height for a stronger presence */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;  /* Keeps it at the top while scrolling */
+  top: 0;
+  left: 0;
+  z-index: 1000;  /* Ensures it stays above other elements */
 }
 
+/* Navbar Container - Makes sure the content is spaced properly */
+.custom-navbar .container {
+  width: 95%;
+  max-width: 1400px;  /* Ensures it scales properly on large screens */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* === Navbar Brand (Logo + Text) === */
 .custom-navbar .custom-brand {
-  font-size: 1.7rem;
+  font-size: 2rem; /* Slightly larger for impact */
   font-weight: bold;
   letter-spacing: 0.5px;
+  color: #ffffff;
+  transition: transform 0.3s ease;
 }
 
+/* Adds a hover effect for interaction */
+.custom-navbar .custom-brand:hover {
+  transform: scale(1.05);
+}
+
+/* === Navbar Links === */
 .custom-navbar .nav-link {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 500;
-  margin-right: 1rem;
+  margin-right: 1.5rem;
+  color: #ffffff;
   transition: all 0.3s ease-in-out;
 }
 
-/* Active tab fix */
+/* Fix for active menu item */
 .custom-navbar .nav-link.active {
   color: #a0ff00 !important;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  padding: 5px 10px;
+  padding: 5px 15px;
 }
 
-/* Hover Effect */
+/* Hover effect for menu links */
 .custom-navbar .nav-link:hover {
   color: #a0ff00;
+  transform: scale(1.05);
+}
+
+/* === Navbar Toggler Button (for mobile) === */
+.custom-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.6);
+  padding: 8px 10px;
+}
+
+/* Toggler Icon Fix */
+.custom-navbar .navbar-toggler-icon {
+  filter: invert(1);
 }
 
 /* === Main Content Box Fix === */
