@@ -96,37 +96,92 @@ function fetchSchedule() {
             return;
         }
 
-        // Build the table header
+        // 🏷️ Build the table header with Day Names + Dates
         let headerHTML = `<tr><th>Name</th>`;
         data.dates.forEach((date, index) => {
-            headerHTML += `<th>${data.days[index]}<br>${date}</th>`;
+            headerHTML += `<th>${data.days[index]}<br><span class="date-text">${date}</span></th>`;
         });
         headerHTML += "</tr>";
         headerRow.innerHTML = headerHTML;
 
-        // Build the table rows
+        // 📅 Build the table rows
         data.schedule.forEach(entry => {
-            let rowHTML = `<tr><td>${entry.name}</td>`;
+            let rowHTML = `<tr><td class="fw-bold">${entry.name}</td>`;  // Make names bold
             entry.shifts.forEach(shift => {
                 let colorClass = shift === "Day" ? "bg-info text-dark fw-bold" : 
                                  shift === "Night" ? "bg-dark text-white fw-bold" :
-                                 shift === "Not set" ? "bg-white text-dark border" : "bg-secondary text-white";
+                                 shift === "Not set" ? "bg-white text-dark border fw-bold" : "bg-secondary text-white";
                 rowHTML += `<td class="${colorClass}">${shift}</td>`;
             });
             rowHTML += "</tr>";
             tableBody.innerHTML += rowHTML;
         });
+
+        adjustTableForMobile();  // Call function to check and fix mobile layout
     })
     .catch(error => console.error("Error fetching schedule:", error));
 }
 
+// 📱 Detect if the user is on a mobile device
+function isMobile() {
+    return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+// 🌍 Apply Mobile Layout Adjustments
+function adjustTableForMobile() {
+    if (isMobile()) {
+        document.body.classList.add("mobile-friendly");
+
+        // Make table scrollable and bigger on mobile
+        document.querySelector(".table-responsive").style.overflowX = "scroll";
+        document.querySelectorAll("table").forEach(table => {
+            table.style.fontSize = "14px"; // Increase font size for readability
+        });
+
+        // Make buttons full-width for easier tapping
+        document.querySelectorAll(".btn").forEach(btn => {
+            btn.style.width = "100%";
+            btn.style.marginBottom = "10px";
+        });
+    }
+}
+
+// 🚀 Run functions when page loads
 fetchSchedule();
 setInterval(fetchSchedule, 30000);
+adjustTableForMobile(); // Apply mobile styling immediately
 </script>
 
 
+
 <style>
-/* Button animations */
+/* 🌍 General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* 📱 Mobile Friendly Adjustments */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    table {
+        font-size: 14px; /* Increase font size */
+    }
+    th, td {
+        padding: 8px;
+    }
+    .btn {
+        width: 100%; /* Make buttons full-width */
+        margin-bottom: 10px;
+    }
+}
+
+/* ✨ Button Animations */
 .animated-button {
     transition: all 0.2s ease-in-out;
 }
@@ -136,13 +191,6 @@ setInterval(fetchSchedule, 30000);
 .animated-button:active {
     transform: scale(0.95);
 }
-
-/* Mobile Responsiveness */
-.mobile-friendly .table {
-    font-size: 14px;
-}
-.mobile-friendly .table-responsive {
-    overflow-x: auto;
-}
 </style>
+
 {% endblock %}
