@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
-<!-- Inline styles for animations and transitions -->
+<!-- Import Google Font for a modern look -->
 <style>
-  /* Keyframes for fade-in and slide-up animation */
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+  body {
+    font-family: 'Roboto', sans-serif;
+  }
+
+  /* Keyframes for fadeInUp animation */
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -14,12 +20,13 @@
     }
   }
 
-  /* Apply fadeInUp animation to the card */
+  /* Animated card style */
   .animated-card {
-    animation: fadeInUp 0.6s ease-out;
+    animation: fadeInUp 0.8s ease-out;
+    border-radius: 12px;
   }
 
-  /* Animate each list-group item with a slight delay */
+  /* Animated list items with staggered animation */
   .animated-item {
     animation: fadeInUp 0.5s ease-out;
     opacity: 0;
@@ -28,31 +35,60 @@
     opacity: 1;
   }
 
-  /* Transition for the Schedule button */
+  /* Enhanced styling for list group items */
+  .list-group-item {
+    background-color: #f9f9f9;
+    border: none;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.2rem;
+    padding: 1rem 1.5rem;
+    transition: background-color 0.2s ease;
+  }
+  .list-group-item:hover {
+    background-color: #ececec;
+  }
+
+  /* Style for the user name text */
+  .user-name {
+    font-weight: 500;
+    color: #333;
+  }
+
+  /* Enhanced schedule button style */
   .btn-schedule {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
   }
   .btn-schedule:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Card header style with gradient and rounded corners */
+  .card-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    font-size: 1.8rem;
+    font-weight: 700;
+    border-radius: 12px 12px 0 0;
   }
 </style>
 
 <div class="container my-5">
   <div class="row justify-content-center">
-    <!-- Increase column width for a larger, more prominent card -->
+    <!-- Use a wider column for a more prominent card -->
     <div class="col-md-10 col-lg-8">
-      <div class="card shadow-lg border-0 animated-card" style="border-radius: 10px;">
-        <div class="card-header bg-primary text-white text-center py-4" style="border-radius: 10px 10px 0 0;">
+      <div class="card shadow-lg animated-card border-0">
+        <div class="card-header text-white text-center py-4">
           <h2 class="mb-0">
             <i class="fa-solid fa-user me-2"></i>Select Your Name
           </h2>
         </div>
-        <div class="card-body py-4" style="font-size: 1.2rem;">
+        <div class="card-body py-4">
           <ul class="list-group list-group-flush">
             {% for user in users %}
-            <li class="list-group-item d-flex justify-content-between align-items-center animated-item" style="padding: 1rem 1.5rem;">
-              <span>
+            <li class="list-group-item d-flex justify-content-between align-items-center animated-item">
+              <span class="user-name">
                 <i class="fa-solid fa-user-circle me-2"></i>{{ user['name'] }}
               </span>
               <a href="{{ url_for('schedule', user_id=user['id'], week_index=0) }}" class="btn btn-primary btn-lg btn-schedule">
@@ -67,13 +103,12 @@
   </div>
 </div>
 
-<!-- JavaScript to add staggered animation delays for list items -->
+<!-- JavaScript for staggered list animations -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const items = document.querySelectorAll('.animated-item');
     items.forEach((item, index) => {
       item.style.animationDelay = (index * 0.1) + 's';
-      // Trigger reflow to ensure animation starts
       item.classList.add('visible');
     });
   });
