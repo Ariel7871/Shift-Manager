@@ -59,24 +59,24 @@
 			  <td class="text-center">
 				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
 				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_day" value="Day" autocomplete="off" {% if prefill.get(day)=='Day' %}checked{% endif %}>
-				  <label class="btn btn-primary shift-btn" for="{{ week }}_{{ day }}_day">
-					<i class="fa-solid fa-sun"></i>
+				  <label class="shift-btn day" for="{{ week }}_{{ day }}_day">
+					<i class="fa-solid fa-sun me-1"></i> Day
 				  </label>
 				</div>
 			  </td>
 			  <td class="text-center">
 				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
 				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_night" value="Night" autocomplete="off" {% if prefill.get(day)=='Night' %}checked{% endif %}>
-				  <label class="btn btn-secondary shift-btn" for="{{ week }}_{{ day }}_night">
-					<i class="fa-solid fa-moon"></i>
+				  <label class="shift-btn night" for="{{ week }}_{{ day }}_night">
+					<i class="fa-solid fa-moon me-1"></i> Night
 				  </label>
 				</div>
 			  </td>
 			  <td class="text-center">
 				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
 				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_ooo" value="OOO" autocomplete="off" {% if prefill.get(day)=='OOO' %}checked{% endif %}>
-				  <label class="btn btn-danger shift-btn" for="{{ week }}_{{ day }}_ooo">
-					<i class="fa-solid fa-user-times"></i>
+				  <label class="shift-btn ooo" for="{{ week }}_{{ day }}_ooo">
+					<i class="fa-solid fa-user-times me-1"></i> OOO
 				  </label>
 				</div>
 			  </td>
