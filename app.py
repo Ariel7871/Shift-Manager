@@ -187,7 +187,46 @@ def logout():
 
 @app.route('/view_all_schedule')
 def view_all_schedule():
-    return render_template('view_all_schedule.html')
+    conn = get_db_connection()
+    
+    # Fetch all users
+    users = conn.execute('SELECT * FROM users').fetchall()
+
+    # Fetch all shifts
+    shifts = conn.execute('SELECT * FROM shifts').fetchall()
+    conn.close()
+
+    # Process shifts into a structured format
+    from collections import defaultdict
+    import datetime
+
+    today = datetime.date.today()
+    grouped_schedule_data = defaultdict(list)
+
+    # Convert shifts into a structured dictionary
+    user_schedules = defaultdict(lambda: defaultdict(dict))
+    for shift in shifts:
+        user_id = shift['user_id']
+        week_start = shift['week_start']
+        day = shift['day']
+        shift_type = shift['shift_type']
+        user_schedules[user_id][week_start][day] = shift_type
+
+    # Organize data by weeks and users
+    for user in users:
+        user_id = user["id"]
+        for week_start, shifts in user_schedules[user_id].items():
+            grouped_schedule_data[week_start].append({
+                "user": user["name"],
+                "shifts": shifts
+            })
+
+    return render_template(
+        'view_all_schedule.html',
+        grouped_schedule_data=grouped_schedule_data,
+        users=users
+    )
+
 
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
 def approve_changes(user_id):
