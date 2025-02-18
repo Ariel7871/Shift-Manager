@@ -127,7 +127,7 @@ def schedule(user_id):
     #Start Here
     if request.method == "POST":
     move_next = request.form.get("nextWeekCheck") == "on"  # ✅ Check if checkbox was selected
-    
+
     for day in days:
         field_name = f"{target_week.isoformat()}_{day}"
         shift_choice = request.form.get(field_name)
@@ -146,10 +146,11 @@ def schedule(user_id):
     
     flash("Your schedule has been submitted.")
 
+    # ✅ Fix: Make sure indentation is correct here
     if move_next and week_index < len(upcoming_weeks) - 1:
         return redirect(url_for("schedule", user_id=user_id, week_index=week_index + 1))  # ✅ Move to next week
-    
-    return redirect(url_for("view_schedule", user_id=user_id))
+
+    return redirect(url_for("view_schedule", user_id=user_id))  # ✅ Otherwise, go to schedule view
 
     conn.close()
     header_text = "Set Your Shifts for " if not existing_shifts else "Update Your Shifts for "
