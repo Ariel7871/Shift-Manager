@@ -93,11 +93,9 @@ def schedule(user_id):
         flash("User not found!")
         return redirect(url_for('choose_schedule'))
     
-    # Compute upcoming week start dates for 4 weeks (about one month).
     num_weeks = 4
     upcoming_weeks = [get_current_week_start() + timedelta(weeks=i) for i in range(num_weeks)]
     
-    # Build week options with labels.
     week_options = []
     for i, ws in enumerate(upcoming_weeks):
         if i == 0:
@@ -109,16 +107,13 @@ def schedule(user_id):
             label = f"{ws.strftime('%d/%m/%y')} - {week_end.strftime('%d/%m/%y')}"
         week_options.append({"index": i, "label": label, "week_start": ws})
     
-    # Get the selected week index from the query parameters.
     week_index = request.args.get("week_index", 0, type=int)
     if week_index < 0 or week_index >= num_weeks:
         week_index = 0
     target_week = upcoming_weeks[week_index]
     
-    # Define work days (Sunday to Thursday).
     days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday']
     
-    # Query existing schedule for this week.
     existing_shifts = conn.execute(
         "SELECT * FROM shifts WHERE user_id = ? AND week_start = ?",
         (user_id, target_week.isoformat())
@@ -129,28 +124,28 @@ def schedule(user_id):
         for row in existing_shifts:
             prefill[row["day"]] = row["shift_type"]
     
-if request.method == "POST":
-    for day in days:
-        field_name = f"{target_week.isoformat()}_{day}"
-        shift_choice = request.form.get(field_name)
+    # ✅ FIXED: Ensure this block is **inside** the function!
+    if request.method == "POST":
+        for day in days:
+            field_name = f"{target_week.isoformat()}_{day}"
+            shift_choice = request.form.get(field_name)
 
-        if shift_choice in ["Day", "Night", "OOO"]:
-            # For Sundays, enforce morning (Day) shift.
-            if day == "Sunday" and shift_choice == "Night":
-                shift_choice = "Day"
-                
-            conn.execute("""
-                INSERT OR REPLACE INTO shifts (user_id, week_start, day, shift_type, pending)
-                VALUES (?, ?, ?, ?, ?)
-            """, (user_id, target_week.isoformat(), day, shift_choice, 1))
-    
-    conn.commit()
-    conn.close()
-    flash("Your schedule has been submitted.")
-    
-    return redirect(url_for("view_schedule", user_id=user_id))  # ✅ Must be inside the function
+            if shift_choice in ["Day", "Night", "OOO"]:
+                # For Sundays, enforce morning (Day) shift.
+                if day == "Sunday" and shift_choice == "Night":
+                    shift_choice = "Day"
 
-    
+                conn.execute("""
+                    INSERT OR REPLACE INTO shifts (user_id, week_start, day, shift_type, pending)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (user_id, target_week.isoformat(), day, shift_choice, 1))
+
+        conn.commit()
+        conn.close()
+        flash("Your schedule has been submitted.")
+
+        return redirect(url_for("view_schedule", user_id=user_id))  # ✅ Must be inside function
+
     conn.close()
     header_text = "Set Your Shifts for " if not existing_shifts else "Update Your Shifts for "
     if week_index == 0:
@@ -160,7 +155,7 @@ if request.method == "POST":
     else:
         week_end = target_week + timedelta(days=4)
         header_text += f"{target_week.strftime('%d/%m/%y')} - {week_end.strftime('%d/%m/%y')}"
-    
+
     return render_template("schedule_week.html",
                            user=user,
                            week=target_week,
@@ -169,6 +164,8 @@ if request.method == "POST":
                            header_text=header_text,
                            week_index=week_index,
                            week_options=week_options)
+
+
 
 
 # View individual schedule (weekly view) for a user.
