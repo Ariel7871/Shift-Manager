@@ -42,13 +42,15 @@
                                         {% for user in users %}
                                             <td class="text-center">
                                                 {% set shift = user_schedules[user['name']].get(entry.week_start, {}).get(entry.day_name) %}
-                                                {% if shift == "Day" %}
-                                                    <i class="fas fa-sun text-warning"></i>
-                                                {% elif shift == "Night" %}
-                                                    <i class="fas fa-moon text-secondary"></i>
-                                                {% else %}
-                                                    —
-                                                {% endif %}
+												{% if shift == "Day" %}
+													<i class="fas fa-sun text-warning"></i>
+												{% elif shift == "Night" %}
+													<i class="fas fa-moon text-secondary"></i>
+												{% elif shift == "OOO" %}
+													<i class="fas fa-sign-out-alt text-danger"></i> <!-- Red sign-out icon -->
+												{% else %}
+													—
+												{% endif %}
                                             </td>
                                         {% endfor %}
                                     </tr>
@@ -108,9 +110,10 @@ function fetchSchedule() {
         data.schedule.forEach(entry => {
             let rowHTML = `<tr><td class="fw-bold">${entry.name}</td>`;  // Make names bold
             entry.shifts.forEach(shift => {
-                let colorClass = shift === "Day" ? "bg-info text-dark fw-bold" : 
-                                 shift === "Night" ? "bg-dark text-white fw-bold" :
-                                 shift === "Not set" ? "bg-white text-dark border fw-bold" : "bg-secondary text-white";
+				let colorClass = shift === "Day" ? "bg-info text-dark fw-bold" : 
+								 shift === "Night" ? "bg-dark text-white fw-bold" :
+								 shift === "OOO" ? "bg-danger text-white fw-bold" : 
+								 shift === "Not set" ? "bg-white text-dark border fw-bold" : "bg-secondary text-white";
                 rowHTML += `<td class="${colorClass}">${shift}</td>`;
             });
             rowHTML += "</tr>";

@@ -37,33 +37,41 @@
                 {% for day in days %}
                 <tr>
                   <td>{{ day }}</td>
-                  <td class="text-center">
-                    {% if day == 'Sunday' %}
-                      <!-- For Sunday, simply show text and include a hidden input -->
-                      Sunday is always Day
-                      <input type="hidden" name="{{ week.isoformat() }}_{{ day }}" value="Day">
-                    {% else %}
-                      <!-- For other days, use toggle buttons -->
-                      <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
-                        {# Day Shift Button #}
-                        <input type="radio" class="btn-check" name="{{ week.isoformat() }}_{{ day }}" 
-                               id="{{ week.isoformat() }}_{{ day }}_day" value="Day"
-                               autocomplete="off" 
-                               {% if prefill.get(day) == 'Day' %} checked {% endif %}>
-                        <label class="btn btn-outline-warning" for="{{ week.isoformat() }}_{{ day }}_day">
-                          <i class="fa-solid fa-sun"></i> Day
-                        </label>
-            
-                        {# Night Shift Button #}
-                        <input type="radio" class="btn-check" name="{{ week.isoformat() }}_{{ day }}" 
-                               id="{{ week.isoformat() }}_{{ day }}_night" value="Night" autocomplete="off"
-                               {% if prefill.get(day) == 'Night' %} checked {% endif %}>
-                        <label class="btn btn-outline-secondary" for="{{ week.isoformat() }}_{{ day }}_night">
-                          <i class="fa-solid fa-moon"></i> Night
-                        </label>
-                      </div>
-                    {% endif %}
-                  </td>
+					<td class="text-center">
+					  {% if day == 'Sunday' %}
+						<!-- For Sunday, simply show text and include a hidden input -->
+						Sunday is always Day
+						<input type="hidden" name="{{ week.isoformat() }}_{{ day }}" value="Day">
+					  {% else %}
+						<!-- For other days, use toggle buttons -->
+						<div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
+						  {# Day Shift Button #}
+						  <input type="radio" class="btn-check" name="{{ week.isoformat() }}_{{ day }}" 
+								 id="{{ week.isoformat() }}_{{ day }}_day" value="Day"
+								 autocomplete="off" 
+								 {% if prefill.get(day) == 'Day' %} checked {% endif %}>
+						  <label class="btn btn-outline-warning" for="{{ week.isoformat() }}_{{ day }}_day">
+							<i class="fa-solid fa-sun"></i> Day
+						  </label>
+
+						  {# Night Shift Button #}
+						  <input type="radio" class="btn-check" name="{{ week.isoformat() }}_{{ day }}" 
+								 id="{{ week.isoformat() }}_{{ day }}_night" value="Night" autocomplete="off"
+								 {% if prefill.get(day) == 'Night' %} checked {% endif %}>
+						  <label class="btn btn-outline-secondary" for="{{ week.isoformat() }}_{{ day }}_night">
+							<i class="fa-solid fa-moon"></i> Night
+						  </label>
+
+						  {# Out of Office (OOO) Button #}
+						  <input type="radio" class="btn-check" name="{{ week.isoformat() }}_{{ day }}" 
+								 id="{{ week.isoformat() }}_{{ day }}_ooo" value="OOO" autocomplete="off"
+								 {% if prefill.get(day) == 'OOO' %} checked {% endif %}>
+						  <label class="btn btn-outline-danger" for="{{ week.isoformat() }}_{{ day }}_ooo">
+							<i class="fa-solid fa-sign-out-alt"></i> OOO
+						  </label>
+						</div>
+					  {% endif %}
+					</td>
                 </tr>
                 {% endfor %}
               </tbody>
