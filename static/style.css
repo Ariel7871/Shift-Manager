@@ -3,9 +3,54 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-.navbar-brand {
-  font-weight: bold;
-  font-size: 1.75rem;
+/* Custom Navbar Styles */
+.custom-navbar {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.95), rgba(0, 86, 179, 0.95));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  padding: 0.75rem 0;
+  transition: background 0.3s ease;
+}
+
+.custom-navbar .navbar-brand {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05rem;
+}
+
+.custom-navbar .nav-link {
+  font-size: 1.1rem;
+  margin-right: 1rem;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.custom-navbar .nav-link:hover,
+.custom-navbar .nav-link:focus {
+  color: #a0d700; /* Neon accent color */
+}
+
+/* Optional: Add an animated underline on hover */
+.custom-navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background-color: #a0d700;
+  transition: width 0.3s ease;
+}
+.custom-navbar .nav-link:hover::after,
+.custom-navbar .nav-link:focus::after {
+  width: 100%;
+}
+
+/* Navbar toggler icon color */
+.custom-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.custom-navbar .navbar-toggler-icon {
+  filter: invert(1);
 }
 
 .card {
