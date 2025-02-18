@@ -44,3 +44,49 @@ body {
 .btn-primary {
   border-radius: 20px;
 }
+
+/* Modern flat button style for shift selection */
+.shift-btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 2px;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  min-width: 80px;
+}
+
+/* Specific colors for each shift */
+.shift-btn.day {
+  background-color: #007bff; /* Blue */
+  color: #fff;
+}
+
+.shift-btn.night {
+  background-color: #6c757d; /* Gray */
+  color: #fff;
+}
+
+.shift-btn.ooo {
+  background-color: #dc3545; /* Red */
+  color: #fff;
+}
+
+/* Hover and active states for a smooth animation */
+.shift-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.shift-btn:active {
+  transform: scale(0.95);
+}
+
+/* Hide default radio button appearance */
+.btn-check {
+  display: none;
+}
