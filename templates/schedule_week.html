@@ -25,83 +25,64 @@
         <thead class="table-light">
           <tr>
             <th>Day</th>
-            <th class="text-center"><i class="fa-solid fa-sun me-1"></i> Day</th>
-            <th class="text-center"><i class="fa-solid fa-moon me-1"></i> Night</th>
-            <th class="text-center"><i class="fa-solid fa-user-times me-1"></i> OOO</th>
+            <th class="text-center">Day</th>
+            <th class="text-center">Night</th>
+            <th class="text-center">OOO</th>
           </tr>
         </thead>
-        <tbody>
-          {% for day in days %}
-          <tr>
-            <td>{{ day }}</td>
-            <td class="text-center">
-              <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
-                <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_day" value="Day" autocomplete="off" {% if prefill.get(day)=='Day' %}checked{% endif %}>
-                <label class="btn btn-outline-primary" for="{{ week }}_{{ day }}_day">
-                  <i class="fa-solid fa-sun"></i>
-                </label>
-              </div>
-            </td>
-            <td class="text-center">
-              <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
-                <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_night" value="Night" autocomplete="off" {% if prefill.get(day)=='Night' %}checked{% endif %}>
-                <label class="btn btn-outline-primary" for="{{ week }}_{{ day }}_night">
-                  <i class="fa-solid fa-moon"></i>
-                </label>
-              </div>
-            </td>
-            <td class="text-center">
-              <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
-                <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_ooo" value="OOO" autocomplete="off" {% if prefill.get(day)=='OOO' %}checked{% endif %}>
-                <label class="btn btn-outline-primary" for="{{ week }}_{{ day }}_ooo">
-                  <i class="fa-solid fa-user-times"></i>
-                </label>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
+		<tbody>
+		  {% for day in days %}
+		  <tr>
+			<td>{{ day }}</td>
+			{% if day == "Sunday" %}
+			  <td colspan="3" class="text-center">
+				Sunday is always morning shift
+				<input type="hidden" name="{{ week }}_{{ day }}" value="Day">
+			  </td>
+			{% else %}
+			  <td class="text-center">
+				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
+				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_day" value="Day" autocomplete="off" {% if prefill.get(day)=='Day' %}checked{% endif %}>
+				  <label class="btn btn-primary" for="{{ week }}_{{ day }}_day">
+					<i class="fa-solid fa-sun"></i>
+				  </label>
+				</div>
+			  </td>
+			  <td class="text-center">
+				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
+				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_night" value="Night" autocomplete="off" {% if prefill.get(day)=='Night' %}checked{% endif %}>
+				  <label class="btn btn-secondary" for="{{ week }}_{{ day }}_night">
+					<i class="fa-solid fa-moon"></i>
+				  </label>
+				</div>
+			  </td>
+			  <td class="text-center">
+				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
+				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_ooo" value="OOO" autocomplete="off" {% if prefill.get(day)=='OOO' %}checked{% endif %}>
+				  <label class="btn btn-danger" for="{{ week }}_{{ day }}_ooo">
+					<i class="fa-solid fa-user-times"></i>
+				  </label>
+				</div>
+			  </td>
+			{% endif %}
+		  </tr>
+		  {% endfor %}
+		</tbody>
       </table>
     </div>
   </div>
 
-  {% if week_index < week_options|length - 1 %}
-  <!-- Checkbox to move to the next week -->
-  <div class="form-check text-center mt-3">
-    <input type="checkbox" id="nextWeekCheck" class="form-check-input">
-    <label for="nextWeekCheck" class="form-check-label fw-bold">Submit and move to the next week</label>
-  </div>
-  {% endif %}
-
-  <!-- Submit Button -->
-  <div class="d-grid mt-3">
-    <button type="submit" id="submitButton" class="btn btn-primary btn-lg">
-      <i class="fa-solid fa-paper-plane me-2"></i>
-      {% if week_index < week_options|length - 1 %}
-        Submit only this week
-      {% else %}
-        Submit Schedule
-      {% endif %}
+  <!-- Two Separate Submit Buttons -->
+  <div class="d-grid gap-3 mt-4">
+    <!-- Blue button: Save current week and move to next week -->
+    <button type="submit" name="action" value="move_next" class="btn btn-primary btn-lg">
+      <i class="fa-solid fa-paper-plane me-2"></i>Submit and move to the next week
+    </button>
+    <!-- Green button: Save current week only -->
+    <button type="submit" name="action" value="only_this_week" class="btn btn-success btn-lg">
+      <i class="fa-solid fa-check me-2"></i>Submit only this week
     </button>
   </div>
 </form>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    let nextWeekCheck = document.getElementById("nextWeekCheck");
-    let submitButton = document.getElementById("submitButton");
-
-    if (nextWeekCheck) {
-        nextWeekCheck.addEventListener("change", function () {
-            if (this.checked) {
-                // Change the text (and keep the blue btn-primary style)
-                submitButton.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit and move to next week';
-            } else {
-                submitButton.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit only this week';
-            }
-        });
-    }
-});
-</script>
 
 {% endblock %}
