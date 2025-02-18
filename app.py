@@ -185,6 +185,10 @@ def logout():
     session.pop('admin', None)
     return redirect(url_for('index'))
 
+@app.route('/view_all_schedule')
+def view_all_schedule():
+    return render_template('view_all_schedule.html')
+
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
 def approve_changes(user_id):
     if not session.get('admin'):
