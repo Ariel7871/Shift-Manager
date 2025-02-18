@@ -211,41 +211,52 @@ def logout():
 @app.route('/view_all_schedule')
 def view_all_schedule():
     conn = get_db_connection()
-    
-    # Fetch all users
     users = conn.execute('SELECT * FROM users').fetchall()
-
-    # Fetch all shifts
     shifts = conn.execute('SELECT * FROM shifts').fetchall()
     conn.close()
 
-    # Process shifts into a structured format
     from collections import defaultdict
+    import datetime
+
+    # Mapping for day offsets (based on week_start)
+    day_offset = {'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4}
+
+    # Group entries by month label (e.g. "February 2025")
     grouped_schedule_data = defaultdict(list)
-
-    # Convert shifts into a structured dictionary
-    user_schedules = defaultdict(lambda: defaultdict(dict))
     for shift in shifts:
-        user_id = shift['user_id']
-        week_start = shift['week_start']
-        day = shift['day']
-        shift_type = shift['shift_type']
-        user_schedules[user_id][week_start][day] = shift_type
+        week_start = datetime.datetime.strptime(shift['week_start'], '%Y-%m-%d').date()
+        offset = day_offset.get(shift['day'], 0)
+        shift_date = week_start + timedelta(days=offset)
+        month_label = shift_date.strftime("%B %Y")
+        entry = {
+            "date": shift_date,
+            "day_name": shift['day'],
+            "week_start": shift['week_start'],
+            "user_id": shift['user_id'],
+            "shift_type": shift['shift_type']
+        }
+        grouped_schedule_data[month_label].append(entry)
 
-    # Organize data by weeks and users
-    for user in users:
-        user_id = user["id"]
-        for week_start, shifts in user_schedules[user_id].items():
-            grouped_schedule_data[week_start].append({
-                "user": user["name"],
-                "shifts": shifts
-            })
+    # Sort each month’s entries by date
+    for month in grouped_schedule_data:
+        grouped_schedule_data[month] = sorted(grouped_schedule_data[month], key=lambda x: x["date"])
+
+    # Build a mapping of user schedules: user name -> { date: shift }
+    user_schedules = { user['name']: {} for user in users }
+    for month, entries in grouped_schedule_data.items():
+        for entry in entries:
+            user_name = next((u['name'] for u in users if u['id'] == entry['user_id']), None)
+            if user_name:
+                user_schedules[user_name][entry['date']] = entry['shift_type']
 
     return render_template(
         'view_all_schedule.html',
         grouped_schedule_data=grouped_schedule_data,
-        users=users
+        users=users,
+        user_schedules=user_schedules,
+        today=date.today()
     )
+
 
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
 def approve_changes(user_id):
