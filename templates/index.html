@@ -1,34 +1,38 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-  /* Hero Section with Background Image and Dark Overlay */
+  /* Parallax hero section with fixed background */
   .hero {
     position: relative;
     min-height: 90vh;
-    background: url('https://source.unsplash.com/1600x900/?office,work') no-repeat center center;
+    background: url('https://source.unsplash.com/1600x900/?office,team') no-repeat center center fixed;
     background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
-  .hero::before {
+  /* Dark gradient overlay for readability */
+  .hero::after {
     content: "";
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.6) 100%);
+    z-index: 1;
   }
-  /* Centered Hero Content */
+  /* Hero content with smooth fade-in-down animation */
   .hero-content {
     position: relative;
+    z-index: 2;
     text-align: center;
     color: #fff;
-    animation: fadeInUp 1s ease-out;
-    padding: 2rem;
+    animation: fadeInDown 1s ease-out;
+    padding: 20px;
   }
-  @keyframes fadeInUp {
+  @keyframes fadeInDown {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(-30px);
     }
     to {
       opacity: 1;
@@ -37,33 +41,40 @@
   }
   .hero h1 {
     font-size: 4rem;
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.7);
   }
   .hero p {
     font-size: 1.5rem;
-    margin-bottom: 2rem;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+    margin-bottom: 40px;
+    text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.6);
   }
-  /* Button Styling */
+  /* Button styling with hover animation */
   .hero a.btn {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    padding: 1rem 2rem;
     font-size: 1.2rem;
+    padding: 1rem 2rem;
     border-radius: 50px;
-    text-transform: uppercase;
-    letter-spacing: 0.05rem;
+    transition: all 0.3s ease;
   }
   .hero a.btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  }
+  @media (max-width: 768px) {
+    .hero h1 {
+      font-size: 2.8rem;
+    }
+    .hero p {
+      font-size: 1.2rem;
+    }
   }
 </style>
 
 <div class="hero">
   <div class="hero-content container">
     <h1 class="display-4">Welcome to Shift Scheduler</h1>
-    <p>Manage and view shift schedules effortlessly</p>
+    <p>Effortlessly manage and view shift schedules with style.</p>
     <div class="d-grid gap-4 col-10 col-md-6 mx-auto">
       <a href="{{ url_for('view_all_schedule') }}" class="btn btn-warning btn-lg">
         <i class="fa-solid fa-users me-2"></i>View All Users' Schedules
