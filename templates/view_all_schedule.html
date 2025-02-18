@@ -29,28 +29,33 @@
                                     {% endfor %}
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% for d in dates %}
-                                <tr class="{% if d == today %}table-primary{% endif %}">
-                                    <td class="text-center">{{ d.strftime("%d/%m/%Y") }}</td>
-                                    <td class="text-center">{{ d.strftime("%A") }}</td>
-                                    {% for user in users %}
-                                        <td class="text-center">
-                                            {% set shift = user_schedules[user['name']][d] %}
-                                            {% if shift == "Day" %}
-                                                <i class="fa-solid fa-sun text-warning"></i>
-                                            {% elif shift == "Night" %}
-                                                <i class="fa-solid fa-moon text-muted"></i>
-                                            {% elif shift == "OOO" %}
-                                                <i class="fa-solid fa-ban text-danger"></i>
-                                            {% else %}
-                                                —
-                                            {% endif %}
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>
+							<tbody>
+							  {% for d in dates %}
+							  <tr class="{% if d == today %}table-primary{% endif %}">
+								  <td class="text-center">{{ d.strftime("%d/%m/%Y") }}</td>
+								  <td class="text-center">{{ d.strftime("%A") }}</td>
+								  {% for user in users %}
+								  <td class="text-center">
+									  {% set shift = user_schedules[user['name']][d] %}
+									  {% if d.strftime("%A") == "Sunday" %}
+										  <!-- Always show sun icon for Sunday -->
+										  <i class="fa-solid fa-sun text-warning"></i>
+									  {% else %}
+										  {% if shift == "Day" %}
+											  <i class="fa-solid fa-sun text-warning"></i>
+										  {% elif shift == "Night" %}
+											  <i class="fa-solid fa-moon text-muted"></i>
+										  {% elif shift == "OOO" %}
+											  <i class="fa-solid fa-ban text-danger"></i>
+										  {% else %}
+											  —
+										  {% endif %}
+									  {% endif %}
+								  </td>
+								  {% endfor %}
+							  </tr>
+							  {% endfor %}
+							</tbody>
                         </table>
                     </div>
                 {% endfor %}
