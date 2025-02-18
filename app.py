@@ -124,27 +124,32 @@ def schedule(user_id):
         for row in existing_shifts:
             prefill[row["day"]] = row["shift_type"]
     
-    # ✅ FIXED: Ensure this block is **inside** the function!
+    #Start Here
     if request.method == "POST":
-        for day in days:
-            field_name = f"{target_week.isoformat()}_{day}"
-            shift_choice = request.form.get(field_name)
+    move_next = request.form.get("nextWeekCheck") == "on"  # ✅ Check if checkbox was selected
+    
+    for day in days:
+        field_name = f"{target_week.isoformat()}_{day}"
+        shift_choice = request.form.get(field_name)
 
-            if shift_choice in ["Day", "Night", "OOO"]:
-                # For Sundays, enforce morning (Day) shift.
-                if day == "Sunday" and shift_choice == "Night":
-                    shift_choice = "Day"
+        if shift_choice in ["Day", "Night", "OOO"]:
+            if day == "Sunday" and shift_choice == "Night":
+                shift_choice = "Day"
 
-                conn.execute("""
-                    INSERT OR REPLACE INTO shifts (user_id, week_start, day, shift_type, pending)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (user_id, target_week.isoformat(), day, shift_choice, 1))
+            conn.execute("""
+                INSERT OR REPLACE INTO shifts (user_id, week_start, day, shift_type, pending)
+                VALUES (?, ?, ?, ?, ?)
+            """, (user_id, target_week.isoformat(), day, shift_choice, 1))
 
-        conn.commit()
-        conn.close()
-        flash("Your schedule has been submitted.")
+    conn.commit()
+    conn.close()
+    
+    flash("Your schedule has been submitted.")
 
-        return redirect(url_for("view_schedule", user_id=user_id))  # ✅ Must be inside function
+    if move_next and week_index < len(upcoming_weeks) - 1:
+        return redirect(url_for("schedule", user_id=user_id, week_index=week_index + 1))  # ✅ Move to next week
+    
+    return redirect(url_for("view_schedule", user_id=user_id))
 
     conn.close()
     header_text = "Set Your Shifts for " if not existing_shifts else "Update Your Shifts for "
