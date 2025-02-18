@@ -46,6 +46,7 @@ body {
 }
 
 /* Modern flat button style for shift selection */
+/* Modern flat button style for shift selection */
 .shift-btn {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   margin: 2px;
@@ -76,17 +77,29 @@ body {
   color: #fff;
 }
 
-/* Hover and active states for a smooth animation */
+/* Hover and active states */
 .shift-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.shift-btn:active {
-  transform: scale(0.95);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Hide default radio button appearance */
 .btn-check {
   display: none;
+}
+
+/* Checked state styles for visual feedback */
+.btn-check:checked + .shift-btn.day {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.5);
+}
+
+.btn-check:checked + .shift-btn.night {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5);
+}
+
+.btn-check:checked + .shift-btn.ooo {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5);
 }
