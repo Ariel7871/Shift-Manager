@@ -5,9 +5,10 @@ body {
 
 /* Custom Navbar Styles */
 /* Custom Navbar Styles */
+/* Professional Navbar Styles */
 .custom-navbar {
-  background: linear-gradient(135deg, rgba(0, 123, 255, 0.95), rgba(0, 86, 179, 0.95));
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #002e5d, #00467f);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   padding: 0.75rem 0;
   transition: background 0.3s ease;
 }
@@ -15,49 +16,49 @@ body {
 .custom-navbar .custom-brand {
   font-size: 1.9rem;
   font-weight: 700;
-  letter-spacing: 0.05rem;
-  position: relative;
+  letter-spacing: 0.03rem;
   transition: transform 0.3s ease;
 }
 
-/* Brand hover effect: slight bounce */
 .custom-navbar .custom-brand:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
-/* Navigation links styling */
 .custom-navbar .nav-link {
   font-size: 1.1rem;
   margin-right: 1rem;
   position: relative;
   transition: color 0.3s ease;
+  font-weight: 500;
 }
 
 .custom-navbar .nav-link:hover,
 .custom-navbar .nav-link:focus {
-  color: #a0d700;  /* Neon accent color */
+  color: #a0d700; /* Subtle accent color */
 }
 
-/* Animated underline for nav links */
+/* Underline animation for nav links */
 .custom-navbar .nav-link::after {
   content: "";
   position: absolute;
   bottom: -4px;
   left: 0;
-  width: 0%;
+  width: 0;
   height: 2px;
   background-color: #a0d700;
   transition: width 0.3s ease;
 }
+
 .custom-navbar .nav-link:hover::after,
 .custom-navbar .nav-link:focus::after {
   width: 100%;
 }
 
-/* Toggler icon adjustments for dark background */
+/* Navbar Toggler */
 .custom-navbar .navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.6);
 }
+
 .custom-navbar .navbar-toggler-icon {
   filter: invert(1);
 }
