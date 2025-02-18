@@ -1,0 +1,46 @@
+body {
+  background-color: #eef3f7;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.75rem;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.card-header {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.btn-outline-primary.active,
+.btn-outline-primary.active:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.table th, .table td {
+  vertical-align: middle !important;
+}
+
+.alert p {
+  margin-bottom: 0;
+}
+/* Limit maximum container width and add some custom spacing */
+.container {
+  max-width: 800px;
+}
+
+/* Add a subtle hover effect for the list items */
+.list-group-item:hover {
+  background-color: #f7f7f7;
+}
+
+/* Adjust button styling if needed */
+.btn-primary {
+  border-radius: 20px;
+}

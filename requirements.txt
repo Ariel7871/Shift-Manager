@@ -1,0 +1,4 @@
+streamlit
+sqlite3  # If using SQLite database
+pandas   # If handling data
+numpy    # If performing numerical operations

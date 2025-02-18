@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow text-center">
+  <div class="card-body">
+    <h4 class="card-title">
+      <i class="fa-solid fa-circle-check me-2"></i>Schedule Already Submitted
+    </h4>
+    <p class="card-text">
+      You have already submitted your monthly schedule for
+      {% if period == 'month' and month_choice == 'this' %}
+        this month.
+      {% elif period == 'month' and month_choice == 'next' %}
+        next month.
+      {% endif %}
+      Would you like to update it?
+    </p>
+    <a href="{{ url_for('schedule', user_id=user['id'], period='month', month=month_choice, update=1) }}" class="btn btn-warning me-2">
+      <i class="fa-solid fa-pen-to-square me-1"></i>Yes, Update
+    </a>
+    <a href="{{ url_for('view_schedule', user_id=user['id']) }}" class="btn btn-secondary">
+      <i class="fa-solid fa-eye me-1"></i>No, View Schedule
+    </a>
+  </div>
+</div>
+{% endblock %}

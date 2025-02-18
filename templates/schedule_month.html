@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-4 text-center">
+  <i class="fa-solid fa-calendar-days me-2"></i>{{ header_text }} for {% if month_choice == 'this' %}This Month{% else %}Next Month{% endif %}
+</h2>
+<form method="POST" id="monthlyScheduleForm">
+  <div class="card shadow">
+    <div class="card-body">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Date</th>
+            <th>Shift</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dt in dates %}
+          <tr>
+            <td>
+              {{ dt.day_name }}, {{ dt.date.strftime("%d %b %Y") }}
+              {% if dt.is_holiday %}
+                <br>
+                <i class="fa-solid fa-gift text-danger"></i> Public Holiday: {{ dt.holiday_name }}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="{{ dt.date.isoformat() }}" value="Day"
+                  {% if prefill[dt.date.isoformat()] == 'Day' %} checked {% endif %}
+                  {% if dt.day_name == 'Sunday' %} checked {% endif %}>
+                <label class="form-check-label">
+                  <i class="fa-solid fa-sun text-warning"></i> Day
+                </label>
+              </div>
+              <div class="form-check form-check-inline">
+                {% if dt.day_name == 'Sunday' %}
+                  <input class="form-check-input sunday-night" type="radio" name="{{ dt.date.isoformat() }}" value="Night" onclick="alert('For now Sundays are default only morning.'); return false;" disabled>
+                {% else %}
+                  <input class="form-check-input" type="radio" name="{{ dt.date.isoformat() }}" value="Night"
+                    {% if prefill[dt.date.isoformat()] == 'Night' %} checked {% endif %}>
+                {% endif %}
+                <label class="form-check-label">
+                  <i class="fa-solid fa-moon text-muted"></i> Night
+                </label>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="d-grid mt-3">
+    <button type="submit" class="btn btn-success btn-lg">
+      <i class="fa-solid fa-paper-plane me-2"></i>Submit Monthly Schedule
+    </button>
+  </div>
+</form>
+<script>
+  // Optional: in case you want to ensure that Sunday night options remain disabled.
+  document.querySelectorAll('.sunday-night').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+          alert("For now Sundays are default only morning.");
+          e.preventDefault();
+      });
+  });
+</script>
+{% endblock %}

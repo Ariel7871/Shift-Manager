@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      
+      <!-- Week Choice Buttons -->
+      <div class="mb-4 text-center">
+        {% for option in week_options %}
+          <a href="{{ url_for('schedule', user_id=user['id'], week_index=option.index) }}" 
+             class="btn btn-outline-primary {% if week_index == option.index %}active{% endif %} me-2">
+            {{ option.label }}
+          </a>
+        {% endfor %}
+      </div>
+
+      <h2 class="mb-4 text-center">
+        <i class="fa-solid fa-edit me-2"></i>{{ header_text }}
+      </h2>
+
+      <form method="POST">
+        <div class="card shadow">
+          <div class="card-header bg-info text-white">
+            <h4 class="mb-0">
+              <i class="fa-solid fa-calendar me-2"></i>Week of {{ week.strftime('%d/%m/%Y') }}
+            </h4>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Day</th>
+                  <th class="text-center">Shift</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for day in days %}
+                <tr>
+                  <td>{{ day }}</td>
+                  <td class="text-center">
+                    {% if day == 'Sunday' %}
+                      <!-- For Sunday, simply show text and include a hidden input -->
+                      Sunday is always Day
+                      <input type="hidden" name="{{ week.isoformat() }}_{{ day }}" value="Day">
+                    {% else %}
+                      <!-- For other days, use toggle buttons -->
+                      <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
+                        {# Day Shift Button #}
+                        <input type="radio" class="btn-check" name="{{ week.isoformat() }}_{{ day }}" 
+                               id="{{ week.isoformat() }}_{{ day }}_day" value="Day"
+                               autocomplete="off" 
+                               {% if prefill.get(day) == 'Day' %} checked {% endif %}>
+                        <label class="btn btn-outline-warning" for="{{ week.isoformat() }}_{{ day }}_day">
+                          <i class="fa-solid fa-sun"></i> Day
+                        </label>
+            
+                        {# Night Shift Button #}
+                        <input type="radio" class="btn-check" name="{{ week.isoformat() }}_{{ day }}" 
+                               id="{{ week.isoformat() }}_{{ day }}_night" value="Night" autocomplete="off"
+                               {% if prefill.get(day) == 'Night' %} checked {% endif %}>
+                        <label class="btn btn-outline-secondary" for="{{ week.isoformat() }}_{{ day }}_night">
+                          <i class="fa-solid fa-moon"></i> Night
+                        </label>
+                      </div>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="d-grid mt-3">
+          <button type="submit" class="btn btn-success btn-lg">
+            <i class="fa-solid fa-paper-plane me-2"></i>Submit Schedule
+          </button>
+        </div>
+      </form>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}

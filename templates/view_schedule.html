@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <!-- Current Week Schedule -->
+  <div class="card mb-5 shadow">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        <i class="fa-solid fa-calendar-week me-2"></i>Current Week Schedule (Starting {{ week_current }})
+      </h4>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th><i class="fa-solid fa-user me-1"></i>Worker</th>
+            {% for day in days %}
+              <th>{{ day }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ user['name'] }}</td>
+            {% for day in days %}
+              <td>{{ schedules_current.get(day, 'Not Set') }}</td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Next Week Schedule -->
+  <div class="card shadow">
+    <div class="card-header bg-secondary text-white">
+      <h4 class="mb-0">
+        <i class="fa-solid fa-calendar-day me-2"></i>Next Week Schedule (Starting {{ week_next }})
+      </h4>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th><i class="fa-solid fa-user me-1"></i>Worker</th>
+            {% for day in days %}
+              <th>{{ day }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ user['name'] }}</td>
+            {% for day in days %}
+              <td>{{ schedules_next.get(day, 'Not Set') }}</td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="mt-4 text-center">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left me-1"></i>Back to Home
+    </a>
+  </div>
+</div>
+{% endblock %}

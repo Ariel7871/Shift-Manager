@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Week Choice Buttons -->
+<div class="mb-4 text-center">
+  <a href="{{ url_for('schedule', user_id=user['id'], week='this') }}" 
+     class="btn btn-outline-primary {% if week_choice == 'this' %}active{% endif %} me-2">
+     <i class="fa-solid fa-calendar-week me-1"></i>This Week
+  </a>
+  <a href="{{ url_for('schedule', user_id=user['id'], week='next') }}" 
+     class="btn btn-outline-primary {% if week_choice == 'next' %}active{% endif %}">
+     <i class="fa-solid fa-calendar-day me-1"></i>Next Week
+  </a>
+</div>
+
+<h2 class="mb-4 text-center">
+  <i class="fa-solid fa-edit me-2"></i>{{ header_text }}
+</h2>
+
+<form method="POST">
+  <div class="card shadow">
+    <div class="card-header bg-info text-white">
+      <h4 class="mb-0"><i class="fa-solid fa-calendar me-2"></i>Week of {{ week }}</h4>
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Day</th>
+            <th class="text-center"><i class="fa-solid fa-sun me-1"></i>Day Shift</th>
+            <th class="text-center"><i class="fa-solid fa-moon me-1"></i>Night Shift</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for day in days %}
+          <tr>
+            <td>{{ day }}</td>
+            <td class="text-center">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="{{ week }}_{{ day }}" value="Day"
+                  {% if prefill.get(day) == 'Day' %} checked {% endif %}>
+                <label class="form-check-label"><i class="fa-solid fa-sun"></i> Day</label>
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="{{ week }}_{{ day }}" value="Night"
+                  {% if prefill.get(day) == 'Night' %} checked {% endif %}>
+                <label class="form-check-label"><i class="fa-solid fa-moon"></i> Night</label>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="d-grid mt-3">
+    <button type="submit" class="btn btn-success btn-lg">
+      <i class="fa-solid fa-paper-plane me-2"></i>Submit Schedule
+    </button>
+  </div>
+</form>
+{% endblock %}

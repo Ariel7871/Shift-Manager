@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="text-center">
+  <h1 class="display-4 mb-4">Welcome to Shift Scheduler</h1>
+  <div class="d-grid gap-4">
+    <a href="{{ url_for('view_all_schedule') }}" class="btn btn-warning btn-lg">
+      <i class="fa-solid fa-users me-2"></i>View All Users' Schedules
+    </a>
+    <a href="{{ url_for('choose_schedule') }}" class="btn btn-primary btn-lg">
+      <i class="fa-solid fa-calendar-edit me-2"></i>Schedule
+    </a>
+  </div>
+</div>
+{% endblock %}
