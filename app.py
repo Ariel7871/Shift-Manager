@@ -176,6 +176,29 @@ def view_schedule(user_id):
     conn.close()
     return render_template('view_schedule.html', user=user)
 
+@app.route('/get_schedule_data')
+def get_schedule_data():
+    # For demonstration purposes, here's a dummy implementation.
+    # In a real application, you would query the database and format the data accordingly.
+    data = {
+        "dates": ["01/02/2025", "02/02/2025", "03/02/2025"],
+        "days": ["Saturday", "Sunday", "Monday"],
+        "schedule": []
+    }
+
+    conn = get_db_connection()
+    users = conn.execute("SELECT * FROM users").fetchall()
+    conn.close()
+
+    # Create a dummy schedule for each user
+    for user in users:
+        data["schedule"].append({
+            "name": user["name"],
+            "shifts": ["Not set", "Not set", "Not set"]
+        })
+    
+    return jsonify(data)
+
 @app.route('/view_schedule')
 def view_schedule_global():
     return redirect(url_for('view_all_schedule'))
@@ -198,9 +221,6 @@ def view_all_schedule():
 
     # Process shifts into a structured format
     from collections import defaultdict
-    import datetime
-
-    today = datetime.date.today()
     grouped_schedule_data = defaultdict(list)
 
     # Convert shifts into a structured dictionary
@@ -226,7 +246,6 @@ def view_all_schedule():
         grouped_schedule_data=grouped_schedule_data,
         users=users
     )
-
 
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
 def approve_changes(user_id):
