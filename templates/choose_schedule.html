@@ -2,21 +2,22 @@
 {% block content %}
 <div class="container my-5">
   <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white text-center">
-          <h3 class="mb-0">
+    <!-- Increase the column width for a larger card -->
+    <div class="col-md-10 col-lg-8">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center py-4">
+          <h2 class="mb-0">
             <i class="fa-solid fa-user me-2"></i>Select Your Name
-          </h3>
+          </h2>
         </div>
-        <div class="card-body">
+        <div class="card-body py-4">
           <ul class="list-group list-group-flush">
             {% for user in users %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="font-size: 1.25rem;">
               <span>
                 <i class="fa-solid fa-user-circle me-2"></i>{{ user['name'] }}
               </span>
-              <a href="{{ url_for('schedule', user_id=user['id'], week_index=0) }}" class="btn btn-primary btn-sm">
+              <a href="{{ url_for('schedule', user_id=user['id'], week_index=0) }}" class="btn btn-primary btn-lg">
                 <i class="fa-solid fa-pencil me-1"></i>Schedule
               </a>
             </li>
