@@ -74,6 +74,36 @@
     </div>
 </div>
 
+<div class="card mb-5 shadow">
+  <div class="card-header bg-primary text-white">
+    <h4 class="mb-0">
+      <i class="fa-solid fa-calendar-week me-2"></i>Current Week Schedule (Starting {{ week_current }})
+    </h4>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th><i class="fa-solid fa-user me-1"></i>Worker</th>
+            {% for day in days %}
+              <th>{{ day }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ user['name'] }}</td>
+            {% for day in days %}
+              <td>{{ schedules_current.get(day, 'Not Set') }}</td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <script>
 // Toggle between standard and colored tables
 function switchTable(view) {
