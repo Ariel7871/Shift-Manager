@@ -1,53 +1,69 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-  /* Hero section styles */
+  /* Hero Section with Background Image and Dark Overlay */
   .hero {
     position: relative;
-    min-height: 80vh;
-    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
-    color: #fff;
+    min-height: 90vh;
+    background: url('https://source.unsplash.com/1600x900/?office,work') no-repeat center center;
+    background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    overflow: hidden;
   }
-  .hero::after {
+  .hero::before {
     content: "";
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.3);
-    z-index: 1;
+    background: rgba(0, 0, 0, 0.6);
   }
+  /* Centered Hero Content */
   .hero-content {
     position: relative;
-    z-index: 2;
-    animation: fadeInUp 0.8s ease-out;
+    text-align: center;
+    color: #fff;
+    animation: fadeInUp 1s ease-out;
+    padding: 2rem;
   }
   @keyframes fadeInUp {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(30px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  /* Button enhancements */
+  .hero h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  }
+  .hero p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+  }
+  /* Button Styling */
   .hero a.btn {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
   }
   .hero a.btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   }
 </style>
 
 <div class="hero">
   <div class="hero-content container">
-    <h1 class="display-4 mb-4">Welcome to Shift Scheduler</h1>
+    <h1 class="display-4">Welcome to Shift Scheduler</h1>
+    <p>Manage and view shift schedules effortlessly</p>
     <div class="d-grid gap-4 col-10 col-md-6 mx-auto">
       <a href="{{ url_for('view_all_schedule') }}" class="btn btn-warning btn-lg">
         <i class="fa-solid fa-users me-2"></i>View All Users' Schedules
