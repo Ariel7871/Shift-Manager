@@ -202,8 +202,6 @@ def get_schedule_data():
     start_date = get_current_week_start()
     end_date = start_date + timedelta(days=30)
 
-    israel_holidays = holidays.Israel(years=[start_date.year, end_date.year])
-
     conn = get_db_connection()
     users = conn.execute('SELECT * FROM users').fetchall()
 
@@ -222,20 +220,35 @@ def get_schedule_data():
             shift_data[key] = {}
         shift_data[key][shift["user_name"]] = shift["shift_type"]
 
-    schedule_data = []
-    current_date = start_date
-    while current_date <= end_date:
-        if current_date.strftime("%A") not in ["Friday", "Saturday"]:  
-            week_start = get_week_start(current_date).isoformat()
-            schedules = [shift_data.get((week_start, current_date.strftime("%A")), {}).get(user['name'], "—") for user in users]
-            schedule_data.append({
-                "date": current_date.strftime("%d/%m/%Y"),
-                "day_name": current_date.strftime("%A"),
-                "schedules": schedules
-            })
-        current_date += timedelta(days=1)
+    dates = []
+    schedule = []
+    
+    for i in range(30):
+        current_date = start_date + timedelta(days=i)
+        if current_date.strftime("%A") not in ["Friday", "Saturday"]:
+            dates.append(current_date.strftime("%d/%m/%Y"))
 
-    return jsonify(schedule_data)
+    for user in users:
+        user_shifts = []
+        for current_date in dates:
+            week_start = get_week_start(current_date).isoformat()
+            day_name = current_date.strftime("%A")
+
+            shift = shift_data.get((week_start, day_name), {}).get(user["name"], "—")
+            
+            # Apply "Day" shift default for Sundays
+            if day_name == "Sunday" and shift == "—":
+                shift = "Day"
+            
+            user_shifts.append(shift)
+
+        schedule.append({
+            "name": user["name"],
+            "shifts": user_shifts
+        })
+
+    return jsonify({"dates": dates, "schedule": schedule})
+
     
 @app.route('/view_all_schedule')
 def view_all_schedule():
