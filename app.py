@@ -221,12 +221,16 @@ def get_schedule_data():
         shift_data[key][shift["user_name"]] = shift["shift_type"]
 
     dates = []
+    days = []
     schedule = []
     
     for i in range(30):
         current_date = start_date + timedelta(days=i)
         if current_date.strftime("%A") not in ["Friday", "Saturday"]:
             dates.append(current_date.strftime("%d/%m/%Y"))
+            days.append(current_date.strftime("%A"))  # Add day names
+
+    return jsonify({"dates": dates, "days": days, "schedule": schedule})
 
     for user in users:
         user_shifts = []
