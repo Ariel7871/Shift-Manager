@@ -1,85 +1,106 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-  /* Parallax hero section with fixed background */
+  /* Import Orbitron for a futuristic feel */
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+  /* Hero Section: Full-screen parallax background with dark, tech-inspired overlay */
   .hero {
     position: relative;
-    min-height: 90vh;
-    background: url('https://source.unsplash.com/1600x900/?office,team') no-repeat center center fixed;
+    min-height: 100vh;
+    background: url('https://source.unsplash.com/1600x900/?technology,abstract') no-repeat center center fixed;
     background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
   }
-  /* Diagonal gradient overlay with mix-blend for extra twist */
+  /* Diagonal overlay with a subtle neon green accent */
   .hero::after {
     content: "";
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(45deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%);
+    background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(118,185,0,0.15) 50%, rgba(0,0,0,0.85) 100%);
     z-index: 1;
     mix-blend-mode: multiply;
   }
-  /* Hero content with combined fadeInDown and twist animation */
+  /* Hero content with slide-in animation */
   .hero-content {
     position: relative;
     z-index: 2;
     text-align: center;
-    color: #fff;
-    animation: fadeInDown 1s ease-out;
+    animation: slideInUp 1.2s cubic-bezier(0.23, 1, 0.32, 1);
     padding: 20px;
+    color: #e0e0e0;
+    font-family: 'Orbitron', sans-serif;
   }
-  @keyframes fadeInDown {
-    from {
-      opacity: 0;
-      transform: translateY(-30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  /* Twist animation applied to the heading for a subtle rotation */
-  @keyframes twist {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(3deg);
-    }
-  }
+  /* Heading with neon green gradient text and twist animation */
   .hero h1 {
-    font-size: 4rem;
+    font-size: 4.5rem;
+    background: -webkit-linear-gradient(45deg, #76B900, #a0d700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     margin-bottom: 1rem;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
-    /* Apply twist animation along with fadeInDown */
-    animation: fadeInDown 1s ease-out, twist 2s ease-in-out infinite alternate;
+    text-shadow: 0 0 8px rgba(118, 185, 0, 0.8);
+    animation: twist 2s ease-in-out infinite alternate;
+  }
+  @keyframes twist {
+    from { transform: rotate(-2deg); }
+    to { transform: rotate(2deg); }
   }
   .hero p {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    font-size: 1.75rem;
+    margin-bottom: 2.5rem;
+    color: #ccc;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
   }
-  /* Button styling with rounded edges and hover effects */
+  /* Enhanced button styles with neon accents */
   .hero a.btn {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
+    padding: 1.2rem 2.5rem;
+    font-size: 1.25rem;
     border-radius: 50px;
     text-transform: uppercase;
     letter-spacing: 0.05rem;
+    border: 2px solid transparent;
+  }
+  .hero a.btn.btn-warning {
+    background-color: #ffc107;
+    color: #000;
+  }
+  .hero a.btn.btn-primary {
+    background-color: #76B900;
+    color: #fff;
   }
   .hero a.btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transform: scale(1.08);
+    box-shadow: 0 8px 25px rgba(118, 185, 0, 0.5);
+  }
+  /* Bouncing scroll indicator */
+  .scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    font-size: 2rem;
+    color: #76B900;
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, 10px); }
   }
 </style>
 
 <div class="hero">
   <div class="hero-content container">
     <h1 class="display-4">Welcome to Shift Scheduler</h1>
-    <p>Manage and view shift schedules</p>
+    <p>Effortlessly manage shifts with futuristic precision</p>
     <div class="d-grid gap-4 col-10 col-md-6 mx-auto">
       <a href="{{ url_for('view_all_schedule') }}" class="btn btn-warning btn-lg">
         <i class="fa-solid fa-users me-2"></i>View All Users' Schedules
@@ -88,6 +109,9 @@
         <i class="fa-solid fa-calendar-edit me-2"></i>Schedule
       </a>
     </div>
+  </div>
+  <div class="scroll-indicator">
+    <i class="fa-solid fa-angle-down"></i>
   </div>
 </div>
 {% endblock %}
