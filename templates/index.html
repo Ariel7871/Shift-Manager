@@ -1,14 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="text-center">
-  <h1 class="display-4 mb-4">Welcome to Shift Scheduler</h1>
-  <div class="d-grid gap-4">
-    <a href="{{ url_for('view_all_schedule') }}" class="btn btn-warning btn-lg">
-      <i class="fa-solid fa-users me-2"></i>View All Users' Schedules
-    </a>
-    <a href="{{ url_for('choose_schedule') }}" class="btn btn-primary btn-lg">
-      <i class="fa-solid fa-calendar-edit me-2"></i>Schedule
-    </a>
+<style>
+  /* Hero section styles */
+  .hero {
+    position: relative;
+    min-height: 80vh;
+    background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 1;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    animation: fadeInUp 0.8s ease-out;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  /* Button enhancements */
+  .hero a.btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hero a.btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+</style>
+
+<div class="hero">
+  <div class="hero-content container">
+    <h1 class="display-4 mb-4">Welcome to Shift Scheduler</h1>
+    <div class="d-grid gap-4 col-10 col-md-6 mx-auto">
+      <a href="{{ url_for('view_all_schedule') }}" class="btn btn-warning btn-lg">
+        <i class="fa-solid fa-users me-2"></i>View All Users' Schedules
+      </a>
+      <a href="{{ url_for('choose_schedule') }}" class="btn btn-primary btn-lg">
+        <i class="fa-solid fa-calendar-edit me-2"></i>Schedule
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}
