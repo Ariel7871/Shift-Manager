@@ -90,23 +90,14 @@ def schedule(user_id):
         flash("User not found!")
         return redirect(url_for('choose_schedule'))
     
-    num_weeks = 4
+    # Increase the number of weeks and set the default week to one month ahead (index 4)
+    num_weeks = 6
     upcoming_weeks = [get_current_week_start() + timedelta(weeks=i) for i in range(num_weeks)]
     
-    week_options = []
-    for i, ws in enumerate(upcoming_weeks):
-        if i == 0:
-            label = "This Week"
-        elif i == 1:
-            label = "Next Week"
-        else:
-            week_end = ws + timedelta(days=4)
-            label = f"{ws.strftime('%d/%m/%y')} - {week_end.strftime('%d/%m/%y')}"
-        week_options.append({"index": i, "label": label, "week_start": ws})
-    
-    week_index = request.args.get("week_index", 0, type=int)
+    # Default to the week one month from today (index 4)
+    week_index = request.args.get("week_index", 4, type=int)
     if week_index < 0 or week_index >= num_weeks:
-        week_index = 0
+        week_index = 4
     target_week = upcoming_weeks[week_index]
     
     days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday']
@@ -139,7 +130,7 @@ def schedule(user_id):
         if action == "move_next" and week_index < len(upcoming_weeks) - 1:
             return redirect(url_for("schedule", user_id=user_id, week_index=week_index + 1))
         return redirect(url_for("view_schedule", user_id=user_id))
-
+    
     conn.close()
     header_text = "Set Your Shifts for " if not existing_shifts else "Update Your Shifts for "
     if week_index == 0:
@@ -149,7 +140,7 @@ def schedule(user_id):
     else:
         week_end = target_week + timedelta(days=4)
         header_text += f"{target_week.strftime('%d/%m/%y')} - {week_end.strftime('%d/%m/%y')}"
-
+    
     return render_template("schedule_week.html",
                            user=user,
                            week=target_week,
@@ -157,7 +148,8 @@ def schedule(user_id):
                            prefill=prefill,
                            header_text=header_text,
                            week_index=week_index,
-                           week_options=week_options)
+                           week_options=[{"index": i, "label": ("This Week" if i == 0 else "Next Week" if i == 1 else f"{(upcoming_weeks[i]).strftime('%d/%m/%y')} - {(upcoming_weeks[i] + timedelta(days=4)).strftime('%d/%m/%y')}"), "week_start": ws} for i, ws in enumerate(upcoming_weeks)]
+                           )
 
 @app.route('/view_schedule/<int:user_id>')
 def view_schedule(user_id):
