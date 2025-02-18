@@ -90,15 +90,21 @@ function fetchSchedule() {
         let headerRow = document.getElementById("scheduleHeader");
         let tableBody = document.getElementById("scheduleBody");
         
-        headerRow.innerHTML = "<tr><th>Name</th>";  // First column for names
-        data.dates.forEach(date => {
-            headerRow.innerHTML += `<th>${date}</th>`;
-        });
-        headerRow.innerHTML += "</tr>";
-
+        // Clear previous data
+        headerRow.innerHTML = "";
         tableBody.innerHTML = "";
+
+        // Build the table header with dates
+        let headerHTML = `<tr><th>Name</th>`;
+        data.dates.forEach(date => {
+            headerHTML += `<th>${date}</th>`;
+        });
+        headerHTML += "</tr>";
+        headerRow.innerHTML = headerHTML;
+
+        // Build the table rows
         data.schedule.forEach(entry => {
-            let row = `<tr><td>${entry.name}</td>`;
+            let rowHTML = `<tr><td>${entry.name}</td>`;
             entry.shifts.forEach(shift => {
                 let colorClass = shift === "Day" ? "bg-info text-dark" : 
                                  shift === "Night" ? "bg-dark text-white" :
@@ -107,15 +113,18 @@ function fetchSchedule() {
                                  shift === "OCI-E" ? "bg-success text-white" :
                                  shift === "OCI-WD" ? "bg-primary text-white" :
                                  shift === "OP-OOH" ? "bg-danger text-white" : "bg-secondary text-white";
-                row += `<td class="${colorClass}">${shift || "—"}</td>`;
+                rowHTML += `<td class="${colorClass}">${shift || "—"}</td>`;
             });
-            row += "</tr>";
-            tableBody.innerHTML += row;
+            rowHTML += "</tr>";
+            tableBody.innerHTML += rowHTML;
         });
-    });
+    })
+    .catch(error => console.error("Error fetching schedule:", error));
 }
 
-setInterval(fetchSchedule, 30000);
+// Run fetch on page load and every 30 seconds
 fetchSchedule();
+setInterval(fetchSchedule, 30000);
 </script>
+
 {% endblock %}
