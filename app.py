@@ -71,12 +71,10 @@ def get_week_start(dt):
 # Routes
 # ----------------------------
 
-# Home Page: Welcome page with two big buttons.
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Choose Schedule Page: Let user select his name to schedule shifts.
 @app.route('/choose_schedule')
 def choose_schedule():
     conn = get_db_connection()
@@ -84,7 +82,6 @@ def choose_schedule():
     conn.close()
     return render_template('choose_schedule.html', users=users)
 
-# Weekly scheduling route.
 @app.route('/schedule/<int:user_id>', methods=['GET', 'POST'])
 def schedule(user_id):
     conn = get_db_connection()
@@ -123,34 +120,32 @@ def schedule(user_id):
     if existing_shifts:
         for row in existing_shifts:
             prefill[row["day"]] = row["shift_type"]
-    
-    #Start Here
+
     if request.method == "POST":
-    move_next = request.form.get("nextWeekCheck") == "on"  # ✅ Check if checkbox was selected
+        move_next = request.form.get("nextWeekCheck") == "on"
 
-    for day in days:
-        field_name = f"{target_week.isoformat()}_{day}"
-        shift_choice = request.form.get(field_name)
+        for day in days:
+            field_name = f"{target_week.isoformat()}_{day}"
+            shift_choice = request.form.get(field_name)
 
-        if shift_choice in ["Day", "Night", "OOO"]:
-            if day == "Sunday" and shift_choice == "Night":
-                shift_choice = "Day"
+            if shift_choice in ["Day", "Night", "OOO"]:
+                if day == "Sunday" and shift_choice == "Night":
+                    shift_choice = "Day"
 
-            conn.execute("""
-                INSERT OR REPLACE INTO shifts (user_id, week_start, day, shift_type, pending)
-                VALUES (?, ?, ?, ?, ?)
-            """, (user_id, target_week.isoformat(), day, shift_choice, 1))
+                conn.execute("""
+                    INSERT OR REPLACE INTO shifts (user_id, week_start, day, shift_type, pending)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (user_id, target_week.isoformat(), day, shift_choice, 1))
 
-    conn.commit()
-    conn.close()
-    
-    flash("Your schedule has been submitted.")
+        conn.commit()
+        conn.close()
+        
+        flash("Your schedule has been submitted.")
 
-    # ✅ Fix: Make sure indentation is correct here
-    if move_next and week_index < len(upcoming_weeks) - 1:
-        return redirect(url_for("schedule", user_id=user_id, week_index=week_index + 1))  # ✅ Move to next week
+        if move_next and week_index < len(upcoming_weeks) - 1:
+            return redirect(url_for("schedule", user_id=user_id, week_index=week_index + 1))
 
-    return redirect(url_for("view_schedule", user_id=user_id))  # ✅ Otherwise, go to schedule view
+        return redirect(url_for("view_schedule", user_id=user_id))
 
     conn.close()
     header_text = "Set Your Shifts for " if not existing_shifts else "Update Your Shifts for "
@@ -171,10 +166,6 @@ def schedule(user_id):
                            week_index=week_index,
                            week_options=week_options)
 
-
-
-
-# View individual schedule (weekly view) for a user.
 @app.route('/view_schedule/<int:user_id>')
 def view_schedule(user_id):
     conn = get_db_connection()
@@ -182,203 +173,12 @@ def view_schedule(user_id):
     if not user:
         flash("User not found!")
         return redirect(url_for('choose_schedule'))
-    days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday']
-    week_current = get_current_week_start()
-    week_next = get_next_week_start()
-    rows_current = conn.execute(
-        'SELECT day, shift_type FROM shifts WHERE user_id = ? AND week_start = ?',
-        (user_id, week_current.isoformat())
-    ).fetchall()
-    schedules_current = {row['day']: row['shift_type'] for row in rows_current}
-    rows_next = conn.execute(
-        'SELECT day, shift_type FROM shifts WHERE user_id = ? AND week_start = ?',
-        (user_id, week_next.isoformat())
-    ).fetchall()
-    schedules_next = {row['day']: row['shift_type'] for row in rows_next}
     conn.close()
-    return render_template('view_schedule.html',
-                           user=user,
-                           schedules_current=schedules_current,
-                           schedules_next=schedules_next,
-                           week_current=week_current,
-                           week_next=week_next,
-                           days=days)
+    return render_template('view_schedule.html', user=user)
 
-# View all users' schedules in a monthly view (30-day period from current week start)
-@app.route('/get_schedule_data')
-def get_schedule_data():
-    start_date = get_current_week_start()
-    end_date = start_date + timedelta(days=30)
-
-    conn = get_db_connection()
-    users = conn.execute('SELECT * FROM users').fetchall()
-
-    shifts = conn.execute("""
-        SELECT users.name AS user_name, week_start, day, shift_type
-        FROM shifts 
-        JOIN users ON shifts.user_id = users.id
-        WHERE week_start BETWEEN ? AND ?
-    """, (start_date.isoformat(), end_date.isoformat())).fetchall()
-    conn.close()
-
-    shift_data = {}
-    for shift in shifts:
-        key = (shift["week_start"], shift["day"])
-        if key not in shift_data:
-            shift_data[key] = {}
-        shift_data[key][shift["user_name"]] = shift["shift_type"]
-
-    dates = []
-    days = []  # List to store day names
-    schedule = []
-    
-    for i in range(30):
-        current_date = start_date + timedelta(days=i)
-        if current_date.strftime("%A") not in ["Friday", "Saturday"]:
-            dates.append(current_date.strftime("%d/%m/%Y"))
-            days.append(current_date.strftime("%A"))  # Store day name
-
-    for user in users:
-        user_shifts = []
-        for i, current_date in enumerate(dates):
-            current_date_obj = datetime.strptime(current_date, "%d/%m/%Y").date()
-            week_start = get_week_start(current_date_obj).isoformat()
-            day_name = days[i]
-
-            shift = shift_data.get((week_start, day_name), {}).get(user["name"], "Not set")
-            
-            # Apply "Day" shift default for Sundays
-            if day_name == "Sunday" and shift == "Not set":
-                shift = "Day"
-            
-            user_shifts.append(shift)
-
-        schedule.append({
-            "name": user["name"],  # Ensure names are included
-            "shifts": user_shifts
-        })
-
-    return jsonify({"dates": dates, "days": days, "schedule": schedule})
-
-
-    
-@app.route('/view_all_schedule')
-def view_all_schedule():
-    import calendar
-    # Adjust the schedule period to start from the current week's start.
-    start_date = get_current_week_start()
-    end_date = start_date + timedelta(days=30)
-    
-    # Build list of dates from start_date to end_date, omitting Fridays and Saturdays.
-    dates = []
-    current_date = start_date
-    while current_date <= end_date:
-        if current_date.strftime("%A") not in ["Friday", "Saturday"]:
-            dates.append(current_date)
-        current_date += timedelta(days=1)
-    
-    # Load Israeli public holidays for the relevant years.
-    israel_holidays = holidays.Israel(years=[start_date.year, end_date.year])
-    
-    # Fetch all users.
-    conn = get_db_connection()
-    users = conn.execute('SELECT * FROM users').fetchall()
-    
-    # For each user, load schedule rows for the period.
-    user_schedules = {}
-    for user in users:
-        rows = conn.execute("""
-            SELECT week_start, shift_type, day FROM shifts 
-            WHERE user_id = ? AND week_start BETWEEN ? AND ?
-        """, (user['id'], start_date.isoformat(), end_date.isoformat())).fetchall()
-        schedule = {}
-        # Build a nested dict: { week_start (as ISO string): { day: shift_type, ... } }
-        for row in rows:
-            week = row['week_start']  # kept as ISO string
-            day = row['day']
-            shift = row['shift_type']
-            if week not in schedule:
-                schedule[week] = {}
-            schedule[week][day] = shift
-        user_schedules[user['name']] = schedule
-    conn.close()
-    
-    # Build schedule_data: one entry per date.
-    schedule_data = []
-    for dt in dates:
-        is_holiday = dt in israel_holidays
-        holiday_name = israel_holidays.get(dt) if is_holiday else ""
-        week_start_iso = get_week_start(dt).isoformat()  # Compute the week's Sunday as an ISO string
-        schedule_data.append({
-            "date": dt,
-            "day_name": dt.strftime("%A"),
-            "is_holiday": is_holiday,
-            "holiday_name": holiday_name,
-            "week_start": week_start_iso
-        })
-    
-    # Group schedule_data by month label.
-    grouped_schedule_data = {}
-    for entry in schedule_data:
-        month_label = entry["date"].strftime("%B %Y")
-        if month_label not in grouped_schedule_data:
-            grouped_schedule_data[month_label] = []
-        grouped_schedule_data[month_label].append(entry)
-    
-    today = date.today()  # Pass today's date to the template
-    return render_template("view_all_schedule.html",
-                           users=users,
-                           grouped_schedule_data=grouped_schedule_data,
-                           user_schedules=user_schedules,
-                           today=today)
-
-# Global view schedule (alternative route)
 @app.route('/view_schedule')
 def view_schedule_global():
     return redirect(url_for('view_all_schedule'))
-
-# Admin login and dashboard routes.
-@app.route('/admin', methods=['GET', 'POST'])
-def admin():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if username == 'admin' and password == '123123':
-            session['admin'] = True
-            return redirect(url_for('admin_panel'))
-        else:
-            flash("Invalid credentials!")
-    return render_template('admin.html')
-
-@app.route('/admin_panel', methods=['GET', 'POST'])
-def admin_panel():
-    if not session.get('admin'):
-        return redirect(url_for('admin'))
-    conn = get_db_connection()
-    week = get_next_week_start()
-    days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday']
-    users = conn.execute('SELECT * FROM users').fetchall()
-    schedules = {}
-    pending_changes = []
-    for user in users:
-        rows = conn.execute('''
-            SELECT day, shift_type, pending FROM shifts 
-            WHERE user_id = ? AND week_start = ?
-        ''', (user['id'], week.isoformat())).fetchall()
-        user_schedule = {row['day']: row['shift_type'] for row in rows}
-        schedules[user['id']] = user_schedule
-        pending_rows = conn.execute('''
-            SELECT day, shift_type FROM shifts 
-            WHERE user_id = ? AND week_start = ? AND pending = 1
-        ''', (user['id'], week.isoformat())).fetchall()
-        if pending_rows:
-            pending_changes.append({
-                'user': user['name'],
-                'user_id': user['id'],
-                'changes': {row['day']: row['shift_type'] for row in pending_rows}
-            })
-    conn.close()
-    return render_template('admin_panel.html', users=users, schedules=schedules, week=week, days=days, pending_changes=pending_changes)
 
 @app.route('/logout')
 def logout():
