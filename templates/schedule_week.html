@@ -15,6 +15,22 @@
   <i class="fa-solid fa-edit me-2"></i>{{ header_text }}
 </h2>
 
+<style>
+  .shift-btn {
+    transition: all 0.2s ease;
+    margin: 0; /* Ensures buttons are close together */
+    /* Optionally adjust padding if needed */
+    padding: 0.5rem 0.75rem;
+  }
+  .shift-btn:hover {
+    transform: scale(1.05);
+  }
+  .shift-btn:active {
+    transform: scale(0.95);
+  }
+</style>
+
+
 <form method="POST">
   <div class="card shadow">
     <div class="card-header bg-info text-white">
@@ -43,7 +59,7 @@
 			  <td class="text-center">
 				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
 				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_day" value="Day" autocomplete="off" {% if prefill.get(day)=='Day' %}checked{% endif %}>
-				  <label class="btn btn-primary" for="{{ week }}_{{ day }}_day">
+				  <label class="btn btn-primary shift-btn" for="{{ week }}_{{ day }}_day">
 					<i class="fa-solid fa-sun"></i>
 				  </label>
 				</div>
@@ -51,7 +67,7 @@
 			  <td class="text-center">
 				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
 				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_night" value="Night" autocomplete="off" {% if prefill.get(day)=='Night' %}checked{% endif %}>
-				  <label class="btn btn-secondary" for="{{ week }}_{{ day }}_night">
+				  <label class="btn btn-secondary shift-btn" for="{{ week }}_{{ day }}_night">
 					<i class="fa-solid fa-moon"></i>
 				  </label>
 				</div>
@@ -59,7 +75,7 @@
 			  <td class="text-center">
 				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
 				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_ooo" value="OOO" autocomplete="off" {% if prefill.get(day)=='OOO' %}checked{% endif %}>
-				  <label class="btn btn-danger" for="{{ week }}_{{ day }}_ooo">
+				  <label class="btn btn-danger shift-btn" for="{{ week }}_{{ day }}_ooo">
 					<i class="fa-solid fa-user-times"></i>
 				  </label>
 				</div>
