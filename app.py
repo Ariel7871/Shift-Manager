@@ -147,7 +147,9 @@ if request.method == "POST":
     conn.commit()
     conn.close()
     flash("Your schedule has been submitted.")
-    return redirect(url_for("view_schedule", user_id=user_id))
+    
+    return redirect(url_for("view_schedule", user_id=user_id))  # ✅ Must be inside the function
+
     
     conn.close()
     header_text = "Set Your Shifts for " if not existing_shifts else "Update Your Shifts for "
