@@ -1,4 +1,6 @@
 streamlit
-sqlite3  # If using SQLite database
+holidays
+flask
+gunicorn
 pandas   # If handling data
 numpy    # If performing numerical operations
