@@ -35,22 +35,21 @@
                                     </td>
                                 </tr>
                                 {% for entry in entries %}
-                                    {% set is_today = (entry.date == today) %}
-                                    <tr class="{% if is_today %}table-primary{% endif %}">
+                                    <tr class="{% if entry.date == today %}table-primary{% endif %}">
                                         <td class="text-center">{{ entry.date.strftime("%d/%m/%Y") }}</td>
                                         <td class="text-center">{{ entry.day_name }}</td>
                                         {% for user in users %}
                                             <td class="text-center">
-                                                {% set shift = user_schedules[user['name']].get(entry.week_start, {}).get(entry.day_name) %}
-												{% if shift == "Day" %}
-													<i class="fas fa-sun text-warning"></i>
-												{% elif shift == "Night" %}
-													<i class="fas fa-moon text-secondary"></i>
-												{% elif shift == "OOO" %}
-													<i class="fas fa-sign-out-alt text-danger"></i> <!-- Red sign-out icon -->
-												{% else %}
-													—
-												{% endif %}
+                                                {% set shift = user_schedules[user['name']].get(entry.date, 'Not set') %}
+                                                {% if shift == "Day" %}
+                                                    <i class="fa-solid fa-sun text-warning"></i>
+                                                {% elif shift == "Night" %}
+                                                    <i class="fa-solid fa-moon text-muted"></i>
+                                                {% elif shift == "OOO" %}
+                                                    <i class="fa-solid fa-ban text-danger"></i>
+                                                {% else %}
+                                                    —
+                                                {% endif %}
                                             </td>
                                         {% endfor %}
                                     </tr>
@@ -61,7 +60,7 @@
                 </div>
             </div>
 
-            <!-- Styled Table -->
+            <!-- Colored Table -->
             <div id="styledTable" style="display: none;">
                 <div class="table-responsive">
                     <table class="table table-bordered text-center">
@@ -74,22 +73,21 @@
     </div>
 </div>
 
-<!-- JavaScript for Tables & Responsiveness -->
 <script>
+// Switch between tables
 function switchTable(view) {
     document.getElementById("defaultTable").style.display = (view === 'default') ? "block" : "none";
     document.getElementById("styledTable").style.display = (view === 'styled') ? "block" : "none";
 }
 
+// Fetch schedule data and build colored table
 function fetchSchedule() {
     fetch("{{ url_for('get_schedule_data') }}")
     .then(response => response.json())
     .then(data => {
-        console.log("Received data:", data);  // DEBUG: Print received data
-
+        console.log("Received data:", data);
         let headerRow = document.getElementById("scheduleHeader");
         let tableBody = document.getElementById("scheduleBody");
-
         headerRow.innerHTML = "";
         tableBody.innerHTML = "";
 
@@ -98,50 +96,61 @@ function fetchSchedule() {
             return;
         }
 
-        // 🏷️ Build the table header with Day Names + Dates
+        // Build the table header using the dates from the API
         let headerHTML = `<tr><th>Name</th>`;
+        let todayStr = new Date().toLocaleDateString('en-GB');
         data.dates.forEach((date, index) => {
-            headerHTML += `<th>${data.days[index]}<br><span class="date-text">${date}</span></th>`;
+            let cellClass = "";
+            if (date === todayStr) {
+                cellClass = "table-primary";
+            }
+            headerHTML += `<th class="${cellClass}">${data.days[index]}<br><span class="date-text">${date}</span></th>`;
         });
         headerHTML += "</tr>";
         headerRow.innerHTML = headerHTML;
 
-        // 📅 Build the table rows
+        // Build the table rows for each user
         data.schedule.forEach(entry => {
-            let rowHTML = `<tr><td class="fw-bold">${entry.name}</td>`;  // Make names bold
+            let rowHTML = `<tr><td class="fw-bold">${entry.name}</td>`;
             entry.shifts.forEach(shift => {
-				let colorClass = shift === "Day" ? "bg-info text-dark fw-bold" : 
-								 shift === "Night" ? "bg-dark text-white fw-bold" :
-								 shift === "OOO" ? "bg-danger text-white fw-bold" : 
-								 shift === "Not set" ? "bg-white text-dark border fw-bold" : "bg-secondary text-white";
+                let colorClass = "";
+                if (shift === "Day") {
+                    colorClass = "bg-info text-dark fw-bold";
+                    shift = "Day";
+                } else if (shift === "Night") {
+                    colorClass = "bg-secondary text-white fw-bold";
+                    shift = "Night";
+                } else if (shift === "OOO") {
+                    colorClass = "bg-danger text-white fw-bold";
+                    shift = "OOO";
+                } else if (shift === "Not set") {
+                    colorClass = "bg-white text-dark border fw-bold";
+                } else {
+                    colorClass = "bg-secondary text-white";
+                }
                 rowHTML += `<td class="${colorClass}">${shift}</td>`;
             });
             rowHTML += "</tr>";
             tableBody.innerHTML += rowHTML;
         });
 
-        adjustTableForMobile();  // Call function to check and fix mobile layout
+        adjustTableForMobile();
     })
     .catch(error => console.error("Error fetching schedule:", error));
 }
 
-// 📱 Detect if the user is on a mobile device
+// Mobile adjustments (if needed)
 function isMobile() {
     return /Mobi|Android/i.test(navigator.userAgent);
 }
 
-// 🌍 Apply Mobile Layout Adjustments
 function adjustTableForMobile() {
     if (isMobile()) {
         document.body.classList.add("mobile-friendly");
-
-        // Make table scrollable and bigger on mobile
         document.querySelector(".table-responsive").style.overflowX = "scroll";
         document.querySelectorAll("table").forEach(table => {
-            table.style.fontSize = "14px"; // Increase font size for readability
+            table.style.fontSize = "14px";
         });
-
-        // Make buttons full-width for easier tapping
         document.querySelectorAll(".btn").forEach(btn => {
             btn.style.width = "100%";
             btn.style.marginBottom = "10px";
@@ -149,50 +158,16 @@ function adjustTableForMobile() {
     }
 }
 
-// 🚀 Run functions when page loads
+// Run functions when page loads
 fetchSchedule();
 setInterval(fetchSchedule, 30000);
-adjustTableForMobile(); // Apply mobile styling immediately
+adjustTableForMobile();
 </script>
 
-
-
 <style>
-/* 🌍 General Page Styling */
-body {
-    font-family: Arial, sans-serif;
-}
-
-/* 📱 Mobile Friendly Adjustments */
-@media (max-width: 768px) {
-    .container {
-        width: 100%;
-        padding: 10px;
-    }
-    .table-responsive {
-        overflow-x: auto;
-    }
-    table {
-        font-size: 14px; /* Increase font size */
-    }
-    th, td {
-        padding: 8px;
-    }
-    .btn {
-        width: 100%; /* Make buttons full-width */
-        margin-bottom: 10px;
-    }
-}
-
-/* ✨ Button Animations */
-.animated-button {
-    transition: all 0.2s ease-in-out;
-}
-.animated-button:hover {
-    transform: scale(1.05);
-}
-.animated-button:active {
-    transform: scale(0.95);
+/* Optional: Additional styling for the colored table */
+.date-text {
+    font-size: 0.8rem;
 }
 </style>
 

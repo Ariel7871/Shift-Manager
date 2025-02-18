@@ -25,9 +25,9 @@
         <thead class="table-light">
           <tr>
             <th>Day</th>
-            <th class="text-center"><i class="fa-solid fa-sun me-1"></i>Day Shift</th>
-            <th class="text-center"><i class="fa-solid fa-moon me-1"></i>Night Shift</th>
-            <th class="text-center"><i class="fa-solid fa-user-times me-1"></i>OOO</th>
+            <th class="text-center"><i class="fa-solid fa-sun me-1"></i> Day</th>
+            <th class="text-center"><i class="fa-solid fa-moon me-1"></i> Night</th>
+            <th class="text-center"><i class="fa-solid fa-user-times me-1"></i> OOO</th>
           </tr>
         </thead>
         <tbody>
@@ -35,24 +35,27 @@
           <tr>
             <td>{{ day }}</td>
             <td class="text-center">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="{{ week }}_{{ day }}" value="Day"
-                  {% if prefill.get(day) == 'Day' %} checked {% endif %}>
-                <label class="form-check-label"><i class="fa-solid fa-sun"></i> Day</label>
+              <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
+                <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_day" value="Day" autocomplete="off" {% if prefill.get(day)=='Day' %}checked{% endif %}>
+                <label class="btn btn-outline-primary" for="{{ week }}_{{ day }}_day">
+                  <i class="fa-solid fa-sun"></i>
+                </label>
               </div>
             </td>
             <td class="text-center">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="{{ week }}_{{ day }}" value="Night"
-                  {% if prefill.get(day) == 'Night' %} checked {% endif %}>
-                <label class="form-check-label"><i class="fa-solid fa-moon"></i> Night</label>
+              <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
+                <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_night" value="Night" autocomplete="off" {% if prefill.get(day)=='Night' %}checked{% endif %}>
+                <label class="btn btn-outline-primary" for="{{ week }}_{{ day }}_night">
+                  <i class="fa-solid fa-moon"></i>
+                </label>
               </div>
             </td>
             <td class="text-center">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="{{ week }}_{{ day }}" value="OOO"
-                  {% if prefill.get(day) == 'OOO' %} checked {% endif %}>
-                <label class="form-check-label"><i class="fa-solid fa-user-times"></i> OOO</label>
+              <div class="btn-group" role="group" aria-label="Shift selection for {{ day }}">
+                <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_ooo" value="OOO" autocomplete="off" {% if prefill.get(day)=='OOO' %}checked{% endif %}>
+                <label class="btn btn-outline-primary" for="{{ week }}_{{ day }}_ooo">
+                  <i class="fa-solid fa-user-times"></i>
+                </label>
               </div>
             </td>
           </tr>
@@ -72,7 +75,7 @@
 
   <!-- Submit Button -->
   <div class="d-grid mt-3">
-    <button type="submit" id="submitButton" class="btn btn-success btn-lg">
+    <button type="submit" id="submitButton" class="btn btn-primary btn-lg">
       <i class="fa-solid fa-paper-plane me-2"></i>
       {% if week_index < week_options|length - 1 %}
         Submit only this week
@@ -91,6 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (nextWeekCheck) {
         nextWeekCheck.addEventListener("change", function () {
             if (this.checked) {
+                // Change the text (and keep the blue btn-primary style)
                 submitButton.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit and move to next week';
             } else {
                 submitButton.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i> Submit only this week';
