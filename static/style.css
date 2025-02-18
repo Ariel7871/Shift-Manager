@@ -1,73 +1,52 @@
-/* Global Styles */
 body {
-  /* Use a full-page background image with a dark overlay effect */
-  background: url('https://source.unsplash.com/1600x900/?abstract,technology') no-repeat center center fixed;
-  background-size: cover;
+  background-color: #eef3f7;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: #333;
-  margin: 0;
-  padding: 0;
 }
 
-/* Navbar Brand */
 .navbar-brand {
   font-weight: bold;
   font-size: 1.75rem;
 }
 
-/* Card Styling */
 .card {
   border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.9); /* Slight transparency for modern feel */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  /* Use a gradient background for the header */
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: #fff;
 }
 
-/* Override for active outline buttons */
 .btn-outline-primary.active,
 .btn-outline-primary.active:hover {
   background-color: #0d6efd;
   color: #fff;
 }
 
-/* Table Vertical Alignment */
 .table th, .table td {
   vertical-align: middle !important;
 }
 
-/* Alert Paragraph Margin */
 .alert p {
   margin-bottom: 0;
 }
-
-/* Container Styling */
+/* Limit maximum container width and add some custom spacing */
 .container {
   max-width: 800px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* List Group Item Hover */
+/* Add a subtle hover effect for the list items */
 .list-group-item:hover {
   background-color: #f7f7f7;
 }
 
-/* Primary Button Adjustments */
+/* Adjust button styling if needed */
 .btn-primary {
   border-radius: 20px;
-  transition: background 0.3s ease;
 }
 
-/* Modern Flat Button Style for Shift Selection */
+/* Modern flat button style for shift selection */
+/* Modern flat button style for shift selection */
 .shift-btn {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   margin: 2px;
@@ -82,7 +61,7 @@ body {
   min-width: 80px;
 }
 
-/* Specific Colors for Each Shift */
+/* Specific colors for each shift */
 .shift-btn.day {
   background-color: #007bff; /* Blue */
   color: #fff;
@@ -98,18 +77,18 @@ body {
   color: #fff;
 }
 
-/* Hover and Active States for Shift Buttons */
+/* Hover and active states */
 .shift-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Hide Default Radio Button Appearance */
+/* Hide default radio button appearance */
 .btn-check {
   display: none;
 }
 
-/* Visual Feedback for Checked State on Shift Buttons */
+/* Checked state styles for visual feedback */
 .btn-check:checked + .shift-btn.day {
   transform: scale(0.95);
   box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.5);
