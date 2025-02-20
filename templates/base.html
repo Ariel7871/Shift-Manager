@@ -34,49 +34,22 @@
 <div class="toolbar-wrapper">
   <div class="container">
     <div class="toolbar">
-      <!-- Left Side -->
-      <div class="toolbar-section">
-        <a href="{{ url_for('choose_schedule') }}" class="toolbar-btn">
+      <nav class="toolbar-nav">
+        <a href="{{ url_for('index') }}" class="toolbar-link {% if request.endpoint == 'index' %}active{% endif %}">
+          <i class="fa-solid fa-home"></i>
+          <span>Home</span>
+        </a>
+
+        <a href="{{ url_for('choose_schedule') }}" class="toolbar-link {% if request.endpoint == 'choose_schedule' %}active{% endif %}">
           <i class="fa-solid fa-calendar-plus"></i>
           <span>New Schedule</span>
         </a>
-        
-        <a href="{{ url_for('view_all_schedule') }}" class="toolbar-btn">
+
+        <a href="{{ url_for('view_all_schedule') }}" class="toolbar-link {% if request.endpoint == 'view_all_schedule' %}active{% endif %}">
           <i class="fa-solid fa-users"></i>
           <span>Team View</span>
         </a>
-
-        <div class="toolbar-divider"></div>
-
-        <div class="toolbar-dropdown">
-          <button class="toolbar-btn">
-            <i class="fa-solid fa-globe"></i>
-            <span>Local Time</span>
-            <i class="fa-solid fa-chevron-down ms-1"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Right Side -->
-      <div class="toolbar-section">
-        <button class="toolbar-btn" data-bs-toggle="tooltip" title="Notifications">
-          <i class="fa-solid fa-bell"></i>
-          <span class="notification-badge">3</span>
-        </button>
-
-        <button class="toolbar-btn" data-bs-toggle="tooltip" title="Settings">
-          <i class="fa-solid fa-gear"></i>
-        </button>
-
-        <div class="toolbar-divider"></div>
-
-        <div class="toolbar-profile">
-          <div class="toolbar-avatar">
-            <i class="fa-solid fa-user"></i>
-          </div>
-          <span class="d-none d-md-inline">Welcome, User</span>
-        </div>
-      </div>
+      </nav>
     </div>
   </div>
 </div>
