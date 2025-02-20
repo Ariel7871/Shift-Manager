@@ -30,6 +30,55 @@
             <div id="profile-root"></div>
         </div>
     </nav>
+	
+<div class="toolbar-wrapper">
+  <div class="container">
+    <div class="toolbar">
+      <!-- Quick Actions -->
+      <div class="toolbar-section">
+        <button class="toolbar-btn" onclick="window.location.href='{{ url_for('choose_schedule') }}'">
+          <i class="fa-solid fa-calendar-plus"></i>
+          <span>New Schedule</span>
+        </button>
+        
+        <button class="toolbar-btn" onclick="window.location.href='{{ url_for('view_all_schedule') }}'">
+          <i class="fa-solid fa-users"></i>
+          <span>Team View</span>
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- Time Zone Selector -->
+        <select class="toolbar-select">
+          <option value="local">Local Time</option>
+          <option value="utc">UTC</option>
+          <option value="est">EST</option>
+        </select>
+      </div>
+
+      <!-- Right Side Tools -->
+      <div class="toolbar-section">
+        <button class="toolbar-btn">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notification-badge">3</span>
+        </button>
+
+        <button class="toolbar-btn">
+          <i class="fa-solid fa-gear"></i>
+          <span>Settings</span>
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <!-- User Profile -->
+        <div class="toolbar-profile">
+          <img src="/api/placeholder/32/32" alt="Profile" class="toolbar-avatar">
+          <span>Welcome, User</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- Main Content -->
     <main class="main-content">

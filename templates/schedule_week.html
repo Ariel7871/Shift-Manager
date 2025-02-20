@@ -1,104 +1,166 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- Week Choice Buttons -->
+<!-- Week Navigation -->
 <div class="mb-4 text-center">
   {% for option in week_options %}
     <a href="{{ url_for('schedule', user_id=user['id'], week_index=option.index) }}" 
-       class="btn btn-outline-primary {% if week_index == option.index %}active{% endif %} me-2">
-       <i class="fa-solid fa-calendar-week me-1"></i> {{ option.label }}
+       class="btn {% if week_index == option.index %}btn-primary{% else %}btn-outline-primary{% endif %} me-2 mb-2">
+       <i class="fa-solid fa-calendar-week me-1"></i>{{ option.label }}
     </a>
   {% endfor %}
 </div>
 
-<h2 class="mb-4 text-center">
+<h2 class="mb-4 text-center text-primary">
   <i class="fa-solid fa-edit me-2"></i>{{ header_text }}
 </h2>
 
-<style>
-  .shift-btn {
-    transition: all 0.2s ease;
-    margin: 0; /* Ensures buttons are close together */
-    /* Optionally adjust padding if needed */
-    padding: 0.5rem 0.75rem;
-  }
-  .shift-btn:hover {
-    transform: scale(1.05);
-  }
-  .shift-btn:active {
-    transform: scale(0.95);
-  }
-</style>
-
-
 <form method="POST">
   <div class="card shadow">
-    <div class="card-header bg-info text-white">
+    <div class="card-header bg-primary text-white">
       <h4 class="mb-0"><i class="fa-solid fa-calendar me-2"></i>Week of {{ week }}</h4>
     </div>
     <div class="card-body">
-      <table class="table table-bordered align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Day</th>
-            <th class="text-center">Day</th>
-            <th class="text-center">Night</th>
-            <th class="text-center">OOO</th>
-          </tr>
-        </thead>
-		<tbody>
-		  {% for day in days %}
-		  <tr>
-			<td>{{ day }}</td>
-			{% if day == "Sunday" %}
-			  <td colspan="3" class="text-center">
-				Sunday is always morning shift
-				<input type="hidden" name="{{ week }}_{{ day }}" value="Day">
-			  </td>
-			{% else %}
-			  <td class="text-center">
-				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
-				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_day" value="Day" autocomplete="off" {% if prefill.get(day)=='Day' %}checked{% endif %}>
-				  <label class="shift-btn day" for="{{ week }}_{{ day }}_day">
-					<i class="fa-solid fa-sun me-1"></i> Day
-				  </label>
-				</div>
-			  </td>
-			  <td class="text-center">
-				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
-				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_night" value="Night" autocomplete="off" {% if prefill.get(day)=='Night' %}checked{% endif %}>
-				  <label class="shift-btn night" for="{{ week }}_{{ day }}_night">
-					<i class="fa-solid fa-moon me-1"></i> Night
-				  </label>
-				</div>
-			  </td>
-			  <td class="text-center">
-				<div class="btn-group" role="group" aria-label="Shift for {{ day }}">
-				  <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_ooo" value="OOO" autocomplete="off" {% if prefill.get(day)=='OOO' %}checked{% endif %}>
-				  <label class="shift-btn ooo" for="{{ week }}_{{ day }}_ooo">
-					<i class="fa-solid fa-user-times me-1"></i> OOO
-				  </label>
-				</div>
-			  </td>
-			{% endif %}
-		  </tr>
-		  {% endfor %}
-		</tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 20%">Day</th>
+              <th class="text-center">Select Shift Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for day in days %}
+            <tr>
+              <td class="fw-bold">{{ day }}</td>
+              {% if day == "Sunday" %}
+                <td class="text-center">
+                  <div class="alert alert-info mb-0">
+                    <i class="fa-solid fa-sun me-2"></i>Sunday is always morning shift
+                    <input type="hidden" name="{{ week }}_{{ day }}" value="Day">
+                  </div>
+                </td>
+              {% else %}
+                <td>
+                  <div class="d-flex justify-content-center gap-3">
+                    <!-- Day Shift Button -->
+                    <div class="form-check">
+                      <input type="radio" 
+                             class="btn-check" 
+                             name="{{ week }}_{{ day }}" 
+                             id="{{ week }}_{{ day }}_day" 
+                             value="Day" 
+                             {% if prefill.get(day)=='Day' %}checked{% endif %}>
+                      <label class="btn btn-outline-primary shift-btn" for="{{ week }}_{{ day }}_day">
+                        <i class="fa-solid fa-sun me-2"></i>Day
+                      </label>
+                    </div>
+
+                    <!-- Night Shift Button -->
+                    <div class="form-check">
+                      <input type="radio" 
+                             class="btn-check" 
+                             name="{{ week }}_{{ day }}" 
+                             id="{{ week }}_{{ day }}_night" 
+                             value="Night" 
+                             {% if prefill.get(day)=='Night' %}checked{% endif %}>
+                      <label class="btn btn-outline-dark shift-btn" for="{{ week }}_{{ day }}_night">
+                        <i class="fa-solid fa-moon me-2"></i>Night
+                      </label>
+                    </div>
+
+                    <!-- OOO Button -->
+                    <div class="form-check">
+                      <input type="radio" 
+                             class="btn-check" 
+                             name="{{ week }}_{{ day }}" 
+                             id="{{ week }}_{{ day }}_ooo" 
+                             value="OOO" 
+                             {% if prefill.get(day)=='OOO' %}checked{% endif %}>
+                      <label class="btn btn-outline-danger shift-btn" for="{{ week }}_{{ day }}_ooo">
+                        <i class="fa-solid fa-ban me-2"></i>OOO
+                      </label>
+                    </div>
+                  </div>
+                </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <!-- Two Separate Submit Buttons -->
+  <!-- Submit Buttons -->
   <div class="d-grid gap-3 mt-4">
-    <!-- Blue button: Save current week and move to next week -->
     <button type="submit" name="action" value="move_next" class="btn btn-primary btn-lg">
-      <i class="fa-solid fa-paper-plane me-2"></i>Submit and move to the next week
+      <i class="fa-solid fa-paper-plane me-2"></i>Submit and move to next week
     </button>
-    <!-- Green button: Save current week only -->
     <button type="submit" name="action" value="only_this_week" class="btn btn-success btn-lg">
       <i class="fa-solid fa-check me-2"></i>Submit only this week
     </button>
   </div>
 </form>
+
+<!-- Add this style section -->
+<style>
+  .shift-btn {
+    min-width: 120px;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .shift-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-check:checked + .shift-btn {
+    transform: scale(0.95);
+    font-weight: bold;
+  }
+
+  .btn-check:checked + .btn-outline-primary {
+    background: linear-gradient(45deg, #0d6efd, #0a58ca);
+    border-color: #0d6efd;
+  }
+
+  .btn-check:checked + .btn-outline-dark {
+    background: linear-gradient(45deg, #212529, #1a1e21);
+    border-color: #212529;
+  }
+
+  .btn-check:checked + .btn-outline-danger {
+    background: linear-gradient(45deg, #dc3545, #bb2d3b);
+    border-color: #dc3545;
+  }
+
+  .table th, .table td {
+    padding: 1rem;
+  }
+
+  .alert {
+    border-radius: 8px;
+    border: none;
+  }
+
+  .card {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    background: linear-gradient(45deg, #0d6efd, #0a58ca);
+    padding: 1.25rem;
+  }
+
+  .btn-lg {
+    padding: 1rem 2rem;
+    border-radius: 8px;
+  }
+</style>
 
 {% endblock %}
