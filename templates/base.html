@@ -1,67 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Add this line -->
-  <title>Shift Scheduler</title>
-  <!-- Bootswatch Cosmo Theme (Bootstrap 5) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/cosmo/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Shift Scheduler</title>
+    <!-- Add Inter font for modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <!-- Toolbar / Navbar -->
-	<nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
-	  <div class="container">
-		<a class="navbar-brand custom-brand" href="{{ url_for('index') }}">
-		  <i class="fa-solid fa-calendar-check me-2"></i>Shift Scheduler
-		</a>
-		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-				aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-		  <span class="navbar-toggler-icon"></span>
-		</button>
-		<div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-		  <ul class="navbar-nav">
-			<li class="nav-item">
-			  <a href="{{ url_for('index') }}" class="nav-link">
-				<i class="fa-solid fa-house me-1"></i>Home
-			  </a>
-			</li>
-			<li class="nav-item">
-			  <a href="{{ url_for('view_all_schedule') }}" class="nav-link">
-				<i class="fa-solid fa-users me-1"></i>All Users
-			  </a>
-			</li>
-			<li class="nav-item">
-			  <a href="{{ url_for('choose_schedule') }}" class="nav-link">
-				<i class="fa-solid fa-calendar-edit me-1"></i>Schedule
-			  </a>
-			</li>
-		  </ul>
-		</div>
-	  </div>
-	</nav>
-  
-  <div class="container mt-4">
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-          {% for message in messages %}
-            <p class="mb-0"><i class="fa-solid fa-info-circle me-2"></i>{{ message }}</p>
-          {% endfor %}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Modern Navbar with Glassmorphism -->
+    <nav class="navbar navbar-expand-lg navbar-glass fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fa-solid fa-calendar-check brand-icon"></i>
+                <span class="brand-text">Shift Scheduler</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a href="{{ url_for('index') }}" class="nav-link nav-icon-link">
+                            <i class="fa-solid fa-house"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('view_all_schedule') }}" class="nav-link nav-icon-link">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Team Schedule</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('choose_schedule') }}" class="nav-link nav-icon-link">
+                            <i class="fa-solid fa-calendar-edit"></i>
+                            <span>My Schedule</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
-      {% endif %}
-    {% endwith %}
-  </div>
+    </nav>
 
-  <div class="container my-5">
-    {% block content %}{% endblock %}
-  </div>
+    <!-- Page Content with Modern Layout -->
+    <main class="main-content">
+        <div class="container mt-4">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="modern-breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    {% block breadcrumb %}{% endblock %}
+                </ol>
+            </nav>
 
-  <!-- Bootstrap 5 JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Flash Messages with Animation -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-modern fade show" role="alert">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="container my-5">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Modern Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">© 2024 Shift Scheduler. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
