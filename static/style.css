@@ -1,160 +1,224 @@
+/* Modern Variables */
+:root {
+    --primary: #0066cc;
+    --secondary: #4c5267;
+    --success: #28a745;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+/* Global Styles */
 body {
-  background-color: #eef3f7;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
 }
 
-/* Custom Navbar Styles */
-/* Custom Navbar Styles */
-/* Professional Navbar Styles */
-.custom-navbar {
-  background: linear-gradient(135deg, #002e5d, #00467f);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  padding: 0.75rem 0;
-  transition: background 0.3s ease;
+/* Modern Navbar */
+.navbar-glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
 }
 
-.custom-navbar .custom-brand {
-  font-size: 1.9rem;
-  font-weight: 700;
-  letter-spacing: 0.03rem;
-  transition: transform 0.3s ease;
+.brand-icon {
+    color: var(--primary);
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
 }
 
-.custom-navbar .custom-brand:hover {
-  transform: translateY(-2px);
+.brand-text {
+    font-weight: 600;
+    font-size: 1.25rem;
 }
 
-.custom-navbar .nav-link {
-  font-size: 1.1rem;
-  margin-right: 1rem;
-  position: relative;
-  transition: color 0.3s ease;
-  font-weight: 500;
+.nav-icon-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
 }
 
-.custom-navbar .nav-link:hover,
-.custom-navbar .nav-link:focus {
-  color: #a0d700; /* Subtle accent color */
+.nav-icon-link:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
 }
 
-/* Underline animation for nav links */
-.custom-navbar .nav-link::after {
-  content: "";
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: #a0d700;
-  transition: width 0.3s ease;
+/* Main Content */
+.main-content {
+    padding-top: 80px;
+    min-height: calc(100vh - 60px);
 }
 
-.custom-navbar .nav-link:hover::after,
-.custom-navbar .nav-link:focus::after {
-  width: 100%;
-}
-
-/* Navbar Toggler */
-.custom-navbar .navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-.custom-navbar .navbar-toggler-icon {
-  filter: invert(1);
-}
-
+/* Modern Cards */
 .card {
-  border-radius: 10px;
+    border: none;
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .card-header {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+    border-radius: 16px 16px 0 0 !important;
+    background: linear-gradient(45deg, var(--primary), #0052cc);
+    color: white;
+    padding: 1.5rem;
 }
 
-.btn-outline-primary.active,
-.btn-outline-primary.active:hover {
-  background-color: #0d6efd;
-  color: #fff;
+/* Modern Buttons */
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
-.table th, .table td {
-  vertical-align: middle !important;
-}
-
-.alert p {
-  margin-bottom: 0;
-}
-/* Limit maximum container width and add some custom spacing */
-.container {
-  max-width: 800px;
-}
-
-/* Add a subtle hover effect for the list items */
-.list-group-item:hover {
-  background-color: #f7f7f7;
-}
-
-/* Adjust button styling if needed */
 .btn-primary {
-  border-radius: 20px;
+    background: var(--primary);
+    border: none;
 }
 
-/* Modern flat button style for shift selection */
-/* Modern flat button style for shift selection */
-.shift-btn {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  margin: 2px;
-  border: none;
-  border-radius: 8px;
-  padding: 0.6rem 1rem;
-  font-size: 1rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  min-width: 80px;
+.btn-primary:hover {
+    background: #0052cc;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
-/* Specific colors for each shift */
-.shift-btn.day {
-  background-color: #007bff; /* Blue */
-  color: #fff;
+/* Modern Tables */
+.table {
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.shift-btn.night {
-  background-color: #6c757d; /* Gray */
-  color: #fff;
+.table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
 }
 
-.shift-btn.ooo {
-  background-color: #dc3545; /* Red */
-  color: #fff;
+/* Shift Type Indicators */
+.shift-day {
+    color: #ff9800;
 }
 
-/* Hover and active states */
-.shift-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.shift-night {
+    color: #5c6bc0;
 }
 
-/* Hide default radio button appearance */
-.btn-check {
-  display: none;
+.shift-ooo {
+    color: #ef5350;
 }
 
-/* Checked state styles for visual feedback */
-.btn-check:checked + .shift-btn.day {
-  transform: scale(0.95);
-  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.5);
+/* Modern Alert */
+.alert-modern {
+    border: none;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    animation: slideIn 0.3s ease;
 }
 
-.btn-check:checked + .shift-btn.night {
-  transform: scale(0.95);
-  box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5);
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
-.btn-check:checked + .shift-btn.ooo {
-  transform: scale(0.95);
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5);
+/* Modern Footer */
+.footer {
+    background: white;
+    padding: 1.5rem 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.footer-link {
+    color: var(--secondary);
+    text-decoration: none;
+    margin-left: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-glass {
+        background: white;
+    }
+    
+    .nav-icon-link {
+        padding: 0.75rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .table-responsive {
+        border-radius: 12px;
+        overflow-x: auto;
+    }
+}
+
+/* Modern Form Elements */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* Modern Breadcrumbs */
+.modern-breadcrumb {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+/* Loading States */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
 }
