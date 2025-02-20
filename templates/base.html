@@ -34,46 +34,47 @@
 <div class="toolbar-wrapper">
   <div class="container">
     <div class="toolbar">
-      <!-- Quick Actions -->
+      <!-- Left Side -->
       <div class="toolbar-section">
-        <button class="toolbar-btn" onclick="window.location.href='{{ url_for('choose_schedule') }}'">
+        <a href="{{ url_for('choose_schedule') }}" class="toolbar-btn">
           <i class="fa-solid fa-calendar-plus"></i>
           <span>New Schedule</span>
-        </button>
+        </a>
         
-        <button class="toolbar-btn" onclick="window.location.href='{{ url_for('view_all_schedule') }}'">
+        <a href="{{ url_for('view_all_schedule') }}" class="toolbar-btn">
           <i class="fa-solid fa-users"></i>
           <span>Team View</span>
-        </button>
+        </a>
 
         <div class="toolbar-divider"></div>
 
-        <!-- Time Zone Selector -->
-        <select class="toolbar-select">
-          <option value="local">Local Time</option>
-          <option value="utc">UTC</option>
-          <option value="est">EST</option>
-        </select>
+        <div class="toolbar-dropdown">
+          <button class="toolbar-btn">
+            <i class="fa-solid fa-globe"></i>
+            <span>Local Time</span>
+            <i class="fa-solid fa-chevron-down ms-1"></i>
+          </button>
+        </div>
       </div>
 
-      <!-- Right Side Tools -->
+      <!-- Right Side -->
       <div class="toolbar-section">
-        <button class="toolbar-btn">
+        <button class="toolbar-btn" data-bs-toggle="tooltip" title="Notifications">
           <i class="fa-solid fa-bell"></i>
           <span class="notification-badge">3</span>
         </button>
 
-        <button class="toolbar-btn">
+        <button class="toolbar-btn" data-bs-toggle="tooltip" title="Settings">
           <i class="fa-solid fa-gear"></i>
-          <span>Settings</span>
         </button>
 
         <div class="toolbar-divider"></div>
 
-        <!-- User Profile -->
         <div class="toolbar-profile">
-          <img src="/api/placeholder/32/32" alt="Profile" class="toolbar-avatar">
-          <span>Welcome, User</span>
+          <div class="toolbar-avatar">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <span class="d-none d-md-inline">Welcome, User</span>
         </div>
       </div>
     </div>
