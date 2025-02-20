@@ -1,72 +1,279 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Shift Scheduler</title>
-    
-    <!-- CSS Dependencies -->
-    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/cosmo/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <!-- Navbar -->
-	<nav class="main-nav">
-	  <div class="nav-brand">
-		<i class="fa-solid fa-calendar-check"></i>
-		<span>Shift Scheduler</span>
-	  </div>
-	  
-	  <div class="nav-items">
-		<a href="{{ url_for('index') }}" class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
-		  <i class="fa-solid fa-home"></i>
-		  <span>Home</span>
-		</a>
-		
-		<a href="{{ url_for('choose_schedule') }}" class="nav-item {% if request.endpoint == 'choose_schedule' %}active{% endif %}">
-		  <i class="fa-solid fa-calendar-plus"></i>
-		  <span>New Schedule</span>
-		</a>
-		
-		<a href="{{ url_for('view_all_schedule') }}" class="nav-item {% if request.endpoint == 'view_all_schedule' %}active{% endif %}">
-		  <i class="fa-solid fa-users"></i>
-		  <span>Team View</span>
-		</a>
-	  </div>
-	</nav>
+{% extends 'base.html' %}
+{% block content %}
 
-    <!-- Toolbar -->
-    <div class="toolbar-wrapper">
-        <div class="container">
-            <div class="toolbar">
-                <nav class="toolbar-nav">
-                    <a href="{{ url_for('index') }}" class="toolbar-link {% if request.endpoint == 'index' %}active{% endif %}">
-                        <i class="fa-solid fa-home"></i>
-                        <span>Home</span>
-                    </a>
+<div class="schedule-container">
+  <!-- Week Navigation Pills -->
+  <div class="week-navigation">
+    {% for option in week_options %}
+      <a href="{{ url_for('schedule', user_id=user['id'], week_index=option.index) }}" 
+         class="week-pill {% if week_index == option.index %}active{% endif %}">
+         <i class="fa-regular fa-calendar"></i>
+         {{ option.label }}
+      </a>
+    {% endfor %}
+  </div>
 
-                    <a href="{{ url_for('choose_schedule') }}" class="toolbar-link {% if request.endpoint == 'choose_schedule' %}active{% endif %}">
-                        <i class="fa-solid fa-calendar-plus"></i>
-                        <span>New Schedule</span>
-                    </a>
-
-                    <a href="{{ url_for('view_all_schedule') }}" class="toolbar-link {% if request.endpoint == 'view_all_schedule' %}active{% endif %}">
-                        <i class="fa-solid fa-users"></i>
-                        <span>Team View</span>
-                    </a>
-                </nav>
-            </div>
-        </div>
+  <div class="schedule-card">
+    <div class="schedule-header">
+      <i class="fa-solid fa-calendar-week"></i>
+      Set Your Shifts for This Week
     </div>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        {% block content %}{% endblock %}
-    </main>
+    <div class="schedule-body">
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>DAY</th>
+            <th>SHIFT TYPE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Sunday Row -->
+          <tr>
+            <td>Sunday</td>
+            <td>
+              <div class="shift-badge morning">
+                <i class="fa-solid fa-sun"></i>
+                Morning Shift
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Other Days -->
+          {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday'] %}
+          <tr>
+            <td>{{ day }}</td>
+            <td>
+              <div class="shift-options">
+                <button class="shift-btn day">
+                  <i class="fa-solid fa-sun"></i>
+                  Day
+                </button>
+                <button class="shift-btn night">
+                  <i class="fa-solid fa-moon"></i>
+                  Night
+                </button>
+                <button class="shift-btn ooo">
+                  <i class="fa-solid fa-ban"></i>
+                  OOO
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-</body>
-</html>
+    <div class="schedule-footer">
+      <button type="submit" class="submit-btn primary">
+        <i class="fa-solid fa-paper-plane"></i>
+        Submit & Next Week
+      </button>
+      <button type="submit" class="submit-btn secondary">
+        <i class="fa-solid fa-check"></i>
+        Submit Only
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.schedule-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.week-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.week-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.week-pill:hover {
+    background: #f8fafc;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.week-pill.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.schedule-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.schedule-header {
+    background: #2563eb;
+    color: white;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table th {
+    background: #f8fafc;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.schedule-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.shift-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.shift-options {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.shift-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shift-btn:hover {
+    background: #f8fafc;
+}
+
+.shift-btn.day:hover {
+    color: #0284c7;
+    border-color: #0284c7;
+}
+
+.shift-btn.night:hover {
+    color: #6366f1;
+    border-color: #6366f1;
+}
+
+.shift-btn.ooo:hover {
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+.schedule-footer {
+    padding: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    border-top: 1px solid #f1f5f9;
+}
+
+.submit-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submit-btn.primary {
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.submit-btn.primary:hover {
+    background: #1d4ed8;
+}
+
+.submit-btn.secondary {
+    background: white;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+}
+
+.submit-btn.secondary:hover {
+    background: #f8fafc;
+}
+
+@media (max-width: 640px) {
+    .week-navigation {
+        padding: 0.75rem;
+    }
+
+    .week-pill {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .shift-options {
+        flex-direction: column;
+    }
+
+    .shift-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .schedule-footer {
+        flex-direction: column;
+    }
+
+    .submit-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+{% endblock %}
