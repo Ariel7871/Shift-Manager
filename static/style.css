@@ -39,7 +39,7 @@ body {
     background: white;
     border-bottom: 1px solid rgba(0,0,0,0.1);
     padding: 0.5rem 0;
-    margin-top: 56px;
+    margin-top: 56px; /* Adjust based on your navbar height */
     position: fixed;
     width: 100%;
     z-index: 1020;
@@ -47,43 +47,67 @@ body {
 
 .toolbar {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    gap: 1rem;
 }
 
-.toolbar-section {
+.toolbar-nav {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.toolbar-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-.toolbar-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
+    padding: 0.75rem 1.25rem;
     color: #4a5568;
-    font-size: 0.9rem;
     text-decoration: none;
+    border-radius: 6px;
     transition: all 0.2s ease;
-    cursor: pointer;
+    font-weight: 500;
 }
 
-.toolbar-btn:hover {
-    background: #f7fafc;
+.toolbar-link:hover {
+    background: #edf2f7;
     color: #2d3748;
     text-decoration: none;
 }
 
-.toolbar-divider {
-    width: 1px;
-    height: 24px;
-    background: rgba(0,0,0,0.1);
-    margin: 0 0.5rem;
+.toolbar-link.active {
+    background: #e2e8f0;
+    color: var(--primary);
+}
+
+.toolbar-link i {
+    font-size: 1.1rem;
+}
+
+/* Update main content padding to account for toolbar */
+.main-content {
+    padding-top: 120px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .toolbar-nav {
+        width: 100%;
+        justify-content: space-around;
+        background: transparent;
+    }
+
+    .toolbar-link {
+        flex-direction: column;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .toolbar-link i {
+        font-size: 1.2rem;
+    }
 }
 
 /* Notification Badge */
