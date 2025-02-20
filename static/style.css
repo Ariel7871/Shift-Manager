@@ -23,7 +23,6 @@ body {
     color: #333;
 }
 
-/* Main content area */
 .main-content {
     padding-top: 4rem;
     min-height: calc(100vh - 4rem);
@@ -86,234 +85,244 @@ body {
     background: rgba(255,255,255,0.15);
 }
 
-.nav-item i {
-    font-size: 1rem;
-}
-
 /* ==========================================================================
    Schedule Page Styles
    ========================================================================== */
-.schedule-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1rem;
-}
-
-/* Week Navigation */
-.week-navigation {
+/* Top Navigation */
+.schedule-navigation {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-    margin-bottom: 1.5rem;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
     background: white;
-    padding: 1rem;
-    border-radius: 8px;
+    border-radius: 4px;
     box-shadow: var(--shadow-sm);
 }
 
-.week-pill {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
+.schedule-navigation a {
     color: #666;
     text-decoration: none;
-    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.schedule-navigation a:hover {
+    background: #f8f9fa;
+    color: var(--primary);
+}
+
+/* Week Selection */
+.week-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.week-option {
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    color: #666;
     transition: all 0.2s ease;
     border: 1px solid #e2e8f0;
 }
 
-.week-pill:hover {
-    background: #f8fafc;
-    color: #2563eb;
-    text-decoration: none;
+.week-option:hover {
+    background: #f8f9fa;
+    color: var(--primary);
 }
 
-.week-pill.active {
-    background: #2563eb;
+.week-option.active {
+    background: var(--primary);
     color: white;
-    border-color: #2563eb;
+    border-color: var(--primary);
 }
 
-/* Schedule Card */
-.schedule-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-}
-
-.schedule-header {
-    background: #2563eb;
+/* Schedule Table */
+.schedule-title {
+    background: #343a40;
     color: white;
     padding: 1rem;
-    font-size: 1.1rem;
-    font-weight: 500;
+    border-radius: 4px;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-/* Schedule Table */
 .schedule-table {
     width: 100%;
-    border-collapse: collapse;
+    background: white;
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 1rem;
+}
+
+.schedule-table th,
+.schedule-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .schedule-table th {
-    background: #f8fafc;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #64748b;
+    background: #f8f9fa;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: #666;
 }
 
-.schedule-table td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
+.schedule-table tr:last-child td {
+    border-bottom: none;
 }
 
-/* Shift Styles */
-.shift-badge {
+/* Shift Options */
+.morning-shift {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    border-radius: 6px;
+    background: #e3f2fd;
+    color: var(--primary);
+    border-radius: 4px;
     font-size: 0.9rem;
-    background: #e0f2fe;
-    color: #0284c7;
 }
 
-.shift-options {
+.shift-group {
     display: flex;
     gap: 0.5rem;
     justify-content: center;
 }
 
-.shift-btn {
-    display: flex;
+.shift-option {
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
-    background: white;
-    color: #64748b;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
 }
 
-.shift-btn:hover {
-    background: #f8fafc;
+.shift-option input[type="radio"] {
+    display: none;
 }
 
-.shift-btn.day:hover {
-    color: #0284c7;
-    border-color: #0284c7;
+.shift-option.day {
+    color: var(--primary);
 }
 
-.shift-btn.night:hover {
-    color: #6366f1;
-    border-color: #6366f1;
+.shift-option.night {
+    color: var(--secondary);
 }
 
-.shift-btn.ooo:hover {
-    color: #ef4444;
-    border-color: #ef4444;
+.shift-option.ooo {
+    color: var(--danger);
+}
+
+.shift-option input[type="radio"]:checked + .shift-option.day {
+    background: var(--primary);
+    color: white;
+}
+
+.shift-option input[type="radio"]:checked + .shift-option.night {
+    background: var(--secondary);
+    color: white;
+}
+
+.shift-option input[type="radio"]:checked + .shift-option.ooo {
+    background: var(--danger);
+    color: white;
 }
 
 /* Submit Buttons */
-.schedule-footer {
-    padding: 1rem;
+.submit-buttons {
     display: flex;
-    gap: 0.75rem;
+    gap: 1rem;
     justify-content: flex-end;
-    border-top: 1px solid #f1f5f9;
+    margin-top: 1rem;
 }
 
-.submit-btn {
-    display: flex;
+.submit-button {
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    border: 1px solid var(--primary);
 }
 
-.submit-btn.primary {
-    background: #2563eb;
+.submit-button.primary {
+    background: var(--primary);
     color: white;
-    border: none;
 }
 
-.submit-btn.primary:hover {
-    background: #1d4ed8;
-}
-
-.submit-btn.secondary {
+.submit-button:not(.primary) {
     background: white;
-    color: #2563eb;
-    border: 1px solid #2563eb;
+    color: var(--primary);
 }
 
-.submit-btn.secondary:hover {
-    background: #f8fafc;
+.submit-button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ==========================================================================
    Responsive Design
    ========================================================================== */
 @media (max-width: 768px) {
-    .main-nav {
-        padding: 0.75rem 1rem;
-    }
-    
     .nav-brand span {
         display: none;
-    }
-    
-    .nav-items {
-        gap: 0.5rem;
-    }
-    
-    .nav-item {
-        padding: 0.5rem 0.75rem;
     }
     
     .nav-item span {
         display: none;
     }
 
-    .week-navigation {
-        padding: 0.75rem;
+    .schedule-navigation {
+        flex-wrap: wrap;
     }
 
-    .week-pill {
-        font-size: 0.8rem;
-        padding: 0.5rem 0.75rem;
-    }
-
-    .shift-options {
+    .shift-group {
         flex-direction: column;
     }
 
-    .shift-btn {
+    .shift-option {
         width: 100%;
         justify-content: center;
     }
 
-    .schedule-footer {
+    .submit-buttons {
         flex-direction: column;
     }
 
-    .submit-btn {
+    .submit-button {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* Mobile Landscape */
+@media (max-width: 480px) {
+    .week-options {
+        flex-direction: column;
+    }
+
+    .week-option {
+        width: 100%;
+        text-align: center;
     }
 }
