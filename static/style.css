@@ -27,81 +27,89 @@ body {
    Navigation & Toolbar
    ========================================================================== */
 /* Navbar */
-.toolbar-wrapper {
-    background: linear-gradient(to right, #0066cc, #0052cc);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.75rem 0;
-    margin-top: 56px;
-    position: fixed;
-    width: 100%;
-    z-index: 1020;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.toolbar {
+.main-nav {
+    background: #343a40;
+    padding: 0.75rem 2rem;
     display: flex;
-    justify-content: center;
     align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.toolbar-nav {
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-right: 2rem;
+}
+
+.nav-brand i {
+    color: #74b9ff;
+}
+
+.nav-items {
     display: flex;
     gap: 1rem;
-    padding: 0.25rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
 }
 
-.toolbar-link {
+.nav-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255,255,255,0.8);
     text-decoration: none;
+    padding: 0.5rem 1rem;
     border-radius: 6px;
     transition: all 0.2s ease;
-    font-weight: 500;
 }
 
-.toolbar-link:hover {
-    background: rgba(255, 255, 255, 0.2);
+.nav-item:hover {
     color: white;
+    background: rgba(255,255,255,0.1);
     text-decoration: none;
 }
 
-.toolbar-link.active {
-    background: rgba(255, 255, 255, 0.2);
+.nav-item.active {
     color: white;
+    background: rgba(255,255,255,0.15);
 }
 
-.toolbar-link i {
-    font-size: 1.1rem;
+.nav-item i {
+    font-size: 1rem;
 }
 
-/* Update main content padding */
+/* Adjust main content to account for nav */
 .main-content {
-    padding-top: 120px;
-    min-height: calc(100vh - 120px);
+    padding-top: 4rem;
 }
 
-/* Mobile Responsiveness */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-    .toolbar-nav {
-        width: 100%;
-        justify-content: space-around;
-        background: transparent;
+    .main-nav {
+        padding: 0.75rem 1rem;
     }
-
-    .toolbar-link {
-        flex-direction: column;
-        padding: 0.5rem;
-        font-size: 0.8rem;
-        text-align: center;
+    
+    .nav-brand span {
+        display: none;
     }
-
-    .toolbar-link i {
-        font-size: 1.2rem;
+    
+    .nav-items {
+        gap: 0.5rem;
+    }
+    
+    .nav-item {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .nav-item span {
+        display: none;
     }
 }
 
