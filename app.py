@@ -252,120 +252,6 @@ def get_schedule_data():
     }
     return jsonify(data)
 
-@app.route('/get_schedule_overview')
-def get_schedule_overview():
-    conn = get_db_connection()
-    try:
-        # Calculate total shifts this week
-        current_week_start = get_current_week_start()
-        today = date.today()
-        tomorrow = today + timedelta(days=1)
-        
-        with conn.cursor() as cursor:
-            # Total shifts this week
-            cursor.execute("""
-                SELECT COUNT(*) as total_shifts 
-                FROM shifts 
-                WHERE week_start = %s
-            """, (current_week_start.isoformat(),))
-            total_shifts = cursor.fetchone()['total_shifts']
-
-            # Total hours (assuming 8-hour shifts)
-            total_hours = total_shifts * 8
-
-            # Active members (currently on shift)
-            cursor.execute("""
-                SELECT COUNT(DISTINCT s.user_id) as active_members 
-                FROM shifts s
-                JOIN shifts current ON s.user_id = current.user_id
-                WHERE s.week_start = %s 
-                AND s.day = %s
-                AND s.shift_type IN ('Day', 'Night')
-            """, (current_week_start.isoformat(), today.strftime("%A")))
-            active_members = cursor.fetchone()['active_members']
-
-            # Pending shift change requests
-            cursor.execute("""
-                SELECT COUNT(*) as pending_requests 
-                FROM shifts 
-                WHERE pending = 1
-            """)
-            pending_requests = cursor.fetchone()['pending_requests']
-
-            # Current shifts
-            cursor.execute("""
-                SELECT u.name, s.shift_type, 
-                    CASE 
-                        WHEN s.shift_type = 'Day' THEN '8:00 AM - 4:00 PM'
-                        WHEN s.shift_type = 'Night' THEN '4:00 PM - 12:00 AM'
-                    END as time
-                FROM shifts s
-                JOIN users u ON s.user_id = u.id
-                WHERE s.week_start = %s 
-                AND s.day = %s
-                AND s.shift_type IN ('Day', 'Night')
-            """, (current_week_start.isoformat(), today.strftime("%A")))
-            current_shifts = cursor.fetchall()
-
-            # Upcoming shifts (tomorrow)
-            cursor.execute("""
-                SELECT u.name, s.shift_type, 
-                    CASE 
-                        WHEN s.shift_type = 'Day' THEN '8:00 AM - 4:00 PM'
-                        WHEN s.shift_type = 'Night' THEN '4:00 PM - 12:00 AM'
-                    END as time
-                FROM shifts s
-                JOIN users u ON s.user_id = u.id
-                WHERE s.week_start = %s 
-                AND s.day = %s
-                AND s.shift_type IN ('Day', 'Night')
-            """, (get_week_start(tomorrow).isoformat(), tomorrow.strftime("%A")))
-            upcoming_shifts = cursor.fetchall()
-
-        # Prepare response
-        response = {
-            'teamStats': {
-                'totalShifts': int(total_shifts),
-                'totalHours': int(total_hours),
-                'activeMembers': int(active_members),
-                'pendingRequests': int(pending_requests)
-            },
-            'currentShifts': [
-                {
-                    'name': shift['name'],
-                    'type': shift['shift_type'],
-                    'time': shift['time'],
-                    'status': 'Active'
-                } for shift in current_shifts
-            ],
-            'upcomingShifts': [
-                {
-                    'name': shift['name'],
-                    'type': shift['shift_type'],
-                    'date': 'Tomorrow',
-                    'time': shift['time']
-                } for shift in upcoming_shifts
-            ]
-        }
-
-        return jsonify(response)
-
-    except Exception as e:
-        print(f"Error in get_schedule_overview: {e}")
-        return jsonify({
-            'error': 'Failed to fetch schedule overview',
-            'teamStats': {
-                'totalShifts': 0,
-                'totalHours': 0,
-                'activeMembers': 0,
-                'pendingRequests': 0
-            },
-            'currentShifts': [],
-            'upcomingShifts': []
-        }), 500
-    finally:
-        conn.close()
-
 @app.route('/view_schedule')
 def view_schedule_global():
     return redirect(url_for('view_all_schedule'))
@@ -379,23 +265,14 @@ def logout():
 @app.route('/view_all_schedule')
 def view_all_schedule():
     from collections import defaultdict
-    from datetime import date, timedelta
-    
     start_date = date.today()
     end_date = start_date + timedelta(days=30)
     allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
     dates = []
     current = start_date
-    
-    # Group dates by month
-    month_dates = defaultdict(list)
-    
     while current <= end_date:
         if current.strftime("%A") in allowed_days:
             dates.append(current)
-            # Group dates by month name
-            month_name = current.strftime("%B %Y")
-            month_dates[month_name].append(current)
         current += timedelta(days=1)
     
     # Build user schedules: for each user, map each date to its shift (or "Not set")
@@ -404,7 +281,6 @@ def view_all_schedule():
         with conn.cursor() as cursor:
             cursor.execute('SELECT * FROM users')
             users = cursor.fetchall()
-        
         user_schedules = { user['name']: {} for user in users }
         for d in dates:
             week_start = get_week_start(d)
@@ -427,8 +303,7 @@ def view_all_schedule():
         users=users,
         user_schedules=user_schedules,
         today=date.today(),
-        dates=dates,
-        month_dates=month_dates  # Add this line
+        dates=dates
     )
 
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
