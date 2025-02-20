@@ -6,3 +6,4 @@ pandas   # If handling data
 numpy    # If performing numerical operations
 flask-assets
 pymysql
+cryptography
