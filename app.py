@@ -379,14 +379,23 @@ def logout():
 @app.route('/view_all_schedule')
 def view_all_schedule():
     from collections import defaultdict
+    from datetime import date, timedelta
+    
     start_date = date.today()
     end_date = start_date + timedelta(days=30)
     allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
     dates = []
     current = start_date
+    
+    # Group dates by month
+    month_dates = defaultdict(list)
+    
     while current <= end_date:
         if current.strftime("%A") in allowed_days:
             dates.append(current)
+            # Group dates by month name
+            month_name = current.strftime("%B %Y")
+            month_dates[month_name].append(current)
         current += timedelta(days=1)
     
     # Build user schedules: for each user, map each date to its shift (or "Not set")
@@ -395,6 +404,7 @@ def view_all_schedule():
         with conn.cursor() as cursor:
             cursor.execute('SELECT * FROM users')
             users = cursor.fetchall()
+        
         user_schedules = { user['name']: {} for user in users }
         for d in dates:
             week_start = get_week_start(d)
@@ -417,7 +427,8 @@ def view_all_schedule():
         users=users,
         user_schedules=user_schedules,
         today=date.today(),
-        dates=dates
+        dates=dates,
+        month_dates=month_dates  # Add this line
     )
 
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
