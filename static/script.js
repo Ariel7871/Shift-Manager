@@ -71,6 +71,134 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Time zone selector functionality
+    const timezoneSelect = document.querySelector('.toolbar-select');
+    if (timezoneSelect) {
+        timezoneSelect.addEventListener('change', function(e) {
+            // Implement timezone change logic here
+            console.log('Selected timezone:', e.target.value);
+        });
+    }
+
+    // Notification system
+    const notificationBtn = document.querySelector('.toolbar-btn i.fa-bell').parentElement;
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', function() {
+            // Toggle notification panel
+            toggleNotificationPanel();
+        });
+    }
+
+    // Settings panel
+    const settingsBtn = document.querySelector('.toolbar-btn i.fa-gear').parentElement;
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', function() {
+            // Toggle settings panel
+            toggleSettingsPanel();
+        });
+    }
+
+    // Profile menu
+    const profileSection = document.querySelector('.toolbar-profile');
+    if (profileSection) {
+        profileSection.addEventListener('click', function() {
+            // Toggle profile menu
+            toggleProfileMenu();
+        });
+    }
+});
+
+// Notification Panel Toggle
+function toggleNotificationPanel() {
+    // Create notification panel if it doesn't exist
+    let panel = document.getElementById('notification-panel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'notification-panel';
+        panel.className = 'notification-panel';
+        panel.innerHTML = `
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <button onclick="toggleNotificationPanel()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="notification-content">
+                <div class="notification-item">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <div class="notification-text">
+                        <p>Your schedule for next week has been approved</p>
+                        <span>2 hours ago</span>
+                    </div>
+                </div>
+                <!-- Add more notification items here -->
+            </div>
+        `;
+        document.body.appendChild(panel);
+    }
+
+    panel.classList.toggle('show');
+}
+
+// Settings Panel Toggle
+function toggleSettingsPanel() {
+    let panel = document.getElementById('settings-panel');
+    if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'settings-panel';
+        panel.className = 'settings-panel';
+        panel.innerHTML = `
+            <div class="settings-header">
+                <h3>Settings</h3>
+                <button onclick="toggleSettingsPanel()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="settings-content">
+                <!-- Add settings options here -->
+                <div class="settings-item">
+                    <label>Theme</label>
+                    <select>
+                        <option>Light</option>
+                        <option>Dark</option>
+                    </select>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(panel);
+    }
+
+    panel.classList.toggle('show');
+}
+
+// Profile Menu Toggle
+function toggleProfileMenu() {
+    let menu = document.getElementById('profile-menu');
+    if (!menu) {
+        menu = document.createElement('div');
+        menu.id = 'profile-menu';
+        menu.className = 'profile-menu';
+        menu.innerHTML = `
+            <div class="profile-menu-item">
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </div>
+            <div class="profile-menu-item">
+                <i class="fa-solid fa-calendar"></i>
+                <span>My Schedule</span>
+            </div>
+            <div class="profile-menu-item">
+                <i class="fa-solid fa-sign-out"></i>
+                <span>Logout</span>
+            </div>
+        `;
+        document.body.appendChild(menu);
+    }
+
+    menu.classList.toggle('show');
+}
+
 // Function to show toast notifications
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
