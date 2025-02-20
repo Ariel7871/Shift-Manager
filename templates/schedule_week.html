@@ -1,104 +1,87 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="schedule-container">
-  <!-- Week Navigation -->
-  <div class="week-navigation">
+<!-- Navigation Links -->
+<div class="schedule-navigation">
+    <a href="{{ url_for('index') }}"><i class="fa-solid fa-home"></i> Home</a>
+    <a href="{{ url_for('choose_schedule') }}"><i class="fa-solid fa-calendar-plus"></i> New Schedule</a>
+    <a href="{{ url_for('view_all_schedule') }}"><i class="fa-solid fa-users"></i> Team View</a>
+</div>
+
+<!-- Week Options -->
+<div class="week-options">
+    <a href="#" class="week-option active">This Week</a>
+    <a href="#" class="week-option">Next Week</a>
     {% for option in week_options %}
-      <a href="{{ url_for('schedule', user_id=user['id'], week_index=option.index) }}" 
-         class="week-pill {% if week_index == option.index %}active{% endif %}">
-         <i class="fa-solid fa-calendar-week"></i>
-         {{ option.label }}
-      </a>
+        <a href="{{ url_for('schedule', user_id=user['id'], week_index=option.index) }}" 
+           class="week-option">{{ option.label }}</a>
     {% endfor %}
-  </div>
+</div>
 
-  <form method="POST">
-    <div class="schedule-card">
-      <div class="schedule-header">
-        <h4 class="header-title">
-          <i class="fa-solid fa-calendar me-2"></i>{{ header_text }}
-        </h4>
-      </div>
-      
-      <div class="schedule-body">
-        <table class="schedule-table">
-          <thead>
+<!-- Schedule Title -->
+<div class="schedule-title">
+    <i class="fa-solid fa-calendar-week"></i>
+    Set Your Shifts for This Week
+</div>
+
+<form method="POST">
+    <table class="schedule-table">
+        <thead>
             <tr>
-              <th>Day</th>
-              <th class="text-center">Shift Type</th>
+                <th>Day</th>
+                <th>Shift Type</th>
             </tr>
-          </thead>
-          <tbody>
-            {% for day in days %}
+        </thead>
+        <tbody>
+            <!-- Sunday -->
             <tr>
-              <td class="day-cell">{{ day }}</td>
-              {% if day == "Sunday" %}
-                <td class="text-center">
-                  <div class="shift-badge">
-                    <i class="fa-solid fa-sun"></i>
-                    Morning Shift
-                    <input type="hidden" name="{{ week }}_{{ day }}" value="Day">
-                  </div>
-                </td>
-              {% else %}
+                <td>Sunday</td>
                 <td>
-                  <div class="shift-options">
-                    <!-- Day Shift -->
-                    <input type="radio" 
-                           class="btn-check" 
-                           name="{{ week }}_{{ day }}" 
-                           id="{{ week }}_{{ day }}_day" 
-                           value="Day" 
-                           {% if prefill.get(day)=='Day' %}checked{% endif %}>
-                    <label class="shift-btn day" for="{{ week }}_{{ day }}_day">
-                      <i class="fa-solid fa-sun"></i>
-                      Day
-                    </label>
-
-                    <!-- Night Shift -->
-                    <input type="radio" 
-                           class="btn-check" 
-                           name="{{ week }}_{{ day }}" 
-                           id="{{ week }}_{{ day }}_night" 
-                           value="Night" 
-                           {% if prefill.get(day)=='Night' %}checked{% endif %}>
-                    <label class="shift-btn night" for="{{ week }}_{{ day }}_night">
-                      <i class="fa-solid fa-moon"></i>
-                      Night
-                    </label>
-
-                    <!-- OOO -->
-                    <input type="radio" 
-                           class="btn-check" 
-                           name="{{ week }}_{{ day }}" 
-                           id="{{ week }}_{{ day }}_ooo" 
-                           value="OOO" 
-                           {% if prefill.get(day)=='OOO' %}checked{% endif %}>
-                    <label class="shift-btn ooo" for="{{ week }}_{{ day }}_ooo">
-                      <i class="fa-solid fa-ban"></i>
-                      OOO
-                    </label>
-                  </div>
+                    <div class="morning-shift">
+                        <i class="fa-solid fa-sun"></i> Morning Shift
+                        <input type="hidden" name="{{ week }}_Sunday" value="Day">
+                    </div>
                 </td>
-              {% endif %}
+            </tr>
+            
+            <!-- Other Days -->
+            {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday'] %}
+            <tr>
+                <td>{{ day }}</td>
+                <td>
+                    <div class="shift-group">
+                        <label class="shift-option day">
+                            <input type="radio" name="{{ week }}_{{ day }}" value="Day" 
+                                   {% if prefill.get(day)=='Day' %}checked{% endif %}>
+                            <i class="fa-solid fa-sun"></i> Day
+                        </label>
+                        
+                        <label class="shift-option night">
+                            <input type="radio" name="{{ week }}_{{ day }}" value="Night"
+                                   {% if prefill.get(day)=='Night' %}checked{% endif %}>
+                            <i class="fa-solid fa-moon"></i> Night
+                        </label>
+                        
+                        <label class="shift-option ooo">
+                            <input type="radio" name="{{ week }}_{{ day }}" value="OOO"
+                                   {% if prefill.get(day)=='OOO' %}checked{% endif %}>
+                            <i class="fa-solid fa-ban"></i> OOO
+                        </label>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
+        </tbody>
+    </table>
 
-    <!-- Submit Buttons -->
-    <div class="schedule-footer">
-      <button type="submit" name="action" value="move_next" class="submit-btn primary">
-        <i class="fa-solid fa-paper-plane me-2"></i>Submit & Next Week
-      </button>
-      <button type="submit" name="action" value="only_this_week" class="submit-btn secondary">
-        <i class="fa-solid fa-check me-2"></i>Submit Only
-      </button>
+    <div class="submit-buttons">
+        <button type="submit" name="action" value="move_next" class="submit-button primary">
+            <i class="fa-solid fa-paper-plane"></i> Submit & Next Week
+        </button>
+        <button type="submit" name="action" value="only_this_week" class="submit-button">
+            <i class="fa-solid fa-check"></i> Submit Only
+        </button>
     </div>
-  </form>
-</div>
+</form>
 
 {% endblock %}
