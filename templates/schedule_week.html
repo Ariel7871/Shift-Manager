@@ -2,85 +2,75 @@
 {% block content %}
 
 <!-- Week Navigation -->
-<div class="mb-4 text-center">
+<div class="schedule-nav mb-3">
   {% for option in week_options %}
     <a href="{{ url_for('schedule', user_id=user['id'], week_index=option.index) }}" 
-       class="btn {% if week_index == option.index %}btn-primary{% else %}btn-outline-primary{% endif %} me-2 mb-2">
-       <i class="fa-solid fa-calendar-week me-1"></i>{{ option.label }}
+       class="nav-pill {% if week_index == option.index %}active{% endif %}">
+       <i class="fa-solid fa-calendar-week"></i>{{ option.label }}
     </a>
   {% endfor %}
 </div>
 
-<h2 class="mb-4 text-center text-primary">
-  <i class="fa-solid fa-edit me-2"></i>{{ header_text }}
-</h2>
-
-<form method="POST">
-  <div class="card shadow">
-    <div class="card-header bg-primary text-white">
-      <h4 class="mb-0"><i class="fa-solid fa-calendar me-2"></i>Week of {{ week }}</h4>
+<form method="POST" class="schedule-form">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h4 class="mb-0">{{ header_text }}</h4>
     </div>
-    <div class="card-body">
+    <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead class="table-light">
+        <table class="table mb-0">
+          <thead>
             <tr>
-              <th style="width: 20%">Day</th>
-              <th class="text-center">Select Shift Type</th>
+              <th>Day</th>
+              <th class="text-center">Shift Type</th>
             </tr>
           </thead>
           <tbody>
             {% for day in days %}
             <tr>
-              <td class="fw-bold">{{ day }}</td>
+              <td class="day-cell">{{ day }}</td>
               {% if day == "Sunday" %}
                 <td class="text-center">
-                  <div class="alert alert-info mb-0">
-                    <i class="fa-solid fa-sun me-2"></i>Sunday is always morning shift
+                  <span class="sunday-shift">
+                    <i class="fa-solid fa-sun"></i> Morning Shift
                     <input type="hidden" name="{{ week }}_{{ day }}" value="Day">
-                  </div>
+                  </span>
                 </td>
               {% else %}
                 <td>
-                  <div class="d-flex justify-content-center gap-3">
-                    <!-- Day Shift Button -->
-                    <div class="form-check">
-                      <input type="radio" 
-                             class="btn-check" 
-                             name="{{ week }}_{{ day }}" 
-                             id="{{ week }}_{{ day }}_day" 
-                             value="Day" 
-                             {% if prefill.get(day)=='Day' %}checked{% endif %}>
-                      <label class="btn btn-outline-primary shift-btn" for="{{ week }}_{{ day }}_day">
-                        <i class="fa-solid fa-sun me-2"></i>Day
-                      </label>
-                    </div>
+                  <div class="shift-buttons">
+                    <!-- Day Shift -->
+                    <input type="radio" 
+                           class="btn-check" 
+                           name="{{ week }}_{{ day }}" 
+                           id="{{ week }}_{{ day }}_day" 
+                           value="Day" 
+                           {% if prefill.get(day)=='Day' %}checked{% endif %}>
+                    <label class="shift-btn day" for="{{ week }}_{{ day }}_day">
+                      <i class="fa-solid fa-sun"></i>
+                    </label>
 
-                    <!-- Night Shift Button -->
-                    <div class="form-check">
-                      <input type="radio" 
-                             class="btn-check" 
-                             name="{{ week }}_{{ day }}" 
-                             id="{{ week }}_{{ day }}_night" 
-                             value="Night" 
-                             {% if prefill.get(day)=='Night' %}checked{% endif %}>
-                      <label class="btn btn-outline-dark shift-btn" for="{{ week }}_{{ day }}_night">
-                        <i class="fa-solid fa-moon me-2"></i>Night
-                      </label>
-                    </div>
+                    <!-- Night Shift -->
+                    <input type="radio" 
+                           class="btn-check" 
+                           name="{{ week }}_{{ day }}" 
+                           id="{{ week }}_{{ day }}_night" 
+                           value="Night" 
+                           {% if prefill.get(day)=='Night' %}checked{% endif %}>
+                    <label class="shift-btn night" for="{{ week }}_{{ day }}_night">
+                      <i class="fa-solid fa-moon"></i>
+                    </label>
 
-                    <!-- OOO Button -->
-                    <div class="form-check">
-                      <input type="radio" 
-                             class="btn-check" 
-                             name="{{ week }}_{{ day }}" 
-                             id="{{ week }}_{{ day }}_ooo" 
-                             value="OOO" 
-                             {% if prefill.get(day)=='OOO' %}checked{% endif %}>
-                      <label class="btn btn-outline-danger shift-btn" for="{{ week }}_{{ day }}_ooo">
-                        <i class="fa-solid fa-ban me-2"></i>OOO
-                      </label>
-                    </div>
+                    <!-- OOO -->
+                    <input type="radio" 
+                           class="btn-check" 
+                           name="{{ week }}_{{ day }}" 
+                           id="{{ week }}_{{ day }}_ooo" 
+                           value="OOO" 
+                           {% if prefill.get(day)=='OOO' %}checked{% endif %}>
+                    <label class="shift-btn ooo" for="{{ week }}_{{ day }}_ooo">
+                      <i class="fa-solid fa-ban"></i>
+                    </label>
                   </div>
                 </td>
               {% endif %}
@@ -93,74 +83,177 @@
   </div>
 
   <!-- Submit Buttons -->
-  <div class="d-grid gap-3 mt-4">
-    <button type="submit" name="action" value="move_next" class="btn btn-primary btn-lg">
-      <i class="fa-solid fa-paper-plane me-2"></i>Submit and move to next week
+  <div class="submit-buttons">
+    <button type="submit" name="action" value="move_next" class="btn btn-primary">
+      <i class="fa-solid fa-paper-plane"></i>Submit & Continue
     </button>
-    <button type="submit" name="action" value="only_this_week" class="btn btn-success btn-lg">
-      <i class="fa-solid fa-check me-2"></i>Submit only this week
+    <button type="submit" name="action" value="only_this_week" class="btn btn-outline-primary">
+      <i class="fa-solid fa-check"></i>Submit Only
     </button>
   </div>
 </form>
 
-<!-- Add this style section -->
 <style>
+/* Week Navigation */
+.schedule-nav {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-pill {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  color: #666;
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+.nav-pill:hover {
+  background: #e9ecef;
+  color: #333;
+  text-decoration: none;
+}
+
+.nav-pill.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* Card Styling */
+.card {
+  border: none;
+  border-radius: 8px;
+}
+
+.card-header {
+  background: white;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.card-header h4 {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* Table Styling */
+.table th {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+}
+
+.table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+.day-cell {
+  font-weight: 500;
+  color: #333;
+  width: 120px;
+}
+
+/* Shift Buttons */
+.shift-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.shift-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shift-btn.day {
+  color: #0d6efd;
+  border: 1px solid #0d6efd;
+}
+
+.shift-btn.night {
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+
+.shift-btn.ooo {
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+.btn-check:checked + .shift-btn.day {
+  background: #0d6efd;
+  color: white;
+}
+
+.btn-check:checked + .shift-btn.night {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-check:checked + .shift-btn.ooo {
+  background: #dc3545;
+  color: white;
+}
+
+/* Sunday Shift */
+.sunday-shift {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #e3f2fd;
+  color: #0d6efd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* Submit Buttons */
+.submit-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.submit-buttons .btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .submit-buttons {
+    flex-direction: column;
+  }
+  
+  .shift-buttons {
+    gap: 0.25rem;
+  }
+  
   .shift-btn {
-    min-width: 120px;
-    padding: 10px 20px;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    font-weight: 500;
+    width: 36px;
+    height: 36px;
   }
-
-  .shift-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .btn-check:checked + .shift-btn {
-    transform: scale(0.95);
-    font-weight: bold;
-  }
-
-  .btn-check:checked + .btn-outline-primary {
-    background: linear-gradient(45deg, #0d6efd, #0a58ca);
-    border-color: #0d6efd;
-  }
-
-  .btn-check:checked + .btn-outline-dark {
-    background: linear-gradient(45deg, #212529, #1a1e21);
-    border-color: #212529;
-  }
-
-  .btn-check:checked + .btn-outline-danger {
-    background: linear-gradient(45deg, #dc3545, #bb2d3b);
-    border-color: #dc3545;
-  }
-
-  .table th, .table td {
-    padding: 1rem;
-  }
-
-  .alert {
-    border-radius: 8px;
-    border: none;
-  }
-
-  .card {
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .card-header {
-    background: linear-gradient(45deg, #0d6efd, #0a58ca);
-    padding: 1.25rem;
-  }
-
-  .btn-lg {
-    padding: 1rem 2rem;
-    border-radius: 8px;
-  }
+}
 </style>
 
 {% endblock %}
