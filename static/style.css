@@ -27,22 +27,15 @@ body {
    Navigation & Toolbar
    ========================================================================== */
 /* Navbar */
-.navbar-glass {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-sm);
-    z-index: 1030;
-}
-
-/* Toolbar */
 .toolbar-wrapper {
-    background: white;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-    padding: 0.5rem 0;
-    margin-top: 56px; /* Adjust based on your navbar height */
+    background: linear-gradient(to right, #0066cc, #0052cc);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 0;
+    margin-top: 56px;
     position: fixed;
     width: 100%;
     z-index: 1020;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toolbar {
@@ -54,8 +47,8 @@ body {
 .toolbar-nav {
     display: flex;
     gap: 1rem;
-    padding: 0.5rem;
-    background: #f8f9fa;
+    padding: 0.25rem;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
 }
 
@@ -63,8 +56,8 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    color: #4a5568;
+    padding: 0.5rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     border-radius: 6px;
     transition: all 0.2s ease;
@@ -72,23 +65,24 @@ body {
 }
 
 .toolbar-link:hover {
-    background: #edf2f7;
-    color: #2d3748;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     text-decoration: none;
 }
 
 .toolbar-link.active {
-    background: #e2e8f0;
-    color: var(--primary);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
 }
 
 .toolbar-link i {
     font-size: 1.1rem;
 }
 
-/* Update main content padding to account for toolbar */
+/* Update main content padding */
 .main-content {
     padding-top: 120px;
+    min-height: calc(100vh - 120px);
 }
 
 /* Mobile Responsiveness */
@@ -103,6 +97,7 @@ body {
         flex-direction: column;
         padding: 0.5rem;
         font-size: 0.8rem;
+        text-align: center;
     }
 
     .toolbar-link i {
