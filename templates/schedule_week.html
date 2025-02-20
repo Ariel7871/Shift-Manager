@@ -3,240 +3,102 @@
 
 <div class="schedule-container">
   <!-- Week Navigation -->
-  <div class="schedule-nav mb-3">
+  <div class="week-navigation">
     {% for option in week_options %}
       <a href="{{ url_for('schedule', user_id=user['id'], week_index=option.index) }}" 
-         class="nav-pill {% if week_index == option.index %}active{% endif %}">
-         <i class="fa-solid fa-calendar-week"></i>{{ option.label }}
+         class="week-pill {% if week_index == option.index %}active{% endif %}">
+         <i class="fa-solid fa-calendar-week"></i>
+         {{ option.label }}
       </a>
     {% endfor %}
   </div>
 
-  <form method="POST" class="schedule-form">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h4 class="header-title"><i class="fa-solid fa-calendar me-2"></i>{{ header_text }}</h4>
+  <form method="POST">
+    <div class="schedule-card">
+      <div class="schedule-header">
+        <h4 class="header-title">
+          <i class="fa-solid fa-calendar me-2"></i>{{ header_text }}
+        </h4>
       </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead class="table-light">
-              <tr>
-                <th>Day</th>
-                <th class="text-center">Shift Type</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for day in days %}
-              <tr>
-                <td class="day-cell">{{ day }}</td>
-                {% if day == "Sunday" %}
-                  <td class="text-center">
-                    <span class="sunday-shift">
-                      <i class="fa-solid fa-sun"></i> Morning Shift
-                      <input type="hidden" name="{{ week }}_{{ day }}" value="Day">
-                    </span>
-                  </td>
-                {% else %}
-                  <td>
-                    <div class="shift-buttons">
-                      <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_day" 
-                             value="Day" {% if prefill.get(day)=='Day' %}checked{% endif %}>
-                      <label class="shift-btn day" for="{{ week }}_{{ day }}_day" title="Day Shift">
-                        <i class="fa-solid fa-sun"></i> Day
-                      </label>
+      
+      <div class="schedule-body">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th class="text-center">Shift Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for day in days %}
+            <tr>
+              <td class="day-cell">{{ day }}</td>
+              {% if day == "Sunday" %}
+                <td class="text-center">
+                  <div class="shift-badge">
+                    <i class="fa-solid fa-sun"></i>
+                    Morning Shift
+                    <input type="hidden" name="{{ week }}_{{ day }}" value="Day">
+                  </div>
+                </td>
+              {% else %}
+                <td>
+                  <div class="shift-options">
+                    <!-- Day Shift -->
+                    <input type="radio" 
+                           class="btn-check" 
+                           name="{{ week }}_{{ day }}" 
+                           id="{{ week }}_{{ day }}_day" 
+                           value="Day" 
+                           {% if prefill.get(day)=='Day' %}checked{% endif %}>
+                    <label class="shift-btn day" for="{{ week }}_{{ day }}_day">
+                      <i class="fa-solid fa-sun"></i>
+                      Day
+                    </label>
 
-                      <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_night" 
-                             value="Night" {% if prefill.get(day)=='Night' %}checked{% endif %}>
-                      <label class="shift-btn night" for="{{ week }}_{{ day }}_night" title="Night Shift">
-                        <i class="fa-solid fa-moon"></i> Night
-                      </label>
+                    <!-- Night Shift -->
+                    <input type="radio" 
+                           class="btn-check" 
+                           name="{{ week }}_{{ day }}" 
+                           id="{{ week }}_{{ day }}_night" 
+                           value="Night" 
+                           {% if prefill.get(day)=='Night' %}checked{% endif %}>
+                    <label class="shift-btn night" for="{{ week }}_{{ day }}_night">
+                      <i class="fa-solid fa-moon"></i>
+                      Night
+                    </label>
 
-                      <input type="radio" class="btn-check" name="{{ week }}_{{ day }}" id="{{ week }}_{{ day }}_ooo" 
-                             value="OOO" {% if prefill.get(day)=='OOO' %}checked{% endif %}>
-                      <label class="shift-btn ooo" for="{{ week }}_{{ day }}_ooo" title="Out of Office">
-                        <i class="fa-solid fa-ban"></i> OOO
-                      </label>
-                    </div>
-                  </td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+                    <!-- OOO -->
+                    <input type="radio" 
+                           class="btn-check" 
+                           name="{{ week }}_{{ day }}" 
+                           id="{{ week }}_{{ day }}_ooo" 
+                           value="OOO" 
+                           {% if prefill.get(day)=='OOO' %}checked{% endif %}>
+                    <label class="shift-btn ooo" for="{{ week }}_{{ day }}_ooo">
+                      <i class="fa-solid fa-ban"></i>
+                      OOO
+                    </label>
+                  </div>
+                </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
     </div>
 
     <!-- Submit Buttons -->
-    <div class="submit-buttons">
-      <button type="submit" name="action" value="move_next" class="btn btn-primary">
+    <div class="schedule-footer">
+      <button type="submit" name="action" value="move_next" class="submit-btn primary">
         <i class="fa-solid fa-paper-plane me-2"></i>Submit & Next Week
       </button>
-      <button type="submit" name="action" value="only_this_week" class="btn btn-outline-primary">
+      <button type="submit" name="action" value="only_this_week" class="submit-btn secondary">
         <i class="fa-solid fa-check me-2"></i>Submit Only
       </button>
     </div>
   </form>
 </div>
-
-<style>
-.schedule-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1rem;
-}
-
-.schedule-nav {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    background: #f8f9fa;
-    padding: 1rem;
-    border-radius: 8px;
-}
-
-.nav-pill {
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    color: #666;
-    text-decoration: none;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-.nav-pill:hover {
-    background: #e9ecef;
-    color: #333;
-    text-decoration: none;
-}
-
-.nav-pill.active {
-    background: var(--primary);
-    color: white;
-}
-
-.card {
-    border: none;
-    border-radius: 8px;
-    background: white;
-}
-
-.card-header {
-    padding: 1rem;
-    border-radius: 8px 8px 0 0;
-}
-
-.header-title {
-    font-size: 1.1rem;
-    margin: 0;
-}
-
-.table {
-    margin: 0;
-}
-
-.table th {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0.75rem 1rem;
-    background: #f8f9fa;
-}
-
-.day-cell {
-    font-weight: 500;
-    color: #333;
-    width: 120px;
-}
-
-.shift-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-}
-
-.shift-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-}
-
-.shift-btn.day {
-    color: #0d6efd;
-    border: 1px solid #0d6efd;
-}
-
-.shift-btn.night {
-    color: #6c757d;
-    border: 1px solid #6c757d;
-}
-
-.shift-btn.ooo {
-    color: #dc3545;
-    border: 1px solid #dc3545;
-}
-
-.btn-check:checked + .shift-btn.day {
-    background: #0d6efd;
-    color: white;
-}
-
-.btn-check:checked + .shift-btn.night {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-check:checked + .shift-btn.ooo {
-    background: #dc3545;
-    color: white;
-}
-
-.sunday-shift {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: #e3f2fd;
-    color: #0d6efd;
-    border-radius: 6px;
-    font-size: 0.9rem;
-}
-
-.submit-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 1rem;
-}
-
-@media (max-width: 768px) {
-    .shift-buttons {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .shift-btn {
-        justify-content: center;
-    }
-    
-    .submit-buttons {
-        flex-direction: column;
-    }
-    
-    .submit-buttons .btn {
-        width: 100%;
-    }
-}
-</style>
 
 {% endblock %}
