@@ -15,34 +15,14 @@
                 </button>
             </div>
             
-            <!-- Toggle Buttons -->
-			<div class="text-center mb-3">
-				<button class="btn btn-primary animated-button" id="standardTableBtn" onclick="location.reload();">📋 Standard Table</button>
-				<button class="btn btn-success animated-button" id="coloredTableBtn" onclick="switchToColored();">🎨 Colored Table</button>
-			</div>
-
-            <!-- Mobile Calendar View -->
-            <div class="mobile-calendar-view">
-                <div class="btn-group w-100 mb-3">
-                    <button class="btn btn-outline-primary active" id="toggleListView">
-                        <i class="fas fa-list-ul me-2"></i>List View
-                    </button>
-                    <button class="btn btn-outline-primary" id="toggleCalendarView">
-                        <i class="fas fa-calendar-alt me-2"></i>Calendar View
-                    </button>
-                </div>
-                
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button class="btn btn-sm btn-outline-secondary prev-day">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <h5 class="mb-0 current-date"></h5>
-                    <button class="btn btn-sm btn-outline-secondary next-day">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                
-                <div class="day-cards-container" id="dayCardsContainer"></div>
+            <!-- View Toggle Buttons -->
+            <div class="btn-group w-100 mb-4">
+                <button class="btn btn-primary active" id="listViewBtn">
+                    <i class="fas fa-list-ul me-2"></i> List View
+                </button>
+                <button class="btn btn-outline-primary" id="calendarViewBtn">
+                    <i class="fas fa-calendar-alt me-2"></i> Calendar View
+                </button>
             </div>
 
             <!-- Loading indicator -->
@@ -58,8 +38,8 @@
                 Failed to load schedule data. Please refresh the page.
             </div>
 
-            <!-- Standard Table -->
-            <div id="defaultTable" class="standard-table-view">
+            <!-- List View -->
+            <div id="listView" class="view-section">
                 {% for month, dates in month_dates.items() %}
                     <h5 class="text-center text-primary fw-bold">{{ month }}</h5>
                     <div class="table-responsive mb-4">
@@ -105,14 +85,21 @@
                 {% endfor %}
             </div>
 
-            <!-- Colored Table -->
-            <div id="styledTable" style="display: none;">
-                <div class="table-responsive">
-                    <table class="table table-bordered text-center">
-                        <thead id="scheduleHeader"></thead>
-                        <tbody id="scheduleBody"></tbody>
-                    </table>
+            <!-- Calendar View -->
+            <div id="calendarView" class="view-section" style="display: none;">
+                <!-- Navigation arrows -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button class="btn btn-sm btn-outline-secondary prev-day">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h5 class="mb-0 current-date">February 2025</h5>
+                    <button class="btn btn-sm btn-outline-secondary next-day">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
+                
+                <!-- Day cards will be inserted here -->
+                <div id="dayCardsContainer" class="mb-4"></div>
             </div>
         </div>
     </div>
@@ -148,88 +135,53 @@
 </div>
 
 <script>
-// Toggle between standard and colored tables - Using direct event handlers instead of onclick attributes
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the button elements
-    const standardTableBtn = document.getElementById('standardTableBtn');
-    const coloredTableBtn = document.getElementById('coloredTableBtn');
-    
-    // Add event listeners
-    if (standardTableBtn) {
-        standardTableBtn.addEventListener('click', function() {
-            switchTable('default');
-            console.log("Switched to default table");
-        });
-    }
-    
-    if (coloredTableBtn) {
-        coloredTableBtn.addEventListener('click', function() {
-            switchTable('styled');
-            console.log("Switched to styled table");
-        });
-    }
-});
+// Format date to display nicely
+function formatMonthYear(date) {
+    return date.toLocaleDateString('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+    });
+}
 
-// Define the switchTable function
-function switchTable(view) {
-    console.log(`Switching to ${view} table`);
-    const defaultTable = document.getElementById("defaultTable");
-    const styledTable = document.getElementById("styledTable");
+// Switch between List and Calendar views
+function switchView(view) {
+    // Hide all views first
+    document.querySelectorAll('.view-section').forEach(el => {
+        el.style.display = 'none';
+    });
     
-    if (defaultTable && styledTable) {
-        defaultTable.style.display = (view === 'default') ? "block" : "none";
-        styledTable.style.display = (view === 'styled') ? "block" : "none";
-        
-        // If switching to the styled table and it's empty, fetch data again
-        if (view === 'styled') {
-            const scheduleBody = document.getElementById("scheduleBody");
-            if (scheduleBody && scheduleBody.innerHTML === "") {
-                fetchSchedule();
-            }
+    // Show the selected view
+    const selectedView = document.getElementById(view);
+    if (selectedView) {
+        selectedView.style.display = 'block';
+    }
+    
+    // Update button styles
+    document.getElementById('listViewBtn').classList.toggle('active', view === 'listView');
+    document.getElementById('listViewBtn').classList.toggle('btn-primary', view === 'listView');
+    document.getElementById('listViewBtn').classList.toggle('btn-outline-primary', view !== 'listView');
+    
+    document.getElementById('calendarViewBtn').classList.toggle('active', view === 'calendarView');
+    document.getElementById('calendarViewBtn').classList.toggle('btn-primary', view === 'calendarView');
+    document.getElementById('calendarViewBtn').classList.toggle('btn-outline-primary', view !== 'calendarView');
+    
+    // If switching to calendar view, load the day cards if they're not already loaded
+    if (view === 'calendarView') {
+        const dayCardsContainer = document.getElementById('dayCardsContainer');
+        if (dayCardsContainer && dayCardsContainer.children.length === 0) {
+            loadCalendarData();
         }
-    } else {
-        console.error("Could not find table elements");
     }
 }
 
-// Format date to compare with API
-function formatDateForComparison(date) {
-    // Format like DD/MM/YYYY
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-}
-
-// Show/hide loading indicator
-function setLoading(isLoading) {
-    const loadingIndicator = document.getElementById("loadingIndicator");
-    const styledTable = document.getElementById("styledTable");
-    const errorMessage = document.getElementById("errorMessage");
+// Load calendar data for day cards
+function loadCalendarData() {
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorMessage = document.getElementById('errorMessage');
+    const dayCardsContainer = document.getElementById('dayCardsContainer');
     
-    if (loadingIndicator && styledTable && errorMessage) {
-        loadingIndicator.classList.toggle("d-none", !isLoading);
-        styledTable.classList.toggle("d-none", isLoading);
-        errorMessage.classList.add("d-none");
-    }
-}
-
-// Show error message
-function showError(message) {
-    const loadingIndicator = document.getElementById("loadingIndicator");
-    const errorMessage = document.getElementById("errorMessage");
-    
-    if (loadingIndicator && errorMessage) {
-        loadingIndicator.classList.add("d-none");
-        errorMessage.classList.remove("d-none");
-        errorMessage.textContent = message || "Failed to load schedule data. Please refresh the page.";
-    }
-}
-
-// Fetch schedule data for colored table (one month ahead)
-function fetchSchedule() {
-    setLoading(true);
-    console.log("Fetching schedule data...");
+    if (loadingIndicator) loadingIndicator.classList.remove('d-none');
+    if (errorMessage) errorMessage.classList.add('d-none');
     
     fetch("{{ url_for('get_schedule_data') }}")
     .then(response => {
@@ -239,105 +191,40 @@ function fetchSchedule() {
         return response.json();
     })
     .then(data => {
-        console.log("Received data:", data);
-        const headerRow = document.getElementById("scheduleHeader");
-        const tableBody = document.getElementById("scheduleBody");
+        console.log("Received calendar data:", data);
         
-        if (!headerRow || !tableBody) {
-            console.error("Could not find table header or body elements");
-            showError("Error: Table elements not found");
-            return;
-        }
+        if (loadingIndicator) loadingIndicator.classList.add('d-none');
         
-        headerRow.innerHTML = "";
-        tableBody.innerHTML = "";
-
         if (!data.dates || !data.schedule || data.dates.length === 0) {
-            showError("Error: Invalid data received from server");
-            console.error("Error: Missing or empty dates or schedule in API response", data);
-            return;
+            throw new Error("Invalid data received from server");
         }
-
-        // Get today's date formatted the same way as API returns
-        const today = formatDateForComparison(new Date());
-        console.log("Today's date for comparison:", today);
         
-        // Build header row with a grey background
-        let headerHTML = `<tr class="table-secondary"><th class="table-secondary">Name</th>`;
-        data.dates.forEach((date, index) => {
-            let cellClass = "";
-            if (date === today) {
-                cellClass = "table-primary";
+        updateDayCards(data);
+        
+        // Set current month in the header
+        const currentDateEl = document.querySelector('.current-date');
+        if (currentDateEl) {
+            // Use the first date to set the initial month display
+            if (data.dates && data.dates.length > 0) {
+                const firstDate = data.dates[0];
+                const [day, month, year] = firstDate.split('/');
+                const dateObj = new Date(year, month - 1, day);
+                currentDateEl.textContent = formatMonthYear(dateObj);
             }
-            headerHTML += `<th class="${cellClass}">${data.days[index]}<br><span class="date-text">${date}</span></th>`;
-        });
-        headerHTML += "</tr>";
-        headerRow.innerHTML = headerHTML;
-
-        // Build rows for each user; the name cell also has a grey background
-        data.schedule.forEach(entry => {
-            if (!entry.name || !Array.isArray(entry.shifts)) {
-                console.error("Invalid entry format:", entry);
-                return;
-            }
-            
-            let rowHTML = `<tr><td class="table-secondary fw-bold">${entry.name}</td>`;
-            entry.shifts.forEach(shift => {
-                let colorClass = "";
-                let displayShift = shift;
-                
-                if (shift === "Day") {
-                    colorClass = "bg-info text-dark fw-bold";
-                } else if (shift === "Night") {
-                    colorClass = "bg-secondary text-white fw-bold";
-                } else if (shift === "OOO") {
-                    colorClass = "bg-danger text-white fw-bold";
-                } else if (shift === "Not set") {
-                    colorClass = "bg-white text-dark border fw-bold";
-                } else {
-                    colorClass = "bg-secondary text-white";
-                }
-                rowHTML += `<td class="${colorClass}">${displayShift}</td>`;
-            });
-            rowHTML += "</tr>";
-            tableBody.innerHTML += rowHTML;
-        });
-        
-        setLoading(false);
-        
-        // Also update the mobile day cards
-        updateMobileDayCards(data);
-        
-        adjustTableForMobile();
+        }
     })
     .catch(error => {
-        console.error("Error fetching schedule:", error);
-        showError("Error fetching schedule: " + error.message);
+        console.error("Error loading calendar data:", error);
+        if (loadingIndicator) loadingIndicator.classList.add('d-none');
+        if (errorMessage) {
+            errorMessage.classList.remove('d-none');
+            errorMessage.textContent = "Error loading calendar data: " + error.message;
+        }
     });
 }
 
-// Mobile adjustments
-function isMobile() {
-    return /Mobi|Android/i.test(navigator.userAgent);
-}
-
-function adjustTableForMobile() {
-    if (isMobile()) {
-        document.body.classList.add("mobile-friendly");
-        document.querySelectorAll(".table-responsive").forEach(table => {
-            table.style.overflowX = "scroll";
-        });
-        document.querySelectorAll("table").forEach(table => {
-            table.style.fontSize = "14px";
-        });
-        document.querySelectorAll(".btn").forEach(btn => {
-            btn.style.width = "100%";
-            btn.style.marginBottom = "10px";
-        });
-    }
-}
-
-function updateMobileDayCards(data) {
+// Update the day cards in the calendar view
+function updateDayCards(data) {
     if (!data || !data.dates || !data.schedule) return;
     
     const dayCardsContainer = document.getElementById('dayCardsContainer');
@@ -390,13 +277,16 @@ function updateMobileDayCards(data) {
         card.appendChild(shiftsDiv);
         dayCardsContainer.appendChild(card);
     }
+    
+    // Adjust styles for mobile
+    adjustForMobile();
 }
 
+// Navigate between days in calendar view
 function navigateDay(direction) {
-    // This would normally change the displayed day in the mobile view
-    console.log(`Navigating ${direction > 0 ? 'forward' : 'backward'} in mobile calendar view`);
+    // This would be implemented to navigate between different days/weeks
+    // For now, show a notification that this feature is coming soon
     
-    // For now just show a message
     const message = document.createElement('div');
     message.className = 'alert alert-info';
     message.textContent = 'Calendar navigation will be implemented soon!';
@@ -413,121 +303,127 @@ function navigateDay(direction) {
     }
 }
 
-// Initial setup - IMPORTANT: Removed the createMobileNavbar call
-document.addEventListener("DOMContentLoaded", function() {
-    console.log("DOM content loaded");
-    adjustTableForMobile();
-    
-    // Ensure default view is shown 
-    const defaultTable = document.getElementById("defaultTable");
-    const styledTable = document.getElementById("styledTable");
-    
-    if (defaultTable && styledTable) {
-        defaultTable.style.display = "block";
-        styledTable.style.display = "none";
+// Adjust UI for mobile devices
+function adjustForMobile() {
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+        document.body.classList.add('mobile-friendly');
+        
+        document.querySelectorAll('.table-responsive').forEach(table => {
+            table.style.overflowX = 'scroll';
+        });
+        
+        document.querySelectorAll('table').forEach(table => {
+            table.style.fontSize = '14px';
+        });
+        
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.style.padding = '0.6rem 0.5rem';
+        });
     }
+}
+
+// Initialize the page when it loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial view to List View
+    switchView('listView');
     
-    // Set up mobile view functionality without creating duplicate navigation
-    if (window.innerWidth <= 576) {
-        // Add event listeners for toggle buttons
-        const toggleListViewBtn = document.getElementById('toggleListView');
-        const toggleCalendarViewBtn = document.getElementById('toggleCalendarView');
-        
-        if (toggleListViewBtn) {
-            toggleListViewBtn.addEventListener('click', function() {
-                document.body.classList.remove('mobile-calendar-mode');
-                this.classList.add('active');
-                const calendarViewBtn = document.getElementById('toggleCalendarView');
-                if (calendarViewBtn) {
-                    calendarViewBtn.classList.remove('active');
-                }
-            });
-        }
-        
-        if (toggleCalendarViewBtn) {
-            toggleCalendarViewBtn.addEventListener('click', function() {
-                document.body.classList.add('mobile-calendar-mode');
-                this.classList.add('active');
-                const listViewBtn = document.getElementById('toggleListView');
-                if (listViewBtn) {
-                    listViewBtn.classList.remove('active');
-                }
-            });
-        }
-        
-        // Set current date in mobile view
-        const currentDateElement = document.querySelector('.current-date');
-        if (currentDateElement) {
-            const currentDate = new Date();
-            currentDateElement.textContent = currentDate.toLocaleDateString('en-US', { 
-                month: 'long', 
-                year: 'numeric' 
-            });
-        }
-        
-        // Add navigation handlers
-        const prevDayBtn = document.querySelector('.prev-day');
-        const nextDayBtn = document.querySelector('.next-day');
-        
-        if (prevDayBtn) {
-            prevDayBtn.addEventListener('click', () => navigateDay(-1));
-        }
-        
-        if (nextDayBtn) {
-            nextDayBtn.addEventListener('click', () => navigateDay(1));
-        }
-        
-        // Fetch data for mobile view if needed
-        const dayCardsContainer = document.getElementById('dayCardsContainer');
-        if (dayCardsContainer && dayCardsContainer.children.length === 0) {
-            fetch("{{ url_for('get_schedule_data') }}")
-            .then(response => response.json())
-            .then(data => {
-                updateMobileDayCards(data);
-            })
-            .catch(error => {
-                console.error("Error fetching data for mobile view:", error);
-            });
-        }
-    }
+    // Add event listeners to the view buttons
+    document.getElementById('listViewBtn').addEventListener('click', function() {
+        switchView('listView');
+    });
+    
+    document.getElementById('calendarViewBtn').addEventListener('click', function() {
+        switchView('calendarView');
+    });
+    
+    // Add event listeners to the navigation buttons
+    document.querySelector('.prev-day')?.addEventListener('click', () => navigateDay(-1));
+    document.querySelector('.next-day')?.addEventListener('click', () => navigateDay(1));
+    
+    // Adjust for mobile
+    adjustForMobile();
 });
 </script>
 
-<script>
-// Simple function to switch to colored table
-function switchToColored() {
-    // Hide default table
-    const defaultTable = document.getElementById('defaultTable');
-    if (defaultTable) {
-        defaultTable.style.display = 'none';
-    }
-    
-    // Show styled table
-    const styledTable = document.getElementById('styledTable');
-    if (styledTable) {
-        styledTable.style.display = 'block';
-        
-        // Fetch data if table is empty
-        const scheduleBody = document.getElementById('scheduleBody');
-        if (scheduleBody && scheduleBody.innerHTML === '') {
-            fetchSchedule();
-        }
-    }
-}
-
-// The rest of your existing JavaScript functions remain the same...
-</script>
-
 <style>
-.date-text {
-    font-size: 0.8rem;
+/* Calendar View Styles */
+.day-card {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow-sm);
 }
+
+.day-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.day-card-date {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.day-card-day {
+    color: var(--text-muted);
+}
+
+.day-card-shifts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.day-card-shift {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: rgba(0,0,0,0.05);
+}
+
+[data-bs-theme="dark"] .day-card-shift {
+    background-color: rgba(255,255,255,0.05);
+}
+
+.day-card-shift-name {
+    font-weight: bold;
+}
+
+.day-card-shift-type {
+    font-weight: bold;
+}
+
+.day-card-shift-type.Day {
+    color: #ffc107;
+}
+
+.day-card-shift-type.Night {
+    color: #6c757d;
+}
+
+.day-card-shift-type.OOO {
+    color: #dc3545;
+}
+
+/* Loading indicator */
 #loadingIndicator {
     min-height: 200px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+/* View transition */
+.view-section {
+    transition: opacity 0.3s ease;
 }
 </style>
 {% endblock %}
