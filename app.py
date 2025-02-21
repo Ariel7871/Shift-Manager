@@ -299,39 +299,57 @@ def get_schedule_data():
     end_date = start_date + timedelta(days=30)
     dates = []
     day_names = []
+    date_objects = []
     current = start_date
     while current <= end_date:
         if current.strftime("%A") in allowed_days:
             dates.append(current.strftime("%d/%m/%Y"))
             day_names.append(current.strftime("%A"))
+            date_objects.append(current)
         current += timedelta(days=1)
 
+    # Build user schedules more efficiently
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM users ORDER BY name")
             users = cursor.fetchall()
 
-        # Get all shifts at once to reduce database connections
+        # Fetch all shifts in one query with date ranges
+        min_date = min(date_objects)
+        max_date = max(date_objects)
+        min_week_start = get_week_start(min_date).isoformat()
+        max_week_start = get_week_start(max_date).isoformat()
+        
+        # Get all shifts for all users in the date range in a single query
         all_shifts = {}
         with conn.cursor() as cursor:
-            for d_str, d_name in zip(dates, day_names):
-                d_obj = datetime.strptime(d_str, "%d/%m/%Y").date()
-                week_start = get_week_start(d_obj)
-                # Get all users' shifts for this date in a single query
-                cursor.execute(
-                    "SELECT user_id, shift_type FROM shifts WHERE week_start = %s AND day = %s",
-                    (week_start.isoformat(), d_name)
-                )
-                results = cursor.fetchall()
-                for result in results:
-                    key = (result['user_id'], d_str, d_name)
-                    all_shifts[key] = result['shift_type']
+            cursor.execute("""
+                SELECT s.user_id, s.week_start, s.day, s.shift_type, u.name 
+                FROM shifts s 
+                JOIN users u ON s.user_id = u.id
+                WHERE s.week_start BETWEEN %s AND %s
+            """, (min_week_start, max_week_start))
+            
+            shifts = cursor.fetchall()
+        
+        # Build a lookup dictionary for fast access
+        for shift in shifts:
+            week_start = shift['week_start']
+            user_id = shift['user_id']
+            day = shift['day']
+            shift_type = shift['shift_type']
+            
+            # Create a key for fast lookup
+            for d_obj, d_str, d_name in zip(date_objects, dates, day_names):
+                if get_week_start(d_obj) == week_start and d_name == day:
+                    key = (user_id, d_str, d_name)
+                    all_shifts[key] = shift_type
 
         schedule_array = []
         for user in users:
             shifts_list = []
-            for d_str, d_name in zip(dates, day_names):
+            for d_str, d_name, d_obj in zip(dates, day_names, date_objects):
                 # Look up from our cached results
                 key = (user['id'], d_str, d_name)
                 shift = all_shifts.get(key, "Not set")
@@ -398,13 +416,7 @@ def view_all_schedule():
             cursor.execute('SELECT * FROM users ORDER BY name')
             users = cursor.fetchall()
             
-        # Fetch all shifts in one query with date ranges
-        min_date = min(dates)
-        max_date = max(dates)
-        min_week_start = get_week_start(min_date).isoformat()
-        max_week_start = get_week_start(max_date).isoformat()
-        
-        # Initialize user_schedules with default values
+        # Initialize schedules with default values
         user_schedules = {user['name']: {} for user in users}
         for user_name in user_schedules:
             for d in dates:
@@ -413,6 +425,12 @@ def view_all_schedule():
                     user_schedules[user_name][d] = "Day"
                 else:
                     user_schedules[user_name][d] = "Not set"
+        
+        # Fetch all shifts in one query with date ranges
+        min_date = min(dates)
+        max_date = max(dates)
+        min_week_start = get_week_start(min_date).isoformat()
+        max_week_start = get_week_start(max_date).isoformat()
         
         with conn.cursor() as cursor:
             # Get all shifts for all users in the date range in a single query
@@ -427,12 +445,14 @@ def view_all_schedule():
             
         # Process all shifts - override the defaults with actual shift values
         for shift in shifts:
-            # week_start is already a date object, no need to parse it
             week_start = shift['week_start']
+            name = shift['name']
+            day_name = shift['day']
+            
             # Find matching dates for this shift
             for d in dates:
-                if get_week_start(d) == week_start and d.strftime("%A") == shift['day']:
-                    user_schedules[shift['name']][d] = shift['shift_type']
+                if get_week_start(d) == week_start and d.strftime("%A") == day_name:
+                    user_schedules[name][d] = shift['shift_type']
     finally:
         conn.close()
 
