@@ -14,6 +14,19 @@
                 <button class="btn btn-success animated-button" onclick="switchTable('styled')">🎨 Colored Table</button>
             </div>
 
+            <!-- Loading indicator -->
+            <div id="loadingIndicator" class="text-center my-5 d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading schedule data...</p>
+            </div>
+
+            <!-- Error message -->
+            <div id="errorMessage" class="alert alert-danger d-none">
+                Failed to load schedule data. Please refresh the page.
+            </div>
+
             <!-- Standard Table -->
             <div id="defaultTable">
                 {% for month, dates in month_dates.items() %}
@@ -29,33 +42,33 @@
                                     {% endfor %}
                                 </tr>
                             </thead>
-							<tbody>
-							  {% for d in dates %}
-							  <tr class="{% if d == today %}table-primary{% endif %}">
-								  <td class="text-center">{{ d.strftime("%d/%m/%Y") }}</td>
-								  <td class="text-center">{{ d.strftime("%A") }}</td>
-								  {% for user in users %}
-								  <td class="text-center">
-									  {% set shift = user_schedules[user['name']][d] %}
-									  {% if d.strftime("%A") == "Sunday" %}
-										  <!-- Always show sun icon for Sunday -->
-										  <i class="fa-solid fa-sun text-warning"></i>
-									  {% else %}
-										  {% if shift == "Day" %}
-											  <i class="fa-solid fa-sun text-warning"></i>
-										  {% elif shift == "Night" %}
-											  <i class="fa-solid fa-moon text-muted"></i>
-										  {% elif shift == "OOO" %}
-											  <i class="fa-solid fa-ban text-danger"></i>
-										  {% else %}
-											  —
-										  {% endif %}
-									  {% endif %}
-								  </td>
-								  {% endfor %}
-							  </tr>
-							  {% endfor %}
-							</tbody>
+                            <tbody>
+                              {% for d in dates %}
+                              <tr class="{% if d == today %}table-primary{% endif %}">
+                                  <td class="text-center">{{ d.strftime("%d/%m/%Y") }}</td>
+                                  <td class="text-center">{{ d.strftime("%A") }}</td>
+                                  {% for user in users %}
+                                  <td class="text-center">
+                                      {% set shift = user_schedules[user['name']][d] %}
+                                      {% if d.strftime("%A") == "Sunday" %}
+                                          <!-- Always show sun icon for Sunday -->
+                                          <i class="fa-solid fa-sun text-warning"></i>
+                                      {% else %}
+                                          {% if shift == "Day" %}
+                                              <i class="fa-solid fa-sun text-warning"></i>
+                                          {% elif shift == "Night" %}
+                                              <i class="fa-solid fa-moon text-muted"></i>
+                                          {% elif shift == "OOO" %}
+                                              <i class="fa-solid fa-ban text-danger"></i>
+                                          {% else %}
+                                              —
+                                          {% endif %}
+                                      {% endif %}
+                                  </td>
+                                  {% endfor %}
+                              </tr>
+                              {% endfor %}
+                            </tbody>
                         </table>
                     </div>
                 {% endfor %}
@@ -79,12 +92,47 @@
 function switchTable(view) {
     document.getElementById("defaultTable").style.display = (view === 'default') ? "block" : "none";
     document.getElementById("styledTable").style.display = (view === 'styled') ? "block" : "none";
+    
+    // If switching to the styled table and it's empty, fetch data again
+    if (view === 'styled' && document.getElementById("scheduleBody").innerHTML === "") {
+        fetchSchedule();
+    }
+}
+
+// Format date to compare with API
+function formatDateForComparison(date) {
+    // Format like DD/MM/YYYY
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+// Show/hide loading indicator
+function setLoading(isLoading) {
+    document.getElementById("loadingIndicator").classList.toggle("d-none", !isLoading);
+    document.getElementById("styledTable").classList.toggle("d-none", isLoading);
+    document.getElementById("errorMessage").classList.add("d-none");
+}
+
+// Show error message
+function showError(message) {
+    document.getElementById("loadingIndicator").classList.add("d-none");
+    document.getElementById("errorMessage").classList.remove("d-none");
+    document.getElementById("errorMessage").textContent = message || "Failed to load schedule data. Please refresh the page.";
 }
 
 // Fetch schedule data for colored table (one month ahead)
 function fetchSchedule() {
+    setLoading(true);
+    
     fetch("{{ url_for('get_schedule_data') }}")
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         console.log("Received data:", data);
         let headerRow = document.getElementById("scheduleHeader");
@@ -92,17 +140,20 @@ function fetchSchedule() {
         headerRow.innerHTML = "";
         tableBody.innerHTML = "";
 
-        if (!data.dates || !data.schedule) {
-            console.error("Error: Missing dates or schedule in API response", data);
+        if (!data.dates || !data.schedule || data.dates.length === 0) {
+            showError("Error: Invalid data received from server");
+            console.error("Error: Missing or empty dates or schedule in API response", data);
             return;
         }
 
+        // Get today's date formatted the same way as API returns
+        const today = formatDateForComparison(new Date());
+        
         // Build header row with a grey background
         let headerHTML = `<tr class="table-secondary"><th class="table-secondary">Name</th>`;
-        let todayStr = new Date().toLocaleDateString('en-GB');
         data.dates.forEach((date, index) => {
             let cellClass = "";
-            if (date === todayStr) {
+            if (date === today) {
                 cellClass = "table-primary";
             }
             headerHTML += `<th class="${cellClass}">${data.days[index]}<br><span class="date-text">${date}</span></th>`;
@@ -115,40 +166,45 @@ function fetchSchedule() {
             let rowHTML = `<tr><td class="table-secondary fw-bold">${entry.name}</td>`;
             entry.shifts.forEach(shift => {
                 let colorClass = "";
+                let displayShift = shift;
+                
                 if (shift === "Day") {
                     colorClass = "bg-info text-dark fw-bold";
-                    shift = "Day";
                 } else if (shift === "Night") {
                     colorClass = "bg-secondary text-white fw-bold";
-                    shift = "Night";
                 } else if (shift === "OOO") {
                     colorClass = "bg-danger text-white fw-bold";
-                    shift = "OOO";
                 } else if (shift === "Not set") {
                     colorClass = "bg-white text-dark border fw-bold";
                 } else {
                     colorClass = "bg-secondary text-white";
                 }
-                rowHTML += `<td class="${colorClass}">${shift}</td>`;
+                rowHTML += `<td class="${colorClass}">${displayShift}</td>`;
             });
             rowHTML += "</tr>";
             tableBody.innerHTML += rowHTML;
         });
-
+        
+        setLoading(false);
         adjustTableForMobile();
     })
-    .catch(error => console.error("Error fetching schedule:", error));
+    .catch(error => {
+        console.error("Error fetching schedule:", error);
+        showError("Error fetching schedule: " + error.message);
+    });
 }
-
 
 // Mobile adjustments
 function isMobile() {
     return /Mobi|Android/i.test(navigator.userAgent);
 }
+
 function adjustTableForMobile() {
     if (isMobile()) {
         document.body.classList.add("mobile-friendly");
-        document.querySelector(".table-responsive").style.overflowX = "scroll";
+        document.querySelectorAll(".table-responsive").forEach(table => {
+            table.style.overflowX = "scroll";
+        });
         document.querySelectorAll("table").forEach(table => {
             table.style.fontSize = "14px";
         });
@@ -159,14 +215,24 @@ function adjustTableForMobile() {
     }
 }
 
-fetchSchedule();
-setInterval(fetchSchedule, 30000);
-adjustTableForMobile();
+// Initial setup
+document.addEventListener("DOMContentLoaded", function() {
+    adjustTableForMobile();
+    // We'll fetch only when the user switches to the styled table
+    // to avoid unnecessary API calls
+});
 </script>
 
 <style>
 .date-text {
     font-size: 0.8rem;
+}
+#loadingIndicator {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 </style>
 {% endblock %}
