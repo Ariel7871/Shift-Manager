@@ -263,22 +263,21 @@ def export_calendar(user_id):
         for shift in shifts:
             event_date = shift['date']
             event_date_str = event_date.strftime("%m/%d/%Y")
-            next_date_str = (event_date + timedelta(days=1)).strftime("%m/%d/%Y")
             
             if shift['shift_type'] == "Day":
                 subject = "Day Shift"
-                start_time = "07:00 AM"
-                end_time = "07:00 PM"
+                start_time = "08:00 AM"
+                end_time = "04:00 PM"
                 all_day = "False"
                 description = f"Day Shift for {user['name']}"
                 csv_content += f'"{subject}",{event_date_str},{start_time},{event_date_str},{end_time},{all_day},"{description}"\n'
             elif shift['shift_type'] == "Night":
                 subject = "Night Shift"
-                start_time = "07:00 PM"
-                end_time = "07:00 AM"
+                start_time = "04:00 PM"
+                end_time = "12:00 AM"
                 all_day = "False"
                 description = f"Night Shift for {user['name']}"
-                csv_content += f'"{subject}",{event_date_str},{start_time},{next_date_str},{end_time},{all_day},"{description}"\n'
+                csv_content += f'"{subject}",{event_date_str},{start_time},{event_date_str},{end_time},{all_day},"{description}"\n'
             else:  # OOO
                 subject = "Out of Office"
                 all_day = "True"
