@@ -306,6 +306,41 @@ def view_all_schedule():
         dates=dates
     )
 
+# --- Admin routes ---
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == 'admin123':  # Simple password for demonstration
+            session['admin'] = True
+            return redirect(url_for('admin_panel'))
+        else:
+            flash('Invalid password')
+    return render_template('admin_login.html')
+
+@app.route('/admin/panel')
+def admin_panel():
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+    
+    # Get users with pending shifts for next week
+    next_week = get_next_week_start()
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT u.id, u.name, COUNT(s.id) as pending_count
+                FROM users u
+                INNER JOIN shifts s ON u.id = s.user_id
+                WHERE s.week_start = %s AND s.pending = 1
+                GROUP BY u.id, u.name
+            """, (next_week.isoformat(),))
+            pending_users = cursor.fetchall()
+    finally:
+        conn.close()
+    
+    return render_template('admin_panel.html', pending_users=pending_users, next_week=next_week)
+
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
 def approve_changes(user_id):
     if not session.get('admin'):
