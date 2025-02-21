@@ -172,7 +172,7 @@
             }
             
             /* Show bottom navbar on mobile */
-            .mobile-navbar {
+            #primaryMobileNavbar {
                 display: flex;
                 position: fixed;
                 bottom: 0;
@@ -312,8 +312,8 @@
         {% block content %}{% endblock %}
     </main>
     
-    <!-- Mobile Navigation Bar -->
-    <div class="mobile-navbar">
+    <!-- Mobile Navigation Bar - With Unique ID -->
+    <div class="mobile-navbar" id="primaryMobileNavbar">
         <a href="{{ url_for('index') }}" class="mobile-navbar-item {% if request.endpoint == 'index' %}active{% endif %}">
             <i class="fas fa-home"></i>
             <span>Home</span>
@@ -443,6 +443,27 @@
             const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
             exportModal.show();
         }
+        
+        // Function to fix duplicate mobile navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Only run on mobile devices
+            if (window.innerWidth <= 576) {
+                // Check if we have duplicate navigation
+                const allNavbars = document.querySelectorAll('.mobile-navbar');
+                
+                // If we have more than one navbar, keep only the primary one
+                if (allNavbars.length > 1) {
+                    const primaryNavbar = document.getElementById('primaryMobileNavbar');
+                    
+                    // Keep only the primary navbar, remove others
+                    allNavbars.forEach(navbar => {
+                        if (navbar.id !== 'primaryMobileNavbar') {
+                            navbar.remove();
+                        }
+                    });
+                }
+            }
+        });
     </script>
 </body>
 </html>

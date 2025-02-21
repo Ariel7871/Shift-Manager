@@ -279,46 +279,6 @@ function adjustTableForMobile() {
     }
 }
 
-// Mobile Enhancement JavaScript
-function enhanceMobileExperience() {
-    // Only run on mobile devices
-    if (window.innerWidth > 576) return;
-    
-    // Create bottom navbar
-    createMobileNavbar();
-    
-    // Add event listeners for toggle buttons
-    document.getElementById('toggleListView').addEventListener('click', function() {
-        document.body.classList.remove('mobile-calendar-mode');
-        this.classList.add('active');
-        document.getElementById('toggleCalendarView').classList.remove('active');
-    });
-    
-    document.getElementById('toggleCalendarView').addEventListener('click', function() {
-        document.body.classList.add('mobile-calendar-mode');
-        this.classList.add('active');
-        document.getElementById('toggleListView').classList.remove('active');
-    });
-    
-    // Set current date in mobile view
-    const currentDate = new Date();
-    document.querySelector('.current-date').textContent = currentDate.toLocaleDateString('en-US', { 
-        month: 'long', 
-        year: 'numeric' 
-    });
-    
-    // Fetch data for mobile view
-    fetch("{{ url_for('get_schedule_data') }}")
-    .then(response => response.json())
-    .then(data => {
-        updateMobileDayCards(data);
-    });
-    
-    // Add navigation handlers
-    document.querySelector('.prev-day').addEventListener('click', () => navigateDay(-1));
-    document.querySelector('.next-day').addEventListener('click', () => navigateDay(1));
-}
-
 function updateMobileDayCards(data) {
     if (!data || !data.dates || !data.schedule) return;
     
@@ -388,13 +348,48 @@ function navigateDay(direction) {
     }, 2000);
 }
 
-// Initial setup
+// Initial setup - IMPORTANT: Removed the createMobileNavbar call
 document.addEventListener("DOMContentLoaded", function() {
     adjustTableForMobile();
-    enhanceMobileExperience();
     
-    // We'll fetch only when the user switches to the styled table
-    // to avoid unnecessary API calls
+    // Set up mobile view functionality without creating duplicate navigation
+    if (window.innerWidth <= 576) {
+        // Add event listeners for toggle buttons
+        document.getElementById('toggleListView')?.addEventListener('click', function() {
+            document.body.classList.remove('mobile-calendar-mode');
+            this.classList.add('active');
+            document.getElementById('toggleCalendarView').classList.remove('active');
+        });
+        
+        document.getElementById('toggleCalendarView')?.addEventListener('click', function() {
+            document.body.classList.add('mobile-calendar-mode');
+            this.classList.add('active');
+            document.getElementById('toggleListView').classList.remove('active');
+        });
+        
+        // Set current date in mobile view
+        const currentDateElement = document.querySelector('.current-date');
+        if (currentDateElement) {
+            const currentDate = new Date();
+            currentDateElement.textContent = currentDate.toLocaleDateString('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+        }
+        
+        // Add navigation handlers
+        document.querySelector('.prev-day')?.addEventListener('click', () => navigateDay(-1));
+        document.querySelector('.next-day')?.addEventListener('click', () => navigateDay(1));
+        
+        // Fetch data for mobile view if needed
+        if (document.getElementById('dayCardsContainer').children.length === 0) {
+            fetch("{{ url_for('get_schedule_data') }}")
+            .then(response => response.json())
+            .then(data => {
+                updateMobileDayCards(data);
+            });
+        }
+    }
 });
 </script>
 
