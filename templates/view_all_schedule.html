@@ -8,10 +8,41 @@
             </h4>
         </div>
         <div class="card-body">
+            <!-- Export Button -->
+            <div class="d-flex justify-content-end mb-3">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exportCalendarModal">
+                    <i class="fas fa-calendar-alt me-2"></i> Export Calendar
+                </button>
+            </div>
+            
             <!-- Toggle Buttons -->
             <div class="text-center mb-3">
                 <button class="btn btn-primary animated-button" onclick="switchTable('default')">📋 Standard Table</button>
                 <button class="btn btn-success animated-button" onclick="switchTable('styled')">🎨 Colored Table</button>
+            </div>
+
+            <!-- Mobile Calendar View -->
+            <div class="mobile-calendar-view">
+                <div class="btn-group w-100 mb-3">
+                    <button class="btn btn-outline-primary active" id="toggleListView">
+                        <i class="fas fa-list-ul me-2"></i>List View
+                    </button>
+                    <button class="btn btn-outline-primary" id="toggleCalendarView">
+                        <i class="fas fa-calendar-alt me-2"></i>Calendar View
+                    </button>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button class="btn btn-sm btn-outline-secondary prev-day">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h5 class="mb-0 current-date"></h5>
+                    <button class="btn btn-sm btn-outline-secondary next-day">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div class="day-cards-container" id="dayCardsContainer"></div>
             </div>
 
             <!-- Loading indicator -->
@@ -28,7 +59,7 @@
             </div>
 
             <!-- Standard Table -->
-            <div id="defaultTable">
+            <div id="defaultTable" class="standard-table-view">
                 {% for month, dates in month_dates.items() %}
                     <h5 class="text-center text-primary fw-bold">{{ month }}</h5>
                     <div class="table-responsive mb-4">
@@ -38,7 +69,7 @@
                                     <th class="text-center text-primary fw-bold">Date</th>
                                     <th class="text-center text-primary fw-bold">Day</th>
                                     {% for user in users %}
-                                        <th class="text-center text-secondary fw-bold">{{ user['name'] }}</th>
+                                        <th class="text-center text-secondary fw-bold" data-user-id="{{ user.id }}">{{ user['name'] }}</th>
                                     {% endfor %}
                                 </tr>
                             </thead>
@@ -82,6 +113,35 @@
                         <tbody id="scheduleBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Calendar Modal -->
+<div class="modal fade" id="exportCalendarModal" tabindex="-1" aria-labelledby="exportCalendarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportCalendarModalLabel">Export Calendar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select a user to export their schedule to Google Calendar:</p>
+                
+                <div class="list-group">
+                    {% for user in users %}
+                    <a href="{{ url_for('export_calendar', user_id=user.id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        {{ user.name }}
+                        <span class="badge bg-primary rounded-pill">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -186,6 +246,10 @@ function fetchSchedule() {
         });
         
         setLoading(false);
+        
+        // Also update the mobile day cards
+        updateMobileDayCards(data);
+        
         adjustTableForMobile();
     })
     .catch(error => {
@@ -215,9 +279,120 @@ function adjustTableForMobile() {
     }
 }
 
+// Mobile Enhancement JavaScript
+function enhanceMobileExperience() {
+    // Only run on mobile devices
+    if (window.innerWidth > 576) return;
+    
+    // Create bottom navbar
+    createMobileNavbar();
+    
+    // Add event listeners for toggle buttons
+    document.getElementById('toggleListView').addEventListener('click', function() {
+        document.body.classList.remove('mobile-calendar-mode');
+        this.classList.add('active');
+        document.getElementById('toggleCalendarView').classList.remove('active');
+    });
+    
+    document.getElementById('toggleCalendarView').addEventListener('click', function() {
+        document.body.classList.add('mobile-calendar-mode');
+        this.classList.add('active');
+        document.getElementById('toggleListView').classList.remove('active');
+    });
+    
+    // Set current date in mobile view
+    const currentDate = new Date();
+    document.querySelector('.current-date').textContent = currentDate.toLocaleDateString('en-US', { 
+        month: 'long', 
+        year: 'numeric' 
+    });
+    
+    // Fetch data for mobile view
+    fetch("{{ url_for('get_schedule_data') }}")
+    .then(response => response.json())
+    .then(data => {
+        updateMobileDayCards(data);
+    });
+    
+    // Add navigation handlers
+    document.querySelector('.prev-day').addEventListener('click', () => navigateDay(-1));
+    document.querySelector('.next-day').addEventListener('click', () => navigateDay(1));
+}
+
+function updateMobileDayCards(data) {
+    if (!data || !data.dates || !data.schedule) return;
+    
+    const dayCardsContainer = document.getElementById('dayCardsContainer');
+    if (!dayCardsContainer) return;
+    
+    dayCardsContainer.innerHTML = '';
+    
+    // Group the data by date
+    for (let i = 0; i < data.dates.length; i++) {
+        const date = data.dates[i];
+        const day = data.days[i];
+        
+        // Create a card for this day
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        
+        // Header with date and day
+        const header = document.createElement('div');
+        header.className = 'day-card-header';
+        header.innerHTML = `
+            <div class="day-card-date">${date}</div>
+            <div class="day-card-day">${day}</div>
+        `;
+        
+        // Shifts section
+        const shiftsDiv = document.createElement('div');
+        shiftsDiv.className = 'day-card-shifts';
+        
+        // Add each user's shift for this day
+        data.schedule.forEach((user, userIndex) => {
+            const shift = user.shifts[i];
+            
+            const shiftDiv = document.createElement('div');
+            shiftDiv.className = 'day-card-shift';
+            
+            shiftDiv.innerHTML = `
+                <div class="day-card-shift-name">${user.name}</div>
+                <div class="day-card-shift-type ${shift}">${shift}</div>
+            `;
+            
+            shiftsDiv.appendChild(shiftDiv);
+        });
+        
+        card.appendChild(header);
+        card.appendChild(shiftsDiv);
+        dayCardsContainer.appendChild(card);
+    }
+}
+
+function navigateDay(direction) {
+    // This would normally change the displayed day in the mobile view
+    console.log(`Navigating ${direction > 0 ? 'forward' : 'backward'} in mobile calendar view`);
+    
+    // For now just show a message
+    const message = document.createElement('div');
+    message.className = 'alert alert-info';
+    message.textContent = 'Calendar navigation will be implemented soon!';
+    message.style.marginBottom = '1rem';
+    
+    const container = document.getElementById('dayCardsContainer');
+    container.prepend(message);
+    
+    // Remove the message after 2 seconds
+    setTimeout(() => {
+        message.remove();
+    }, 2000);
+}
+
 // Initial setup
 document.addEventListener("DOMContentLoaded", function() {
     adjustTableForMobile();
+    enhanceMobileExperience();
+    
     // We'll fetch only when the user switches to the styled table
     // to avoid unnecessary API calls
 });

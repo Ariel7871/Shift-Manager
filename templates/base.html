@@ -9,6 +9,277 @@
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/cosmo/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Dark mode CSS -->
+    <style>
+        :root {
+            --bs-body-color: #212529;
+            --bs-body-bg: #fff;
+            --card-bg: #fff;
+            --card-border: rgba(0,0,0,.125);
+            --text-muted: #6c757d;
+            --border-color: rgba(0,0,0,.125);
+        }
+        
+        [data-bs-theme="dark"] {
+            --bs-body-color: #e3e3e3;
+            --bs-body-bg: #222;
+            --card-bg: #2d2d2d;
+            --card-border: rgba(255,255,255,.125);
+            --text-muted: #adb5bd;
+            --border-color: rgba(255,255,255,.125);
+            
+            color-scheme: dark;
+        }
+        
+        body {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--card-border);
+        }
+        
+        .border {
+            border-color: var(--border-color) !important;
+        }
+        
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+        
+        /* Table adjustments for dark mode */
+        [data-bs-theme="dark"] .table {
+            --bs-table-color: var(--bs-body-color);
+            --bs-table-bg: var(--card-bg);
+            --bs-table-border-color: var(--border-color);
+        }
+        
+        [data-bs-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+            --bs-table-accent-bg: rgba(255, 255, 255, 0.05);
+        }
+        
+        [data-bs-theme="dark"] .table-hover > tbody > tr:hover > * {
+            --bs-table-accent-bg: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Colored table specific dark mode adjustments */
+        [data-bs-theme="dark"] #styledTable .bg-white {
+            background-color: var(--card-bg) !important;
+        }
+        
+        /* Dark mode toggle button styles */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        [data-bs-theme="dark"] .theme-toggle .fa-moon {
+            display: none;
+        }
+        
+        [data-bs-theme="dark"] .theme-toggle .fa-sun {
+            display: inline-block;
+        }
+        
+        .theme-toggle .fa-sun {
+            display: none;
+        }
+        
+        .theme-toggle .fa-moon {
+            display: inline-block;
+        }
+        
+        /* Dark mode nav styles */
+        [data-bs-theme="dark"] .main-nav {
+            background: #1a1a1a;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        /* Mobile Experience Improvements */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+                max-width: 100%;
+            }
+            
+            .card {
+                border-radius: 0.5rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 1rem;
+            }
+            
+            h4 {
+                font-size: 1.35rem;
+            }
+            
+            /* Improved table layout for mobile */
+            .table-responsive {
+                margin-bottom: 1rem;
+                border-radius: 0.5rem;
+                overflow: hidden;
+            }
+            
+            /* Calendar view for mobile */
+            .mobile-calendar-view {
+                display: none;
+            }
+            
+            /* Bottom navbar for mobile */
+            .mobile-navbar {
+                display: none;
+            }
+            
+            /* Make the theme toggle bigger on mobile */
+            .theme-toggle {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
+            }
+        }
+
+        /* CSS for mobile-specific views */
+        @media (max-width: 576px) {
+            /* Show mobile calendar view on small screens */
+            .mobile-calendar-view {
+                display: block;
+                margin-bottom: 2rem;
+            }
+            
+            /* Hide standard table on extremely small screens when in calendar mode */
+            .mobile-calendar-mode .standard-table-view {
+                display: none;
+            }
+            
+            /* Show bottom navbar on mobile */
+            .mobile-navbar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: var(--card-bg);
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+                z-index: 999;
+            }
+            
+            .mobile-navbar-item {
+                flex: 1;
+                text-align: center;
+                padding: 0.8rem 0.5rem;
+                color: var(--bs-body-color);
+                text-decoration: none;
+                font-size: 0.8rem;
+                transition: background-color 0.2s;
+            }
+            
+            .mobile-navbar-item.active {
+                background-color: rgba(var(--bs-primary-rgb), 0.1);
+                color: var(--bs-primary);
+            }
+            
+            .mobile-navbar-item i {
+                display: block;
+                font-size: 1.2rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            /* Add padding to body to prevent content from being hidden behind navbar */
+            body {
+                padding-bottom: 70px;
+            }
+            
+            /* Adjust theme toggle position to avoid navbar */
+            .theme-toggle {
+                bottom: 80px;
+            }
+            
+            /* Mobile day card view */
+            .day-card {
+                border: 1px solid var(--border-color);
+                border-radius: 0.5rem;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                background-color: var(--card-bg);
+            }
+            
+            .day-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.5rem;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 0.5rem;
+            }
+            
+            .day-card-date {
+                font-weight: bold;
+                font-size: 1.1rem;
+            }
+            
+            .day-card-day {
+                color: var(--text-muted);
+            }
+            
+            .day-card-shifts {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .day-card-shift {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem;
+                border-radius: 0.25rem;
+                background-color: rgba(0,0,0,0.05);
+            }
+            
+            [data-bs-theme="dark"] .day-card-shift {
+                background-color: rgba(255,255,255,0.05);
+            }
+            
+            .day-card-shift-name {
+                font-weight: bold;
+            }
+            
+            .day-card-shift-type {
+                font-weight: bold;
+            }
+            
+            .day-card-shift-type.Day {
+                color: #ffc107;
+            }
+            
+            .day-card-shift-type.Night {
+                color: #6c757d;
+            }
+            
+            .day-card-shift-type.OOO {
+                color: #dc3545;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Main Navigation -->
@@ -40,9 +311,138 @@
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
+    
+    <!-- Mobile Navigation Bar -->
+    <div class="mobile-navbar">
+        <a href="{{ url_for('index') }}" class="mobile-navbar-item {% if request.endpoint == 'index' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{{ url_for('choose_schedule') }}" class="mobile-navbar-item {% if request.endpoint == 'choose_schedule' %}active{% endif %}">
+            <i class="fas fa-calendar-plus"></i>
+            <span>Schedule</span>
+        </a>
+        <a href="{{ url_for('view_all_schedule') }}" class="mobile-navbar-item {% if request.endpoint == 'view_all_schedule' %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            <span>Team</span>
+        </a>
+        <a href="#" class="mobile-navbar-item" id="mobileExportBtn">
+            <i class="fas fa-download"></i>
+            <span>Export</span>
+        </a>
+    </div>
+    
+    <!-- Dark Mode Toggle Button -->
+    <button class="theme-toggle btn btn-primary rounded-circle">
+        <i class="fas fa-sun"></i>
+        <i class="fas fa-moon"></i>
+    </button>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    
+    <!-- Theme Toggle JavaScript -->
+    <script>
+        // Function to set theme
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        
+        // Function to toggle theme
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+        
+        // Initialize theme from localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                // Use system preference as default if no saved preference
+                setTheme('dark');
+            }
+            
+            // Add click handler to theme toggle button
+            document.querySelector('.theme-toggle').addEventListener('click', toggleTheme);
+            
+            // Mobile Export Button Handler
+            const mobileExportBtn = document.getElementById('mobileExportBtn');
+            if (mobileExportBtn) {
+                mobileExportBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Check if we're on a user-specific page
+                    const urlPath = window.location.pathname;
+                    const userIdMatch = urlPath.match(/\/view_schedule\/(\d+)/);
+                    
+                    if (userIdMatch && userIdMatch[1]) {
+                        // If we're on a user-specific page, export that user's calendar
+                        window.location.href = `/export_calendar/${userIdMatch[1]}`;
+                    } else {
+                        // Show a dialog to select a user
+                        showExportDialog();
+                    }
+                });
+            }
+        });
+        
+        // Show Export Dialog Function
+        function showExportDialog() {
+            // Create a modal for user selection if it doesn't exist
+            if (!document.getElementById('exportModal')) {
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'exportModal';
+                modal.setAttribute('tabindex', '-1');
+                modal.setAttribute('aria-hidden', 'true');
+                
+                modal.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Export Calendar</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Select a user to export their schedule to Google Calendar:</p>
+                                <div class="list-group" id="userSelectList"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Fetch users and populate the list
+                fetch('/get_users')
+                    .then(response => response.json())
+                    .then(users => {
+                        const userSelectList = document.getElementById('userSelectList');
+                        users.forEach(user => {
+                            userSelectList.innerHTML += `
+                                <a href="/export_calendar/${user.id}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    ${user.name}
+                                    <span class="badge bg-primary rounded-pill">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </span>
+                                </a>
+                            `;
+                        });
+                    });
+            }
+            
+            // Show the modal
+            const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+            exportModal.show();
+        }
+    </script>
 </body>
 </html>
