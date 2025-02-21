@@ -16,10 +16,10 @@
             </div>
             
             <!-- Toggle Buttons -->
-            <div class="text-center mb-3">
-                <button id="standardTableBtn" class="btn btn-primary animated-button">📋 Standard Table</button>
-                <button id="coloredTableBtn" class="btn btn-success animated-button">🎨 Colored Table</button>
-            </div>
+			<div class="text-center mb-3">
+				<button class="btn btn-primary animated-button" id="standardTableBtn" onclick="location.reload();">📋 Standard Table</button>
+				<button class="btn btn-success animated-button" id="coloredTableBtn" onclick="switchToColored();">🎨 Colored Table</button>
+			</div>
 
             <!-- Mobile Calendar View -->
             <div class="mobile-calendar-view">
@@ -491,6 +491,31 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 });
+</script>
+
+<script>
+// Simple function to switch to colored table
+function switchToColored() {
+    // Hide default table
+    const defaultTable = document.getElementById('defaultTable');
+    if (defaultTable) {
+        defaultTable.style.display = 'none';
+    }
+    
+    // Show styled table
+    const styledTable = document.getElementById('styledTable');
+    if (styledTable) {
+        styledTable.style.display = 'block';
+        
+        // Fetch data if table is empty
+        const scheduleBody = document.getElementById('scheduleBody');
+        if (scheduleBody && scheduleBody.innerHTML === '') {
+            fetchSchedule();
+        }
+    }
+}
+
+// The rest of your existing JavaScript functions remain the same...
 </script>
 
 <style>
