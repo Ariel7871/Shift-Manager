@@ -391,25 +391,51 @@ def view_all_schedule():
         month_name = d.strftime("%B %Y")
         month_dates[month_name].append(d)
     
-    # Build user schedules: for each user, map each date to its shift (or "Not set")
+    # Build user schedules more efficiently
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            cursor.execute('SELECT * FROM users')
+            cursor.execute('SELECT * FROM users ORDER BY name')
             users = cursor.fetchall()
-        user_schedules = { user['name']: {} for user in users }
-        for d in dates:
-            week_start = get_week_start(d)
-            day_name = d.strftime("%A")
-            with conn.cursor() as cursor:
-                for user in users:
-                    cursor.execute(
-                        "SELECT shift_type FROM shifts WHERE user_id = %s AND week_start = %s AND day = %s",
-                        (user['id'], week_start.isoformat(), day_name)
-                    )
-                    row = cursor.fetchone()
-                    shift = row["shift_type"] if row else "Not set"
-                    user_schedules[user['name']][d] = shift
+            
+        # Fetch all shifts in one query with date ranges
+        all_shifts = {}
+        min_date = min(dates)
+        max_date = max(dates)
+        min_week_start = get_week_start(min_date).isoformat()
+        max_week_start = get_week_start(max_date).isoformat()
+        
+        with conn.cursor() as cursor:
+            # Get all shifts for all users in the date range in a single query
+            cursor.execute("""
+                SELECT s.user_id, s.week_start, s.day, s.shift_type, u.name 
+                FROM shifts s 
+                JOIN users u ON s.user_id = u.id
+                WHERE s.week_start BETWEEN %s AND %s
+            """, (min_week_start, max_week_start))
+            
+            shifts = cursor.fetchall()
+            
+        # Build a lookup dictionary for fast access
+        user_schedules = {user['name']: {} for user in users}
+        
+        # Process all shifts
+        for shift in shifts:
+            week_start = datetime.strptime(shift['week_start'], '%Y-%m-%d').date()
+            # Find matching dates for this shift
+            for d in dates:
+                if get_week_start(d) == week_start and d.strftime("%A") == shift['day']:
+                    user_schedules[shift['name']][d] = shift['shift_type']
+        
+        # Fill in gaps with "Not set"
+        for user_name in user_schedules:
+            for d in dates:
+                if d not in user_schedules[user_name]:
+                    # Special case for Sunday
+                    if d.strftime("%A") == "Sunday":
+                        user_schedules[user_name][d] = "Day"
+                    else:
+                        user_schedules[user_name][d] = "Not set"
     finally:
         conn.close()
 
