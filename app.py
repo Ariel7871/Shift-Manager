@@ -399,11 +399,20 @@ def view_all_schedule():
             users = cursor.fetchall()
             
         # Fetch all shifts in one query with date ranges
-        all_shifts = {}
         min_date = min(dates)
         max_date = max(dates)
         min_week_start = get_week_start(min_date).isoformat()
         max_week_start = get_week_start(max_date).isoformat()
+        
+        # Initialize user_schedules with default values
+        user_schedules = {user['name']: {} for user in users}
+        for user_name in user_schedules:
+            for d in dates:
+                # Default to 'Day' for Sundays, 'Not set' for others
+                if d.strftime("%A") == "Sunday":
+                    user_schedules[user_name][d] = "Day"
+                else:
+                    user_schedules[user_name][d] = "Not set"
         
         with conn.cursor() as cursor:
             # Get all shifts for all users in the date range in a single query
@@ -416,26 +425,14 @@ def view_all_schedule():
             
             shifts = cursor.fetchall()
             
-        # Build a lookup dictionary for fast access
-        user_schedules = {user['name']: {} for user in users}
-        
-        # Process all shifts
+        # Process all shifts - override the defaults with actual shift values
         for shift in shifts:
-            week_start = datetime.strptime(shift['week_start'], '%Y-%m-%d').date()
+            # week_start is already a date object, no need to parse it
+            week_start = shift['week_start']
             # Find matching dates for this shift
             for d in dates:
                 if get_week_start(d) == week_start and d.strftime("%A") == shift['day']:
                     user_schedules[shift['name']][d] = shift['shift_type']
-        
-        # Fill in gaps with "Not set"
-        for user_name in user_schedules:
-            for d in dates:
-                if d not in user_schedules[user_name]:
-                    # Special case for Sunday
-                    if d.strftime("%A") == "Sunday":
-                        user_schedules[user_name][d] = "Day"
-                    else:
-                        user_schedules[user_name][d] = "Not set"
     finally:
         conn.close()
 
