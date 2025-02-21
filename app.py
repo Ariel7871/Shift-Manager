@@ -232,26 +232,35 @@ def get_schedule_data():
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM users")
+            cursor.execute("SELECT * FROM users ORDER BY name")
             users = cursor.fetchall()
+
+        # Get all shifts at once to reduce database connections
+        all_shifts = {}
+        with conn.cursor() as cursor:
+            for d_str, d_name in zip(dates, day_names):
+                d_obj = datetime.strptime(d_str, "%d/%m/%Y").date()
+                week_start = get_week_start(d_obj)
+                # Get all users' shifts for this date in a single query
+                cursor.execute(
+                    "SELECT user_id, shift_type FROM shifts WHERE week_start = %s AND day = %s",
+                    (week_start.isoformat(), d_name)
+                )
+                results = cursor.fetchall()
+                for result in results:
+                    key = (result['user_id'], d_str, d_name)
+                    all_shifts[key] = result['shift_type']
 
         schedule_array = []
         for user in users:
             shifts_list = []
             for d_str, d_name in zip(dates, day_names):
-                d_obj = datetime.strptime(d_str, "%d/%m/%Y").date()
-                week_start = get_week_start(d_obj)
-                conn2 = get_db_connection()
-                try:
-                    with conn2.cursor() as cursor:
-                        cursor.execute(
-                            "SELECT shift_type FROM shifts WHERE user_id = %s AND week_start = %s AND day = %s",
-                            (user["id"], week_start.isoformat(), d_name)
-                        )
-                        row = cursor.fetchone()
-                        shift = row["shift_type"] if row else "Not set"
-                finally:
-                    conn2.close()
+                # Look up from our cached results
+                key = (user['id'], d_str, d_name)
+                shift = all_shifts.get(key, "Not set")
+                # Special case for Sunday - always Day
+                if d_name == "Sunday" and shift == "Not set":
+                    shift = "Day"
                 shifts_list.append(shift)
             schedule_array.append({"name": user["name"], "shifts": shifts_list})
     finally:
