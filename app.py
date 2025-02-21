@@ -2,10 +2,7 @@ import pymysql
 from datetime import date, timedelta, datetime
 import calendar
 import holidays
-import uuid
-import pytz
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, Response
-from icalendar import Calendar, Event
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -217,10 +214,10 @@ def view_schedule(user_id):
         conn.close()
     return render_template('view_schedule.html', user=user)
 
-# --- Export calendar as iCal file for Google Calendar ---
+# --- Export calendar as CSV file for Google Calendar ---
 @app.route('/export_calendar/<int:user_id>')
 def export_calendar(user_id):
-    """Generate iCal file for Google Calendar export based on user's schedule"""
+    """Generate CSV file for Google Calendar export based on user's schedule"""
     # Get user info
     conn = get_db_connection()
     try:
@@ -230,13 +227,6 @@ def export_calendar(user_id):
         if not user:
             return "User not found", 404
             
-        # Create calendar
-        cal = Calendar()
-        cal.add('prodid', f'-//Shift Scheduler//EN')
-        cal.add('version', '2.0')
-        cal.add('name', f"{user['name']}'s Work Schedule")
-        cal.add('x-wr-calname', f"{user['name']}'s Work Schedule")
-        
         # Set date range (next 3 months)
         start_date = date.today()
         end_date = start_date + timedelta(days=90)
@@ -267,51 +257,39 @@ def export_calendar(user_id):
                         })
             current += timedelta(days=1)
         
-        # Convert to timezone aware (use your local timezone)
-        tz = pytz.timezone('Asia/Jerusalem')  # Change to your timezone
+        # Generate CSV
+        csv_content = "Subject,Start Date,Start Time,End Date,End Time,All Day,Description\n"
         
-        # Add each shift as an event
         for shift in shifts:
-            event = Event()
-            event.add('summary', f"{shift['shift_type']} Shift")
-            
-            # Set event times based on shift type
             event_date = shift['date']
+            event_date_str = event_date.strftime("%m/%d/%Y")
+            next_date_str = (event_date + timedelta(days=1)).strftime("%m/%d/%Y")
+            
             if shift['shift_type'] == "Day":
-                start_time = tz.localize(datetime.combine(event_date, datetime.min.time().replace(hour=7, minute=0)))
-                end_time = tz.localize(datetime.combine(event_date, datetime.min.time().replace(hour=19, minute=0)))
-                event.add('description', 'Day Shift (7:00 - 19:00)')
-                event.add('color', '#FFEB3B')  # Yellow for day shifts
+                subject = "Day Shift"
+                start_time = "07:00 AM"
+                end_time = "07:00 PM"
+                all_day = "False"
+                description = f"Day Shift for {user['name']}"
+                csv_content += f'"{subject}",{event_date_str},{start_time},{event_date_str},{end_time},{all_day},"{description}"\n'
             elif shift['shift_type'] == "Night":
-                start_time = tz.localize(datetime.combine(event_date, datetime.min.time().replace(hour=19, minute=0)))
-                end_time = tz.localize(datetime.combine(event_date + timedelta(days=1), datetime.min.time().replace(hour=7, minute=0)))
-                event.add('description', 'Night Shift (19:00 - 7:00)')
-                event.add('color', '#3F51B5')  # Blue for night shifts
+                subject = "Night Shift"
+                start_time = "07:00 PM"
+                end_time = "07:00 AM"
+                all_day = "False"
+                description = f"Night Shift for {user['name']}"
+                csv_content += f'"{subject}",{event_date_str},{start_time},{next_date_str},{end_time},{all_day},"{description}"\n'
             else:  # OOO
-                start_time = tz.localize(datetime.combine(event_date, datetime.min.time()))
-                end_time = tz.localize(datetime.combine(event_date + timedelta(days=1), datetime.min.time()))
-                event.add('description', 'Out of Office')
-                event.add('color', '#F44336')  # Red for OOO
-            
-            event.add('dtstart', start_time)
-            event.add('dtend', end_time)
-            event.add('dtstamp', datetime.now(tz=tz))
-            event.add('uid', str(uuid.uuid4()))
-            
-            if shift['shift_type'] == "OOO":
-                event.add('transp', 'TRANSPARENT')  # Shows as free time in calendar
-                event.add('status', 'CONFIRMED')
-            else:
-                event.add('transp', 'OPAQUE')  # Shows as busy time in calendar
-                event.add('status', 'CONFIRMED')
-            
-            cal.add_component(event)
+                subject = "Out of Office"
+                all_day = "True"
+                description = f"{user['name']} is out of office"
+                csv_content += f'"{subject}",{event_date_str},,{event_date_str},,{all_day},"{description}"\n'
     finally:
         conn.close()
     
-    # Return as downloadable iCal file
-    response = Response(cal.to_ical(), mimetype='text/calendar')
-    response.headers['Content-Disposition'] = f'attachment; filename="{user["name"]}_schedule.ics"'
+    # Return as downloadable CSV file
+    response = Response(csv_content, mimetype='text/csv')
+    response.headers['Content-Disposition'] = f'attachment; filename="{user["name"]}_schedule.csv"'
     return response
 
 # --- get_schedule_data: returns scheduling data for one month ahead ---
