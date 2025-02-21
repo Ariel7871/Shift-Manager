@@ -17,8 +17,8 @@
             
             <!-- Toggle Buttons -->
             <div class="text-center mb-3">
-                <button class="btn btn-primary animated-button" onclick="switchTable('default')">📋 Standard Table</button>
-                <button class="btn btn-success animated-button" onclick="switchTable('styled')">🎨 Colored Table</button>
+                <button id="standardTableBtn" class="btn btn-primary animated-button">📋 Standard Table</button>
+                <button id="coloredTableBtn" class="btn btn-success animated-button">🎨 Colored Table</button>
             </div>
 
             <!-- Mobile Calendar View -->
@@ -148,14 +148,47 @@
 </div>
 
 <script>
-// Toggle between standard and colored tables
-function switchTable(view) {
-    document.getElementById("defaultTable").style.display = (view === 'default') ? "block" : "none";
-    document.getElementById("styledTable").style.display = (view === 'styled') ? "block" : "none";
+// Toggle between standard and colored tables - Using direct event handlers instead of onclick attributes
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the button elements
+    const standardTableBtn = document.getElementById('standardTableBtn');
+    const coloredTableBtn = document.getElementById('coloredTableBtn');
     
-    // If switching to the styled table and it's empty, fetch data again
-    if (view === 'styled' && document.getElementById("scheduleBody").innerHTML === "") {
-        fetchSchedule();
+    // Add event listeners
+    if (standardTableBtn) {
+        standardTableBtn.addEventListener('click', function() {
+            switchTable('default');
+            console.log("Switched to default table");
+        });
+    }
+    
+    if (coloredTableBtn) {
+        coloredTableBtn.addEventListener('click', function() {
+            switchTable('styled');
+            console.log("Switched to styled table");
+        });
+    }
+});
+
+// Define the switchTable function
+function switchTable(view) {
+    console.log(`Switching to ${view} table`);
+    const defaultTable = document.getElementById("defaultTable");
+    const styledTable = document.getElementById("styledTable");
+    
+    if (defaultTable && styledTable) {
+        defaultTable.style.display = (view === 'default') ? "block" : "none";
+        styledTable.style.display = (view === 'styled') ? "block" : "none";
+        
+        // If switching to the styled table and it's empty, fetch data again
+        if (view === 'styled') {
+            const scheduleBody = document.getElementById("scheduleBody");
+            if (scheduleBody && scheduleBody.innerHTML === "") {
+                fetchSchedule();
+            }
+        }
+    } else {
+        console.error("Could not find table elements");
     }
 }
 
@@ -170,21 +203,33 @@ function formatDateForComparison(date) {
 
 // Show/hide loading indicator
 function setLoading(isLoading) {
-    document.getElementById("loadingIndicator").classList.toggle("d-none", !isLoading);
-    document.getElementById("styledTable").classList.toggle("d-none", isLoading);
-    document.getElementById("errorMessage").classList.add("d-none");
+    const loadingIndicator = document.getElementById("loadingIndicator");
+    const styledTable = document.getElementById("styledTable");
+    const errorMessage = document.getElementById("errorMessage");
+    
+    if (loadingIndicator && styledTable && errorMessage) {
+        loadingIndicator.classList.toggle("d-none", !isLoading);
+        styledTable.classList.toggle("d-none", isLoading);
+        errorMessage.classList.add("d-none");
+    }
 }
 
 // Show error message
 function showError(message) {
-    document.getElementById("loadingIndicator").classList.add("d-none");
-    document.getElementById("errorMessage").classList.remove("d-none");
-    document.getElementById("errorMessage").textContent = message || "Failed to load schedule data. Please refresh the page.";
+    const loadingIndicator = document.getElementById("loadingIndicator");
+    const errorMessage = document.getElementById("errorMessage");
+    
+    if (loadingIndicator && errorMessage) {
+        loadingIndicator.classList.add("d-none");
+        errorMessage.classList.remove("d-none");
+        errorMessage.textContent = message || "Failed to load schedule data. Please refresh the page.";
+    }
 }
 
 // Fetch schedule data for colored table (one month ahead)
 function fetchSchedule() {
     setLoading(true);
+    console.log("Fetching schedule data...");
     
     fetch("{{ url_for('get_schedule_data') }}")
     .then(response => {
@@ -195,8 +240,15 @@ function fetchSchedule() {
     })
     .then(data => {
         console.log("Received data:", data);
-        let headerRow = document.getElementById("scheduleHeader");
-        let tableBody = document.getElementById("scheduleBody");
+        const headerRow = document.getElementById("scheduleHeader");
+        const tableBody = document.getElementById("scheduleBody");
+        
+        if (!headerRow || !tableBody) {
+            console.error("Could not find table header or body elements");
+            showError("Error: Table elements not found");
+            return;
+        }
+        
         headerRow.innerHTML = "";
         tableBody.innerHTML = "";
 
@@ -208,6 +260,7 @@ function fetchSchedule() {
 
         // Get today's date formatted the same way as API returns
         const today = formatDateForComparison(new Date());
+        console.log("Today's date for comparison:", today);
         
         // Build header row with a grey background
         let headerHTML = `<tr class="table-secondary"><th class="table-secondary">Name</th>`;
@@ -223,6 +276,11 @@ function fetchSchedule() {
 
         // Build rows for each user; the name cell also has a grey background
         data.schedule.forEach(entry => {
+            if (!entry.name || !Array.isArray(entry.shifts)) {
+                console.error("Invalid entry format:", entry);
+                return;
+            }
+            
             let rowHTML = `<tr><td class="table-secondary fw-bold">${entry.name}</td>`;
             entry.shifts.forEach(shift => {
                 let colorClass = "";
@@ -310,6 +368,11 @@ function updateMobileDayCards(data) {
         
         // Add each user's shift for this day
         data.schedule.forEach((user, userIndex) => {
+            if (!user.shifts || !Array.isArray(user.shifts) || i >= user.shifts.length) {
+                console.error("Invalid shifts data for user", user);
+                return;
+            }
+            
             const shift = user.shifts[i];
             
             const shiftDiv = document.createElement('div');
@@ -340,32 +403,57 @@ function navigateDay(direction) {
     message.style.marginBottom = '1rem';
     
     const container = document.getElementById('dayCardsContainer');
-    container.prepend(message);
-    
-    // Remove the message after 2 seconds
-    setTimeout(() => {
-        message.remove();
-    }, 2000);
+    if (container) {
+        container.prepend(message);
+        
+        // Remove the message after 2 seconds
+        setTimeout(() => {
+            message.remove();
+        }, 2000);
+    }
 }
 
 // Initial setup - IMPORTANT: Removed the createMobileNavbar call
 document.addEventListener("DOMContentLoaded", function() {
+    console.log("DOM content loaded");
     adjustTableForMobile();
+    
+    // Ensure default view is shown 
+    const defaultTable = document.getElementById("defaultTable");
+    const styledTable = document.getElementById("styledTable");
+    
+    if (defaultTable && styledTable) {
+        defaultTable.style.display = "block";
+        styledTable.style.display = "none";
+    }
     
     // Set up mobile view functionality without creating duplicate navigation
     if (window.innerWidth <= 576) {
         // Add event listeners for toggle buttons
-        document.getElementById('toggleListView')?.addEventListener('click', function() {
-            document.body.classList.remove('mobile-calendar-mode');
-            this.classList.add('active');
-            document.getElementById('toggleCalendarView').classList.remove('active');
-        });
+        const toggleListViewBtn = document.getElementById('toggleListView');
+        const toggleCalendarViewBtn = document.getElementById('toggleCalendarView');
         
-        document.getElementById('toggleCalendarView')?.addEventListener('click', function() {
-            document.body.classList.add('mobile-calendar-mode');
-            this.classList.add('active');
-            document.getElementById('toggleListView').classList.remove('active');
-        });
+        if (toggleListViewBtn) {
+            toggleListViewBtn.addEventListener('click', function() {
+                document.body.classList.remove('mobile-calendar-mode');
+                this.classList.add('active');
+                const calendarViewBtn = document.getElementById('toggleCalendarView');
+                if (calendarViewBtn) {
+                    calendarViewBtn.classList.remove('active');
+                }
+            });
+        }
+        
+        if (toggleCalendarViewBtn) {
+            toggleCalendarViewBtn.addEventListener('click', function() {
+                document.body.classList.add('mobile-calendar-mode');
+                this.classList.add('active');
+                const listViewBtn = document.getElementById('toggleListView');
+                if (listViewBtn) {
+                    listViewBtn.classList.remove('active');
+                }
+            });
+        }
         
         // Set current date in mobile view
         const currentDateElement = document.querySelector('.current-date');
@@ -378,15 +466,27 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         // Add navigation handlers
-        document.querySelector('.prev-day')?.addEventListener('click', () => navigateDay(-1));
-        document.querySelector('.next-day')?.addEventListener('click', () => navigateDay(1));
+        const prevDayBtn = document.querySelector('.prev-day');
+        const nextDayBtn = document.querySelector('.next-day');
+        
+        if (prevDayBtn) {
+            prevDayBtn.addEventListener('click', () => navigateDay(-1));
+        }
+        
+        if (nextDayBtn) {
+            nextDayBtn.addEventListener('click', () => navigateDay(1));
+        }
         
         // Fetch data for mobile view if needed
-        if (document.getElementById('dayCardsContainer').children.length === 0) {
+        const dayCardsContainer = document.getElementById('dayCardsContainer');
+        if (dayCardsContainer && dayCardsContainer.children.length === 0) {
             fetch("{{ url_for('get_schedule_data') }}")
             .then(response => response.json())
             .then(data => {
                 updateMobileDayCards(data);
+            })
+            .catch(error => {
+                console.error("Error fetching data for mobile view:", error);
             });
         }
     }
