@@ -294,70 +294,105 @@ def export_calendar(user_id):
 # --- get_schedule_data: returns scheduling data for one month ahead ---
 @app.route('/get_schedule_data')
 def get_schedule_data():
+    print("get_schedule_data called")
     allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
     start_date = date.today()
     end_date = start_date + timedelta(days=30)
-    dates = []
-    day_names = []
-    date_objects = []
+    
+    # These lists must remain in sync
+    dates = []         # Formatted as strings: "DD/MM/YYYY"
+    day_names = []     # Day names: "Sunday", "Monday", etc.
+    date_objects = []  # Python date objects for calculations
+    
     current = start_date
     while current <= end_date:
         if current.strftime("%A") in allowed_days:
+            # Format the date as DD/MM/YYYY for JavaScript
             dates.append(current.strftime("%d/%m/%Y"))
             day_names.append(current.strftime("%A"))
             date_objects.append(current)
         current += timedelta(days=1)
 
-    # Build user schedules more efficiently
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM users ORDER BY name")
+            cursor.execute("SELECT id, name FROM users ORDER BY name")
             users = cursor.fetchall()
-
-        # Fetch all shifts in one query with date ranges
+        
+        # Initialize schedule arrays for each user
+        schedule_array = []
+        for user in users:
+            shifts_list = ["Not set"] * len(dates)  # Initialize all shifts as "Not set"
+            
+            # Handle Sundays - always "Day"
+            for i, day_name in enumerate(day_names):
+                if day_name == "Sunday":
+                    shifts_list[i] = "Day"
+            
+            schedule_array.append({
+                "name": user["name"],
+                "shifts": shifts_list
+            })
+        
+        # Map user IDs to their position in the schedule array for quick lookup
+        user_id_to_index = {user['id']: i for i, user in enumerate(users)}
+        
+        # Prepare date lookups for quick matching
+        date_lookups = {}
+        for i, d_obj in enumerate(date_objects):
+            week_start = get_week_start(d_obj)
+            day_name = day_names[i]
+            key = (week_start.isoformat(), day_name)
+            date_lookups[key] = i
+        
+        # Fetch shifts for all users in the date range
         min_date = min(date_objects)
         max_date = max(date_objects)
         min_week_start = get_week_start(min_date).isoformat()
         max_week_start = get_week_start(max_date).isoformat()
         
-        # Get all shifts for all users in the date range in a single query
-        all_shifts = {}
+        print(f"Fetching shifts between {min_week_start} and {max_week_start}")
+        
         with conn.cursor() as cursor:
             cursor.execute("""
-                SELECT s.user_id, s.week_start, s.day, s.shift_type, u.name 
-                FROM shifts s 
-                JOIN users u ON s.user_id = u.id
+                SELECT s.user_id, s.week_start, s.day, s.shift_type
+                FROM shifts s
                 WHERE s.week_start BETWEEN %s AND %s
             """, (min_week_start, max_week_start))
             
             shifts = cursor.fetchall()
-        
-        # Build a lookup dictionary for fast access
+            print(f"Found {len(shifts)} shifts")
+            
+        # Update the schedule array with actual shifts
         for shift in shifts:
-            week_start = shift['week_start']
             user_id = shift['user_id']
+            week_start = shift['week_start']
             day = shift['day']
             shift_type = shift['shift_type']
             
-            # Create a key for fast lookup
-            for d_obj, d_str, d_name in zip(date_objects, dates, day_names):
-                if get_week_start(d_obj) == week_start and d_name == day:
-                    key = (user_id, d_str, d_name)
-                    all_shifts[key] = shift_type
-
-        schedule_array = []
-        for user in users:
-            shifts_list = []
-            for d_str, d_name, d_obj in zip(dates, day_names, date_objects):
-                # Look up from our cached results
-                key = (user['id'], d_str, d_name)
-                shift = all_shifts.get(key, "Not set")
-                # Special case for Sunday - always Day
-                if d_name == "Sunday" and shift == "Not set":
-                    shift = "Day"
-                shifts_list.append(shift)
-            schedule_array.append({"name": user["name"], "shifts": shifts_list})
+            # Get the array index for this user
+            user_index = user_id_to_index.get(user_id)
+            if user_index is None:
+                print(f"Warning: Shift for unknown user ID {user_id}")
+                continue
+                
+            # Get the array index for this date
+            date_index = date_lookups.get((week_start.isoformat(), day))
+            if date_index is None:
+                # This shift doesn't match any of our dates
+                continue
+                
+            # Update the shift in the schedule array
+            schedule_array[user_index]["shifts"][date_index] = shift_type
+    except Exception as e:
+        print(f"Error in get_schedule_data: {e}")
+        # Return minimal data to prevent JavaScript errors
+        return jsonify({
+            "error": str(e),
+            "dates": dates,
+            "days": day_names,
+            "schedule": []
+        })
     finally:
         conn.close()
 
@@ -366,6 +401,16 @@ def get_schedule_data():
         "days": day_names,
         "schedule": schedule_array
     }
+    
+    # Print the first few entries for debugging
+    print("API Response Structure:")
+    print(f"dates: {dates[:3]}...")
+    print(f"days: {day_names[:3]}...")
+    if schedule_array:
+        user = schedule_array[0]["name"]
+        shifts = schedule_array[0]["shifts"][:3]
+        print(f"First user '{user}' shifts: {shifts}...")
+    
     return jsonify(data)
 
 @app.route('/view_schedule')
