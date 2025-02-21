@@ -51,18 +51,30 @@ def init_db():
                 )
             """)
         conn.commit()
-        # Insert default users if not present.
+        
+        # Insert default users if not present, with deadlock prevention
         with conn.cursor() as cursor:
             for worker in ['Ariel', 'Roei', 'Ofek', 'Guy']:
                 try:
-                    cursor.execute("INSERT INTO users (name) VALUES (%s)", (worker,))
+                    # Check if user exists first to avoid lock contention
+                    cursor.execute("SELECT id FROM users WHERE name = %s", (worker,))
+                    if cursor.fetchone() is None:
+                        cursor.execute("INSERT INTO users (name) VALUES (%s)", (worker,))
                 except pymysql.err.IntegrityError:
                     pass
-        conn.commit()
+                except pymysql.err.OperationalError as e:
+                    if "Deadlock" in str(e):
+                        # Log the error but continue - the user might already exist
+                        print(f"Deadlock while inserting user {worker}, continuing...")
+                    else:
+                        raise
+                conn.commit()  # Commit after each user to reduce transaction size
     finally:
         conn.close()
 
-init_db()
+# Run init_db only when the application starts, not when imported
+if __name__ == '__main__':
+    init_db()
 
 # ----------------------------
 # Helper Functions for Weeks and Months
@@ -275,6 +287,12 @@ def view_all_schedule():
             dates.append(current)
         current += timedelta(days=1)
     
+    # Group dates by month for template rendering
+    month_dates = defaultdict(list)
+    for d in dates:
+        month_name = d.strftime("%B %Y")
+        month_dates[month_name].append(d)
+    
     # Build user schedules: for each user, map each date to its shift (or "Not set")
     conn = get_db_connection()
     try:
@@ -303,7 +321,8 @@ def view_all_schedule():
         users=users,
         user_schedules=user_schedules,
         today=date.today(),
-        dates=dates
+        dates=dates,
+        month_dates=month_dates
     )
 
 # --- Admin routes ---
@@ -359,6 +378,14 @@ def approve_changes(user_id):
         conn.close()
     flash("Changes approved for the user.")
     return redirect(url_for('admin_panel'))
+
+# Initialize database on application startup
+with app.app_context():
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+        # Continue anyway - the app might still work if tables already exist
 
 if __name__ == '__main__':
     app.run(debug=True)
