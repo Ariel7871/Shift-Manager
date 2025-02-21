@@ -2,7 +2,10 @@ import pymysql
 from datetime import date, timedelta, datetime
 import calendar
 import holidays
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+import uuid
+import pytz
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, Response
+from icalendar import Calendar, Event
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -214,6 +217,103 @@ def view_schedule(user_id):
         conn.close()
     return render_template('view_schedule.html', user=user)
 
+# --- Export calendar as iCal file for Google Calendar ---
+@app.route('/export_calendar/<int:user_id>')
+def export_calendar(user_id):
+    """Generate iCal file for Google Calendar export based on user's schedule"""
+    # Get user info
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
+            user = cursor.fetchone()
+        if not user:
+            return "User not found", 404
+            
+        # Create calendar
+        cal = Calendar()
+        cal.add('prodid', f'-//Shift Scheduler//EN')
+        cal.add('version', '2.0')
+        cal.add('name', f"{user['name']}'s Work Schedule")
+        cal.add('x-wr-calname', f"{user['name']}'s Work Schedule")
+        
+        # Set date range (next 3 months)
+        start_date = date.today()
+        end_date = start_date + timedelta(days=90)
+        allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+        
+        # Get all the user's shifts
+        shifts = []
+        current = start_date
+        while current <= end_date:
+            if current.strftime("%A") in allowed_days:
+                week_start = get_week_start(current)
+                day_name = current.strftime("%A")
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        "SELECT shift_type FROM shifts WHERE user_id = %s AND week_start = %s AND day = %s",
+                        (user_id, week_start.isoformat(), day_name)
+                    )
+                    row = cursor.fetchone()
+                    # Handle special case for Sunday (always Day)
+                    shift_type = row["shift_type"] if row else ("Day" if day_name == "Sunday" else "Not set")
+                    
+                    # Only add events for scheduled shifts
+                    if shift_type in ["Day", "Night", "OOO"]:
+                        shifts.append({
+                            "date": current,
+                            "day": day_name,
+                            "shift_type": shift_type
+                        })
+            current += timedelta(days=1)
+        
+        # Convert to timezone aware (use your local timezone)
+        tz = pytz.timezone('Asia/Jerusalem')  # Change to your timezone
+        
+        # Add each shift as an event
+        for shift in shifts:
+            event = Event()
+            event.add('summary', f"{shift['shift_type']} Shift")
+            
+            # Set event times based on shift type
+            event_date = shift['date']
+            if shift['shift_type'] == "Day":
+                start_time = tz.localize(datetime.combine(event_date, datetime.min.time().replace(hour=7, minute=0)))
+                end_time = tz.localize(datetime.combine(event_date, datetime.min.time().replace(hour=19, minute=0)))
+                event.add('description', 'Day Shift (7:00 - 19:00)')
+                event.add('color', '#FFEB3B')  # Yellow for day shifts
+            elif shift['shift_type'] == "Night":
+                start_time = tz.localize(datetime.combine(event_date, datetime.min.time().replace(hour=19, minute=0)))
+                end_time = tz.localize(datetime.combine(event_date + timedelta(days=1), datetime.min.time().replace(hour=7, minute=0)))
+                event.add('description', 'Night Shift (19:00 - 7:00)')
+                event.add('color', '#3F51B5')  # Blue for night shifts
+            else:  # OOO
+                start_time = tz.localize(datetime.combine(event_date, datetime.min.time()))
+                end_time = tz.localize(datetime.combine(event_date + timedelta(days=1), datetime.min.time()))
+                event.add('description', 'Out of Office')
+                event.add('color', '#F44336')  # Red for OOO
+            
+            event.add('dtstart', start_time)
+            event.add('dtend', end_time)
+            event.add('dtstamp', datetime.now(tz=tz))
+            event.add('uid', str(uuid.uuid4()))
+            
+            if shift['shift_type'] == "OOO":
+                event.add('transp', 'TRANSPARENT')  # Shows as free time in calendar
+                event.add('status', 'CONFIRMED')
+            else:
+                event.add('transp', 'OPAQUE')  # Shows as busy time in calendar
+                event.add('status', 'CONFIRMED')
+            
+            cal.add_component(event)
+    finally:
+        conn.close()
+    
+    # Return as downloadable iCal file
+    response = Response(cal.to_ical(), mimetype='text/calendar')
+    response.headers['Content-Disposition'] = f'attachment; filename="{user["name"]}_schedule.ics"'
+    return response
+
 # --- get_schedule_data: returns scheduling data for one month ahead ---
 @app.route('/get_schedule_data')
 def get_schedule_data():
@@ -281,6 +381,18 @@ def view_schedule_global():
 def logout():
     session.pop('admin', None)
     return redirect(url_for('index'))
+
+# Route to get all users in JSON format
+@app.route('/get_users')
+def get_users():
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT id, name FROM users ORDER BY name')
+            users = cursor.fetchall()
+    finally:
+        conn.close()
+    return jsonify(users)
 
 # --- view_all_schedule: retrieves schedules from MySQL ---
 @app.route('/view_all_schedule')
