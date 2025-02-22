@@ -359,7 +359,15 @@ def get_shifts_for_date(date):
             
             return jsonify({
                 'date': date,
-                'shifts': shi
+                'shifts': shifts,
+                'users': user_names
+            })
+            
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 # --- get_schedule_data: returns scheduling data for one month ahead ---
 @app.route('/get_schedule_data')
