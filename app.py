@@ -374,8 +374,14 @@ def export_calendar(user_id):
 def get_shifts_for_date(date):
     try:
         selected_date = datetime.strptime(date, '%Y-%m-%d').date()
-        week_start = get_week_start(selected_date)
+        # Move the date calculation to the actual Sunday of that week
+        days_since_sunday = selected_date.weekday() + 1 % 7
+        week_start = selected_date - timedelta(days=days_since_sunday)
         day_name = selected_date.strftime("%A")
+        
+        print(f"Selected date: {selected_date}")  # Debug
+        print(f"Week start: {week_start}")        # Debug
+        print(f"Day name: {day_name}")           # Debug
         
         conn = get_db_connection()
         try:
@@ -390,18 +396,22 @@ def get_shifts_for_date(date):
             # Get shifts for all users on this date
             shifts = {}
             for user in users:
-                if day_name == "Sunday":
-                    shifts[str(user['id'])] = "Day"
-                else:
-                    with conn.cursor() as cursor:
-                        cursor.execute("""
-                            SELECT shift_type 
-                            FROM shifts 
-                            WHERE user_id = %s AND week_start = %s AND day = %s
-                        """, (user['id'], week_start.isoformat(), day_name))
-                        
-                        row = cursor.fetchone()
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT shift_type 
+                        FROM shifts 
+                        WHERE user_id = %s AND week_start = %s AND day = %s
+                    """, (user['id'], week_start.isoformat(), day_name))
+                    
+                    row = cursor.fetchone()
+                    
+                    # For Sundays or if there's no shift set
+                    if day_name == "Sunday":
+                        shifts[str(user['id'])] = "Day"  # Always Day shift on Sunday
+                    else:
                         shifts[str(user['id'])] = row["shift_type"] if row else "Not set"
+                        
+                    print(f"User {user['id']} shift: {shifts[str(user['id'])]}")  # Debug
             
             return jsonify({
                 'date': date,
@@ -413,7 +423,7 @@ def get_shifts_for_date(date):
             conn.close()
             
     except Exception as e:
-        print(f"Error in get_shifts_for_date: {e}")  # Added logging
+        print(f"Error in get_shifts_for_date: {e}")
         return jsonify({'error': str(e)}), 400
 
 # --- get_schedule_data: returns scheduling data for one month ahead ---
