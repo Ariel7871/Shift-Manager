@@ -497,7 +497,6 @@ def user_dashboard(user_id):
         today=date.today()
     )
 
-# Add this route to your app.py file
 
 @app.route('/analytics')
 def analytics_dashboard():
@@ -517,6 +516,12 @@ def analytics_dashboard():
             cursor.execute('SELECT * FROM users ORDER BY name')
             users = cursor.fetchall()
         
+        # Initialize totals
+        total_shifts = 0
+        total_day_shifts = 0
+        total_night_shifts = 0
+        total_ooo = 0
+        
         # Get shift distribution per user
         shift_distribution = []
         for user in users:
@@ -535,22 +540,27 @@ def analytics_dashboard():
                 for row in cursor.fetchall():
                     if row["shift_type"] == "Day":
                         day_count = row["count"]
+                        total_day_shifts += day_count
                     elif row["shift_type"] == "Night":
                         night_count = row["count"]
+                        total_night_shifts += night_count
                     elif row["shift_type"] == "OOO":
                         ooo_count = row["count"]
+                        total_ooo += ooo_count
+                
+                user_total = day_count + night_count + ooo_count
+                total_shifts += user_total
                 
                 shift_distribution.append({
                     "name": user["name"],
                     "day_shifts": day_count,
                     "night_shifts": night_count,
                     "ooo": ooo_count,
-                    "total": day_count + night_count + ooo_count
+                    "total": user_total
                 })
         
         # Calculate fairness metrics
         if shift_distribution:
-            total_night_shifts = sum(user["night_shifts"] for user in shift_distribution)
             avg_night_shifts = total_night_shifts / len(shift_distribution) if len(shift_distribution) > 0 else 0
             
             # Add fairness score to each user
@@ -560,26 +570,6 @@ def analytics_dashboard():
                     user["fairness_score"] = max(100 - (deviation * 25), 0)  # Simple fairness score
                 else:
                     user["fairness_score"] = 100  # If no night shifts, everyone is equal
-        
-        # Get coverage statistics
-        coverage_stats = {
-            "total_days_covered": 0,
-            "days_with_gaps": 0
-        }
-        
-        # Count days with missing coverage
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT week_start, day, COUNT(DISTINCT user_id) as user_count
-                FROM shifts
-                WHERE week_start BETWEEN %s AND %s
-                GROUP BY week_start, day
-            """, (start_date.isoformat(), end_date.isoformat()))
-            
-            for row in cursor.fetchall():
-                coverage_stats["total_days_covered"] += 1
-                if row["user_count"] < len(users):
-                    coverage_stats["days_with_gaps"] += 1
     finally:
         conn.close()
     
@@ -587,9 +577,12 @@ def analytics_dashboard():
         'analytics_dashboard.html',
         users=users,
         shift_distribution=shift_distribution,
-        coverage_stats=coverage_stats,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        total_shifts=total_shifts,
+        total_day_shifts=total_day_shifts,
+        total_night_shifts=total_night_shifts,
+        total_ooo=total_ooo
     )
 
 @app.route('/logout')
