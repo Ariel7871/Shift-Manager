@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% block content %}
-<!-- Import Google Font for a modern look -->
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
@@ -8,7 +7,6 @@
     font-family: 'Roboto', sans-serif;
   }
 
-  /* Keyframes for fadeInUp animation */
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -20,79 +18,209 @@
     }
   }
 
-  /* Animated card style */
   .animated-card {
     animation: fadeInUp 0.8s ease-out;
     border-radius: 12px;
   }
 
-  /* Animated list items with staggered animation */
   .animated-item {
     animation: fadeInUp 0.5s ease-out;
     opacity: 0;
+    transition: all 0.3s ease;
   }
+
   .animated-item.visible {
     opacity: 1;
   }
 
-  /* Enhanced styling for list group items */
+  .animated-item:hover {
+    transform: translateX(10px);
+  }
+
   .list-group-item {
     background-color: #f9f9f9;
     border: none;
     border-bottom: 1px solid #e0e0e0;
     font-size: 1.2rem;
-    padding: 1rem 1.5rem;
-    transition: background-color 0.2s ease;
-  }
-  .list-group-item:hover {
-    background-color: #ececec;
+    padding: 1.2rem 1.5rem;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+    border-radius: 8px !important;
   }
 
-  /* Style for the user name text */
+  .list-group-item:hover {
+    background-color: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
   .user-name {
     font-weight: 500;
     color: #333;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
 
-  /* Enhanced schedule button style */
-  .btn-schedule {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    font-weight: 500;
-    padding: 0.6rem 1.2rem;
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
   }
+
+  .btn-schedule {
+    transition: all 0.3s ease;
+    font-weight: 500;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .btn-schedule:hover {
-    transform: scale(1.05);
+    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
-  /* Card header style with gradient and rounded corners */
+  .btn-schedule .icon {
+    transition: transform 0.3s ease;
+  }
+
+  .btn-schedule:hover .icon {
+    transform: rotate(90deg);
+  }
+
   .card-header {
     background: linear-gradient(135deg, #007bff, #0056b3);
     font-size: 1.8rem;
     font-weight: 700;
     border-radius: 12px 12px 0 0;
+    padding: 1.5rem;
+  }
+
+  .user-stats {
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .search-box {
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    padding-left: 3rem;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .search-box input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+  }
+
+  [data-bs-theme="dark"] {
+    .list-group-item {
+      background-color: #2d2d2d;
+      border-bottom-color: #404040;
+    }
+
+    .list-group-item:hover {
+      background-color: #363636;
+    }
+
+    .user-name {
+      color: #e0e0e0;
+    }
+
+    .user-stats {
+      color: #999;
+    }
+
+    .search-box input {
+      background-color: #2d2d2d;
+      border-color: #404040;
+      color: #e0e0e0;
+    }
+
+    .search-box input:focus {
+      border-color: #0d6efd;
+    }
+
+    .search-icon {
+      color: #999;
+    }
   }
 </style>
 
 <div class="container my-5">
   <div class="row justify-content-center">
-    <!-- Use a wider column for a more prominent card -->
     <div class="col-md-10 col-lg-8">
       <div class="card shadow-lg animated-card border-0">
         <div class="card-header text-white text-center py-4">
           <h2 class="mb-0">
-            <i class="fa-solid fa-user me-2"></i>Select Your Name
+            <i class="fa-solid fa-users me-2"></i>Choose Team Member
           </h2>
         </div>
         <div class="card-body py-4">
-          <ul class="list-group list-group-flush">
+          <!-- Search Box -->
+          <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search team member...">
+          </div>
+
+          <ul class="list-group list-group-flush" id="usersList">
             {% for user in users %}
-            <li class="list-group-item d-flex justify-content-between align-items-center animated-item">
-              <span class="user-name">
-                <i class="fa-solid fa-user-circle me-2"></i>{{ user['name'] }}
-              </span>
+            <li class="list-group-item d-flex justify-content-between align-items-center animated-item" data-name="{{ user['name'].lower() }}">
+              <div class="d-flex flex-column">
+                <div class="user-name mb-2">
+                  <div class="user-avatar">
+                    {{ user['name'][0] }}
+                  </div>
+                  {{ user['name'] }}
+                </div>
+                <div class="user-stats">
+                  <div class="stat-item">
+                    <i class="fas fa-sun text-warning"></i>
+                    <span>Day Shifts: 12</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="fas fa-moon text-primary"></i>
+                    <span>Night Shifts: 8</span>
+                  </div>
+                </div>
+              </div>
               <a href="{{ url_for('schedule', user_id=user['id'], week_index=0) }}" class="btn btn-primary btn-lg btn-schedule">
-                <i class="fa-solid fa-pencil me-1"></i>Schedule
+                <span>Schedule</span>
+                <i class="fa-solid fa-arrow-right icon"></i>
               </a>
             </li>
             {% endfor %}
@@ -103,14 +231,38 @@
   </div>
 </div>
 
-<!-- JavaScript for staggered list animations -->
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const items = document.querySelectorAll('.animated-item');
-    items.forEach((item, index) => {
-      item.style.animationDelay = (index * 0.1) + 's';
-      item.classList.add('visible');
+document.addEventListener("DOMContentLoaded", function () {
+  // Animate list items
+  const items = document.querySelectorAll('.animated-item');
+  items.forEach((item, index) => {
+    item.style.animationDelay = (index * 0.1) + 's';
+    item.classList.add('visible');
+  });
+
+  // Search functionality
+  const searchInput = document.getElementById('searchInput');
+  const usersList = document.getElementById('usersList');
+  const listItems = usersList.getElementsByTagName('li');
+
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    
+    Array.from(listItems).forEach(item => {
+      const userName = item.getAttribute('data-name');
+      if (userName.includes(searchTerm)) {
+        item.style.display = '';
+        // Highlight matching text
+        const nameElement = item.querySelector('.user-name');
+        const name = nameElement.lastChild.textContent.trim();
+        const regex = new RegExp(searchTerm, 'gi');
+        const highlightedText = name.replace(regex, match => `<span class="highlight">${match}</span>`);
+        nameElement.lastChild.textContent = name;
+      } else {
+        item.style.display = 'none';
+      }
     });
   });
+});
 </script>
 {% endblock %}
