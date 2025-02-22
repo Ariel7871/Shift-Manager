@@ -92,31 +92,47 @@
     gap: 0.5rem;
     justify-content: center;
     flex-wrap: wrap;
-    background: #f8f9fa;
+    background: #e8f0fe;
     padding: 1rem;
     border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .nav-pill {
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    color: #666;
+    color: #4a5568;
     text-decoration: none;
     font-size: 0.9rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     transition: all 0.2s ease;
+    background: white;
+    border: 1px solid #e2e8f0;
 }
 
 .nav-pill:hover {
-    background: #e9ecef;
-    color: #333;
+    background: #f7fafc;
+    color: #2b6cb0;
+    border-color: #90cdf4;
     text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .nav-pill.active {
-    background: var(--primary);
+    background: #3182ce;
+    color: white;
+    border-color: #2b6cb0;
+    box-shadow: 0 2px 4px rgba(49,130,206,0.3);
+}
+
+.nav-pill i {
+    color: #4299e1;
+}
+
+.nav-pill.active i {
     color: white;
 }
 
@@ -172,32 +188,32 @@
 }
 
 .shift-btn.day {
-    color: #0d6efd;
-    border: 1px solid #0d6efd;
+    color: #3182ce;
+    border: 1px solid #3182ce;
 }
 
 .shift-btn.night {
-    color: #6c757d;
-    border: 1px solid #6c757d;
+    color: #4a5568;
+    border: 1px solid #4a5568;
 }
 
 .shift-btn.ooo {
-    color: #dc3545;
-    border: 1px solid #dc3545;
+    color: #e53e3e;
+    border: 1px solid #e53e3e;
 }
 
 .btn-check:checked + .shift-btn.day {
-    background: #0d6efd;
+    background: #3182ce;
     color: white;
 }
 
 .btn-check:checked + .shift-btn.night {
-    background: #6c757d;
+    background: #4a5568;
     color: white;
 }
 
 .btn-check:checked + .shift-btn.ooo {
-    background: #dc3545;
+    background: #e53e3e;
     color: white;
 }
 
@@ -206,8 +222,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #e3f2fd;
-    color: #0d6efd;
+    background: #ebf8ff;
+    color: #3182ce;
     border-radius: 6px;
     font-size: 0.9rem;
 }
@@ -217,6 +233,29 @@
     gap: 1rem;
     justify-content: flex-end;
     margin-top: 1rem;
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] .schedule-nav {
+    background: #2d3748;
+}
+
+[data-bs-theme="dark"] .nav-pill {
+    background: #1a202c;
+    color: #e2e8f0;
+    border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .nav-pill:hover {
+    background: #2d3748;
+    color: #63b3ed;
+    border-color: #4299e1;
+}
+
+[data-bs-theme="dark"] .nav-pill.active {
+    background: #4299e1;
+    color: white;
+    border-color: #63b3ed;
 }
 
 @media (max-width: 768px) {
