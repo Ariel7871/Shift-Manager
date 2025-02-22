@@ -7,3 +7,5 @@ numpy    # If performing numerical operations
 flask-assets
 pymysql
 cryptography
+icalendar
+pytz
