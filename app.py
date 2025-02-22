@@ -488,20 +488,21 @@ def user_dashboard(user_id):
         today=date.today()
     )
 
+# Add this route to your app.py file
+
 @app.route('/analytics')
 def analytics_dashboard():
-    # Remove the admin check
-    # if not session.get('admin'):
-    #     return redirect(url_for('admin'))
+    # Get date range parameter (default to 30 days)
+    days = request.args.get('days', default=30, type=int)
+    if days not in [30, 60, 90]:
+        days = 30
     
     # Date range for analytics
-    start_date = date.today() - timedelta(days=30)
-    end_date = date.today() + timedelta(days=30)
+    start_date = date.today() - timedelta(days=days)
+    end_date = date.today() + timedelta(days=30)  # Include future scheduled shifts
     
     conn = get_db_connection()
     try:
-        # Rest of the code remains the same...
-        
         # Get all users
         with conn.cursor() as cursor:
             cursor.execute('SELECT * FROM users ORDER BY name')
@@ -510,14 +511,66 @@ def analytics_dashboard():
         # Get shift distribution per user
         shift_distribution = []
         for user in users:
-            # Code to gather shift statistics...
-            
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    SELECT shift_type, COUNT(*) as count 
+                    FROM shifts 
+                    WHERE user_id = %s AND week_start BETWEEN %s AND %s
+                    GROUP BY shift_type
+                """, (user['id'], start_date.isoformat(), end_date.isoformat()))
+                
+                day_count = 0
+                night_count = 0
+                ooo_count = 0
+                
+                for row in cursor.fetchall():
+                    if row["shift_type"] == "Day":
+                        day_count = row["count"]
+                    elif row["shift_type"] == "Night":
+                        night_count = row["count"]
+                    elif row["shift_type"] == "OOO":
+                        ooo_count = row["count"]
+                
+                shift_distribution.append({
+                    "name": user["name"],
+                    "day_shifts": day_count,
+                    "night_shifts": night_count,
+                    "ooo": ooo_count,
+                    "total": day_count + night_count + ooo_count
+                })
+        
         # Calculate fairness metrics
-        # Code to calculate fairness...
+        if shift_distribution:
+            total_night_shifts = sum(user["night_shifts"] for user in shift_distribution)
+            avg_night_shifts = total_night_shifts / len(shift_distribution) if len(shift_distribution) > 0 else 0
+            
+            # Add fairness score to each user
+            for user in shift_distribution:
+                if avg_night_shifts > 0:
+                    deviation = abs(user["night_shifts"] - avg_night_shifts)
+                    user["fairness_score"] = max(100 - (deviation * 25), 0)  # Simple fairness score
+                else:
+                    user["fairness_score"] = 100  # If no night shifts, everyone is equal
         
         # Get coverage statistics
-        # Code to analyze coverage...
+        coverage_stats = {
+            "total_days_covered": 0,
+            "days_with_gaps": 0
+        }
+        
+        # Count days with missing coverage
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT week_start, day, COUNT(DISTINCT user_id) as user_count
+                FROM shifts
+                WHERE week_start BETWEEN %s AND %s
+                GROUP BY week_start, day
+            """, (start_date.isoformat(), end_date.isoformat()))
             
+            for row in cursor.fetchall():
+                coverage_stats["total_days_covered"] += 1
+                if row["user_count"] < len(users):
+                    coverage_stats["days_with_gaps"] += 1
     finally:
         conn.close()
     
