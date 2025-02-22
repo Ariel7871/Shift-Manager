@@ -390,17 +390,18 @@ def get_shifts_for_date(date):
             # Get shifts for all users on this date
             shifts = {}
             for user in users:
-                with conn.cursor() as cursor:
-                    cursor.execute("""
-                        SELECT shift_type 
-                        FROM shifts 
-                        WHERE user_id = %s AND week_start = %s AND day = %s
-                    """, (user['id'], week_start.isoformat(), day_name))
-                    
-                    row = cursor.fetchone()
-                    # Handle Sundays and default cases
-                    shift_type = row["shift_type"] if row else ("Day" if day_name == "Sunday" else "Not set")
-                    shifts[str(user['id'])] = shift_type
+                if day_name == "Sunday":
+                    shifts[str(user['id'])] = "Day"
+                else:
+                    with conn.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT shift_type 
+                            FROM shifts 
+                            WHERE user_id = %s AND week_start = %s AND day = %s
+                        """, (user['id'], week_start.isoformat(), day_name))
+                        
+                        row = cursor.fetchone()
+                        shifts[str(user['id'])] = row["shift_type"] if row else "Not set"
             
             return jsonify({
                 'date': date,
@@ -412,6 +413,7 @@ def get_shifts_for_date(date):
             conn.close()
             
     except Exception as e:
+        print(f"Error in get_shifts_for_date: {e}")  # Added logging
         return jsonify({'error': str(e)}), 400
 
 # --- get_schedule_data: returns scheduling data for one month ahead ---
