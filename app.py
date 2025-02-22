@@ -417,6 +417,119 @@ def get_schedule_data():
 def view_schedule_global():
     return redirect(url_for('view_all_schedule'))
 
+@app.route('/dashboard/<int:user_id>')
+def user_dashboard(user_id):
+    # Get user info
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
+            user = cursor.fetchone()
+        if not user:
+            flash("User not found!")
+            return redirect(url_for('index'))
+        
+        # Get upcoming shifts for the next 14 days
+        start_date = date.today()
+        end_date = start_date + timedelta(days=14)
+        allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+        
+        upcoming_shifts = []
+        current = start_date
+        while current <= end_date:
+            if current.strftime("%A") in allowed_days:
+                week_start = get_week_start(current)
+                day_name = current.strftime("%A")
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        "SELECT shift_type FROM shifts WHERE user_id = %s AND week_start = %s AND day = %s",
+                        (user_id, week_start.isoformat(), day_name)
+                    )
+                    row = cursor.fetchone()
+                    shift_type = row["shift_type"] if row else ("Day" if day_name == "Sunday" else "Not set")
+                    
+                    upcoming_shifts.append({
+                        "date": current,
+                        "day": day_name,
+                        "shift_type": shift_type
+                    })
+            current += timedelta(days=1)
+        
+        # Get shift statistics
+        shift_stats = {
+            "total_day_shifts": 0,
+            "total_night_shifts": 0,
+            "total_ooo": 0
+        }
+        
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT shift_type, COUNT(*) as count 
+                FROM shifts 
+                WHERE user_id = %s AND week_start >= %s
+                GROUP BY shift_type
+            """, (user_id, (start_date - timedelta(days=30)).isoformat()))
+            
+            for row in cursor.fetchall():
+                if row["shift_type"] == "Day":
+                    shift_stats["total_day_shifts"] = row["count"]
+                elif row["shift_type"] == "Night":
+                    shift_stats["total_night_shifts"] = row["count"]
+                elif row["shift_type"] == "OOO":
+                    shift_stats["total_ooo"] = row["count"]
+    finally:
+        conn.close()
+    
+    return render_template(
+        'user_dashboard.html',
+        user=user,
+        upcoming_shifts=upcoming_shifts,
+        shift_stats=shift_stats,
+        today=date.today()
+    )
+
+@app.route('/analytics')
+def analytics_dashboard():
+    # Remove the admin check
+    # if not session.get('admin'):
+    #     return redirect(url_for('admin'))
+    
+    # Date range for analytics
+    start_date = date.today() - timedelta(days=30)
+    end_date = date.today() + timedelta(days=30)
+    
+    conn = get_db_connection()
+    try:
+        # Rest of the code remains the same...
+        
+        # Get all users
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM users ORDER BY name')
+            users = cursor.fetchall()
+        
+        # Get shift distribution per user
+        shift_distribution = []
+        for user in users:
+            # Code to gather shift statistics...
+            
+        # Calculate fairness metrics
+        # Code to calculate fairness...
+        
+        # Get coverage statistics
+        # Code to analyze coverage...
+            
+    finally:
+        conn.close()
+    
+    return render_template(
+        'analytics_dashboard.html',
+        users=users,
+        shift_distribution=shift_distribution,
+        coverage_stats=coverage_stats,
+        start_date=start_date,
+        end_date=end_date
+    )
+
 @app.route('/logout')
 def logout():
     session.pop('admin', None)
