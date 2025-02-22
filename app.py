@@ -325,6 +325,42 @@ def export_calendar(user_id):
     response.headers['Content-Disposition'] = f'attachment; filename="{user["name"]}_schedule.ics"'
     return response
 
+@app.route('/api/shifts/<date>')
+def get_shifts_for_date(date):
+    try:
+        selected_date = datetime.strptime(date, '%Y-%m-%d').date()
+        week_start = get_week_start(selected_date)
+        day_name = selected_date.strftime("%A")
+        
+        conn = get_db_connection()
+        try:
+            # Get all users
+            with conn.cursor() as cursor:
+                cursor.execute('SELECT * FROM users ORDER BY name')
+                users = cursor.fetchall()
+            
+            # Create a dictionary to store user names by ID
+            user_names = {str(user['id']): user['name'] for user in users}
+            
+            # Get shifts for all users on this date
+            shifts = {}
+            for user in users:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        SELECT shift_type 
+                        FROM shifts 
+                        WHERE user_id = %s AND week_start = %s AND day = %s
+                    """, (user['id'], week_start.isoformat(), day_name))
+                    
+                    row = cursor.fetchone()
+                    # Handle Sundays and default cases
+                    shift_type = row["shift_type"] if row else ("Day" if day_name == "Sunday" else "Not set")
+                    shifts[str(user['id'])] = shift_type
+            
+            return jsonify({
+                'date': date,
+                'shifts': shi
+
 # --- get_schedule_data: returns scheduling data for one month ahead ---
 @app.route('/get_schedule_data')
 def get_schedule_data():
