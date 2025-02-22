@@ -1,141 +1,270 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
-    <!-- Welcome Card -->
-    <div class="card shadow mb-4">
-        <div class="card-header bg-dark text-white">
-            <h4 class="mb-0">
-                <i class="fa-solid fa-calendar-check me-2"></i> Shift Scheduler
-            </h4>
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">Welcome to the Shift Scheduler</h5>
-            <p class="card-text">Use this application to manage and view team shift schedules.</p>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <a href="{{ url_for('choose_schedule') }}" class="btn btn-primary">
-                    <i class="fa-solid fa-calendar-plus me-1"></i> Create New Schedule
-                </a>
-                <a href="{{ url_for('view_all_schedule') }}" class="btn btn-success">
-                    <i class="fa-solid fa-users me-1"></i> View Team Schedule
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dashboard Cards -->
-    <h5 class="mb-3">Dashboards & Analytics</h5>
     <div class="row">
-        <!-- Team Analytics Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow h-100">
+        <!-- Main Content Column -->
+        <div class="col-lg-8">
+            <!-- Welcome Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">
+                        <i class="fa-solid fa-calendar-check me-2"></i> Shift Scheduler
+                    </h4>
+                </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-3 text-center">
-                            <i class="fas fa-chart-line text-primary fa-3x"></i>
+                    <h5 class="card-title">Welcome to the Shift Scheduler</h5>
+                    <p class="card-text">Use this application to manage and view team shift schedules.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a href="{{ url_for('choose_schedule') }}" class="btn btn-primary">
+                            <i class="fa-solid fa-calendar-plus me-1"></i> Create New Schedule
+                        </a>
+                        <a href="{{ url_for('view_all_schedule') }}" class="btn btn-success">
+                            <i class="fa-solid fa-users me-1"></i> View Team Schedule
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Cards -->
+            <h5 class="mb-3">Dashboards & Analytics</h5>
+            <div class="row">
+                <!-- Team Analytics Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-3 text-center">
+                                    <i class="fas fa-chart-line text-primary fa-3x"></i>
+                                </div>
+                                <div class="col-9">
+                                    <h5 class="card-title">Team Analytics</h5>
+                                    <p class="card-text">View shift distribution, coverage analysis, and fairness metrics</p>
+                                    <a href="{{ url_for('analytics_dashboard') }}" class="btn btn-primary">View Analytics</a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-9">
-                            <h5 class="card-title">Team Analytics</h5>
-                            <p class="card-text">View shift distribution, coverage analysis, and fairness metrics</p>
-                            <a href="{{ url_for('analytics_dashboard') }}" class="btn btn-primary">View Analytics</a>
+                    </div>
+                </div>
+                
+                <!-- Personal Dashboard Card -->
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-3 text-center">
+                                    <i class="fas fa-user-circle text-success fa-3x"></i>
+                                </div>
+                                <div class="col-9">
+                                    <h5 class="card-title">Personal Dashboard</h5>
+                                    <p class="card-text">View your upcoming shifts and personal statistics</p>
+                                    <div class="dropdown">
+                                        <button class="btn btn-success dropdown-toggle" type="button" id="dashboardDropdown" data-bs-toggle="dropdown">
+                                            Select User
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {% for user in users %}
+                                                <li><a class="dropdown-item" href="{{ url_for('user_dashboard', user_id=user.id) }}">{{ user.name }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Personal Dashboard Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-3 text-center">
-                            <i class="fas fa-user-circle text-success fa-3x"></i>
+
+            <!-- Quick Actions Cards -->
+            <h5 class="mb-3">Quick Actions</h5>
+            <div class="row">
+                <!-- Schedule Management Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 text-primary">
+                                <i class="fa-solid fa-calendar-alt me-2"></i> Schedule Management
+                            </h5>
                         </div>
-                        <div class="col-9">
-                            <h5 class="card-title">Personal Dashboard</h5>
-                            <p class="card-text">View your upcoming shifts and personal statistics</p>
-                            <div class="dropdown">
-                                <button class="btn btn-success dropdown-toggle" type="button" id="dashboardDropdown" data-bs-toggle="dropdown">
-                                    Select User
-                                </button>
-                                <ul class="dropdown-menu">
-                                    {% for user in users %}
-                                        <li><a class="dropdown-item" href="{{ url_for('user_dashboard', user_id=user.id) }}">{{ user.name }}</a></li>
-                                    {% endfor %}
-                                </ul>
+                        <div class="card-body">
+                            <div class="list-group">
+                                <a href="{{ url_for('choose_schedule') }}" class="list-group-item list-group-item-action">
+                                    <i class="fa-solid fa-calendar-plus me-2"></i> Create New Schedule
+                                </a>
+                                <a href="{{ url_for('view_all_schedule') }}" class="list-group-item list-group-item-action">
+                                    <i class="fa-solid fa-users me-2"></i> View Team Schedule
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Individual Schedules Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 text-primary">
+                                <i class="fa-solid fa-user-clock me-2"></i> Individual Schedules
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Select a team member to view or update their schedule:</p>
+                            <div class="list-group">
+                                {% for user in users %}
+                                <a href="{{ url_for('view_schedule', user_id=user.id) }}" class="list-group-item list-group-item-action">
+                                    <i class="fa-solid fa-user me-2"></i> {{ user.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Export Options Card -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0 text-primary">
+                                <i class="fa-solid fa-file-export me-2"></i> Export Options
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Export a team member's schedule to calendar:</p>
+                            <div class="list-group">
+                                {% for user in users %}
+                                <a href="{{ url_for('export_calendar', user_id=user.id) }}" class="list-group-item list-group-item-action">
+                                    <i class="fa-solid fa-calendar-alt me-2"></i> {{ user.name }}'s Calendar
+                                </a>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Quick Actions Cards -->
-    <h5 class="mb-3">Quick Actions</h5>
-    <div class="row">
-        <!-- Schedule Management Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0 text-primary">
-                        <i class="fa-solid fa-calendar-alt me-2"></i> Schedule Management
+        <!-- Quick Shift Widget Column -->
+        <div class="col-lg-4">
+            <!-- Quick Shift Widget -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Today's Shifts
                     </h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        <a href="{{ url_for('choose_schedule') }}" class="list-group-item list-group-item-action">
-                            <i class="fa-solid fa-calendar-plus me-2"></i> Create New Schedule
-                        </a>
-                        <a href="{{ url_for('view_all_schedule') }}" class="list-group-item list-group-item-action">
-                            <i class="fa-solid fa-users me-2"></i> View Team Schedule
-                        </a>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-light btn-sm" onclick="previousDay()">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-light btn-sm" id="currentDate">Today</button>
+                        <button class="btn btn-light btn-sm" onclick="nextDay()">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Individual Schedules Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0 text-primary">
-                        <i class="fa-solid fa-user-clock me-2"></i> Individual Schedules
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Select a team member to view or update their schedule:</p>
-                    <div class="list-group">
-                        {% for user in users %}
-                        <a href="{{ url_for('view_schedule', user_id=user.id) }}" class="list-group-item list-group-item-action">
-                            <i class="fa-solid fa-user me-2"></i> {{ user.name }}
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Export Options Card -->
-        <div class="col-md-4 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0 text-primary">
-                        <i class="fa-solid fa-file-export me-2"></i> Export Options
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Export a team member's schedule to calendar:</p>
-                    <div class="list-group">
-                        {% for user in users %}
-                        <a href="{{ url_for('export_calendar', user_id=user.id) }}" class="list-group-item list-group-item-action">
-                            <i class="fa-solid fa-calendar-alt me-2"></i> {{ user.name }}'s Calendar
-                        </a>
-                        {% endfor %}
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="shiftsList">
+                        <!-- Shifts will be populated here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+let currentDisplayDate = new Date();
+
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+function updateWidgetDate() {
+    document.getElementById('currentDate').textContent = 
+        currentDisplayDate.toLocaleDateString('en-US', { 
+            weekday: 'short', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+}
+
+function getShiftIcon(shiftType) {
+    switch(shiftType) {
+        case 'Day':
+            return '<i class="fas fa-sun text-warning me-1"></i>';
+        case 'Night':
+            return '<i class="fas fa-moon text-secondary me-1"></i>';
+        case 'OOO':
+            return '<i class="fas fa-ban text-danger me-1"></i>';
+        default:
+            return '<i class="fas fa-minus text-muted me-1"></i>';
+    }
+}
+
+function getShiftClass(shiftType) {
+    switch(shiftType) {
+        case 'Day':
+            return 'bg-warning text-dark';
+        case 'Night':
+            return 'bg-secondary text-white';
+        case 'OOO':
+            return 'bg-danger text-white';
+        default:
+            return 'bg-light text-dark';
+    }
+}
+
+function updateWidget() {
+    const dateStr = formatDate(currentDisplayDate);
+    updateWidgetDate();
+    
+    // Fetch shifts for the selected date
+    fetch(`/api/shifts/${dateStr}`)
+        .then(response => response.json())
+        .then(data => {
+            const shiftsList = document.getElementById('shiftsList');
+            shiftsList.innerHTML = '';
+            
+            for (const userId in data.shifts) {
+                const shift = data.shifts[userId];
+                const userName = data.users[userId];
+                
+                const shiftHtml = `
+                    <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+                        <div>
+                            <i class="fas fa-user text-muted me-2"></i>
+                            ${userName}
+                        </div>
+                        <span class="badge ${getShiftClass(shift)}">
+                            ${getShiftIcon(shift)} ${shift}
+                        </span>
+                    </div>
+                `;
+                shiftsList.innerHTML += shiftHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching shifts:', error);
+            document.getElementById('shiftsList').innerHTML = `
+                <div class="list-group-item text-center text-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    Error loading shifts
+                </div>
+            `;
+        });
+}
+
+function previousDay() {
+    currentDisplayDate.setDate(currentDisplayDate.getDate() - 1);
+    updateWidget();
+}
+
+function nextDay() {
+    currentDisplayDate.setDate(currentDisplayDate.getDate() + 1);
+    updateWidget();
+}
+
+// Initialize widget on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateWidget();
+});
+</script>
 {% endblock %}
