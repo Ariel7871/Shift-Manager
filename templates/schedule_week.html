@@ -239,4 +239,91 @@
 }
 </style>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const scheduleForm = document.querySelector('.schedule-form');
+    
+    scheduleForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        
+        // Get all days except Sunday (which is always set)
+        const shifts = Array.from(document.querySelectorAll('input[type="radio"]'))
+            .filter(input => !input.name.endsWith('_Sunday'));
+            
+        // Group radio buttons by their name (day)
+        const shiftsByDay = {};
+        shifts.forEach(shift => {
+            if (!shiftsByDay[shift.name]) {
+                shiftsByDay[shift.name] = [];
+            }
+            shiftsByDay[shift.name].push(shift);
+        });
+        
+        // Check if any day has no selection
+        const unselectedDays = Object.entries(shiftsByDay).filter(([day, shifts]) => {
+            return !shifts.some(shift => shift.checked);
+        });
+        
+        if (unselectedDays.length > 0) {
+            // Create modal for confirmation
+            const modalHtml = `
+                <div class="modal fade" id="incompleteShiftsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Incomplete Shift Selection</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-warning" role="alert">
+                                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                                    You haven't selected shifts for all days this week.
+                                </div>
+                                <p>Missing selections for:</p>
+                                <ul class="list-unstyled">
+                                    ${unselectedDays.map(([day]) => `
+                                        <li><i class="fa-solid fa-circle-exclamation text-warning me-2"></i>${day.split('_')[1]}</li>
+                                    `).join('')}
+                                </ul>
+                                <p>Are you sure you want to submit?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa-solid fa-xmark me-2"></i>Go Back
+                                </button>
+                                <button type="button" class="btn btn-primary" id="confirmSubmit">
+                                    <i class="fa-solid fa-check me-2"></i>Submit Anyway
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('incompleteShiftsModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to document
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('incompleteShiftsModal'));
+            modal.show();
+            
+            // Handle confirmation
+            document.getElementById('confirmSubmit').addEventListener('click', function() {
+                modal.hide();
+                scheduleForm.submit(); // Actually submit the form
+            });
+        } else {
+            // If all shifts are selected, submit normally
+            scheduleForm.submit();
+        }
+    });
+});
+</script>
+
 {% endblock %}
