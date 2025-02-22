@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <!-- Analytics Header -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">
+                <i class="fa-solid fa-chart-line me-2"></i> Team Schedule Analytics
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">
+                        Viewing data from <strong>{{ start_date.strftime("%d/%m/%Y") }}</strong> to <strong>{{ end_date.strftime("%d/%m/%Y") }}</strong>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-md-end">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary active" id="thirtyDayBtn">Last 30 Days</button>
+                            <button type="button" class="btn btn-outline-primary" id="sixtyDayBtn">Last 60 Days</button>
+                            <button type="button" class="btn btn-outline-primary" id="ninetyDayBtn">Last 90 Days</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <!-- Total Shifts Card -->
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="text-primary mb-1">
+                        <i class="fa-solid fa-calendar-check fa-2x"></i>
+                    </div>
+                    <div class="display-5 mb-1 fw-bold">
+                        {% set total_shifts = 0 %}
+                        {% for user in shift_distribution %}
+                            {% set total_shifts = total_shifts + user.total %}
+                        {% endfor %}
+                        {{ total_shifts }}
+                    </div>
+                    <div class="text-muted">Total Shifts</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Day Shifts Card -->
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="text-info mb-1">
+                        <i class="fa-solid fa-sun fa-2x"></i>
+                    </div>
+                    <div class="display-5 mb-1 fw-bold">
+                        {% set total_day_shifts = 0 %}
+                        {% for user in shift_distribution %}
+                            {% set total_day_shifts = total_day_shifts + user.day_shifts %}
+                        {% endfor %}
+                        {{ total_day_shifts }}
+                    </div>
+                    <div class="text-muted">Day Shifts</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Night Shifts Card -->
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="text-secondary mb-1">
+                        <i class="fa-solid fa-moon fa-2x"></i>
+                    </div>
+                    <div class="display-5 mb-1 fw-bold">
+                        {% set total_night_shifts = 0 %}
+                        {% for user in shift_distribution %}
+                            {% set total_night_shifts = total_night_shifts + user.night_shifts %}
+                        {% endfor %}
+                        {{ total_night_shifts }}
+                    </div>
+                    <div class="text-muted">Night Shifts</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coverage Card -->
+        <div class="col-md-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <div class="text-success mb-1">
+                        <i class="fa-solid fa-shield-alt fa-2x"></i>
+                    </div>
+                    <div class="display-5 mb-1 fw-bold">
+                        {% if coverage_stats.total_days_covered > 0 %}
+                            {{ ((coverage_stats.total_days_covered - coverage_stats.days_with_gaps) / coverage_stats.total_days_covered * 100) | round }}%
+                        {% else %}
+                            100%
+                        {% endif %}
+                    </div>
+                    <div class="text-muted">Schedule Coverage</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Shift Distribution Chart -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-chart-bar me-2"></i> Shift Distribution by Team Member
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="shiftDistributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fairness and Coverage Cards -->
+    <div class="row mb-4">
+        <!-- Fairness Metrics -->
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-balance-scale me-2"></i> Fairness Metrics
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Team Member</th>
+                                    <th class="text-center">Night Shifts</th>
+                                    <th class="text-center">Fairness Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in shift_distribution %}
+                                <tr>
+                                    <td>{{ user.name }}</td>
+                                    <td class="text-center">{{ user.night_shifts }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ user.fairness_score }}%"></div>
+                                            </div>
+                                            <span>{{ user.fairness_score | round }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Fairness score is based on how evenly night shifts are distributed among team members.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coverage Analysis -->
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-calendar-check me-2"></i> Coverage Analysis
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="coverageChart" height="250"></canvas>
+                    <div class="d-flex justify-content-between mt-4">
+                        <div class="text-center">
+                            <h6>{{ coverage_stats.total_days_covered }}</h6>
+                            <p class="text-muted mb-0">Total Days</p>
+                        </div>
+                        <div class="text-center">
+                            <h6>{{ coverage_stats.total_days_covered - coverage_stats.days_with_gaps }}</h6>
+                            <p class="text-muted mb-0">Fully Covered</p>
+                        </div>
+                        <div class="text-center">
+                            <h6>{{ coverage_stats.days_with_gaps }}</h6>
+                            <p class="text-muted mb-0">Days with Gaps</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detailed Shift Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-table me-2"></i> Detailed Shift Report
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Team Member</th>
+                            <th class="text-center">Total Shifts</th>
+                            <th class="text-center">Day Shifts</th>
+                            <th class="text-center">Night Shifts</th>
+                            <th class="text-center">Days Off</th>
+                            <th class="text-center">Day/Night Ratio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in shift_distribution %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td class="text-center">{{ user.total }}</td>
+                            <td class="text-center">{{ user.day_shifts }}</td>
+                            <td class="text-center">{{ user.night_shifts }}</td>
+                            <td class="text-center">{{ user.ooo }}</td>
+                            <td class="text-center">
+                                {% if user.night_shifts > 0 %}
+                                    {{ (user.day_shifts / user.night_shifts) | round(1) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-primary">
+                            <th>Total</th>
+                            <th class="text-center">
+                                {% set total_all_shifts = 0 %}
+                                {% for user in shift_distribution %}
+                                    {% set total_all_shifts = total_all_shifts + user.total %}
+                                {% endfor %}
+                                {{ total_all_shifts }}
+                            </th>
+                            <th class="text-center">
+                                {% set total_day_shifts = 0 %}
+                                {% for user in shift_distribution %}
+                                    {% set total_day_shifts = total_day_shifts + user.day_shifts %}
+                                {% endfor %}
+                                {{ total_day_shifts }}
+                            </th>
+                            <th class="text-center">
+                                {% set total_night_shifts = 0 %}
+                                {% for user in shift_distribution %}
+                                    {% set total_night_shifts = total_night_shifts + user.night_shifts %}
+                                {% endfor %}
+                                {{ total_night_shifts }}
+                            </th>
+                            <th class="text-center">
+                                {% set total_ooo = 0 %}
+                                {% for user in shift_distribution %}
+                                    {% set total_ooo = total_ooo + user.ooo %}
+                                {% endfor %}
+                                {{ total_ooo }}
+                            </th>
+                            <th class="text-center">
+                                {% if total_night_shifts > 0 %}
+                                    {{ (total_day_shifts / total_night_shifts) | round(1) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set Chart.js defaults based on theme
+    const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    if (isDarkMode) {
+        Chart.defaults.color = '#e3e3e3';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+    }
+    
+    // Shift Distribution Chart
+    const shiftDistributionCtx = document.getElementById('shiftDistributionChart').getContext('2d');
+    const shiftDistributionChart = new Chart(shiftDistributionCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for user in shift_distribution %}
+                    '{{ user.name }}',
+                {% endfor %}
+            ],
+            datasets: [
+                {
+                    label: 'Day Shifts',
+                    data: [
+                        {% for user in shift_distribution %}
+                            {{ user.day_shifts }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(13, 202, 240, 0.7)',
+                    borderColor: 'rgba(13, 202, 240, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Night Shifts',
+                    data: [
+                        {% for user in shift_distribution %}
+                            {{ user.night_shifts }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(108, 117, 125, 0.7)',
+                    borderColor: 'rgba(108, 117, 125, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Days Off',
+                    data: [
+                        {% for user in shift_distribution %}
+                            {{ user.ooo }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Coverage Chart
+    const coverageCtx = document.getElementById('coverageChart').getContext('2d');
+    const coverageChart = new Chart(coverageCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Fully Covered', 'Days with Gaps'],
+            datasets: [{
+                data: [
+                    {{ coverage_stats.total_days_covered - coverage_stats.days_with_gaps }},
+                    {{ coverage_stats.days_with_gaps }}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',    // Success (green)
+                    'rgba(255, 193, 7, 0.7)'     // Warning (yellow)
+                ],
+                borderColor: [
+                    'rgba(40, 167, 69, 1)',
+                    'rgba(255, 193, 7, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            },
+            cutout: '70%'
+        }
+    });
+    
+    // Date range buttons functionality
+    document.getElementById('thirtyDayBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("analytics_dashboard") }}?days=30';
+    });
+    
+    document.getElementById('sixtyDayBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("analytics_dashboard") }}?days=60';
+    });
+    
+    document.getElementById('ninetyDayBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("analytics_dashboard") }}?days=90';
+    });
+});
+</script>
+{% endblock %}

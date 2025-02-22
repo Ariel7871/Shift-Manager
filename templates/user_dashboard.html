@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <!-- Welcome Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+                <i class="fa-solid fa-user-circle me-2"></i> {{ user['name'] }}'s Dashboard
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-primary">Welcome, {{ user['name'] }}!</h5>
+                    <p class="text-muted">View your upcoming shifts and schedule statistics.</p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                        <a href="{{ url_for('export_calendar', user_id=user.id) }}" class="btn btn-success">
+                            <i class="fas fa-calendar-alt me-2"></i> Export to Calendar
+                        </a>
+                        <a href="{{ url_for('schedule', user_id=user.id) }}" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i> Update Schedule
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-center mb-3">Your Shift Summary</h6>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="display-6 text-primary">{{ shift_stats.total_day_shifts }}</div>
+                                    <div class="small text-muted">Day Shifts</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="display-6 text-secondary">{{ shift_stats.total_night_shifts }}</div>
+                                    <div class="small text-muted">Night Shifts</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="display-6 text-danger">{{ shift_stats.total_ooo }}</div>
+                                    <div class="small text-muted">Days Off</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Shifts Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-calendar-week me-2"></i> Your Upcoming Shifts
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Day</th>
+                            <th>Shift</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for shift in upcoming_shifts %}
+                        <tr class="{% if shift.date == today %}table-primary{% endif %}">
+                            <td>{{ shift.date.strftime("%d/%m/%Y") }}</td>
+                            <td>{{ shift.day }}</td>
+                            <td>
+                                {% if shift.shift_type == "Day" %}
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fa-solid fa-sun me-1"></i> Day Shift
+                                    </span>
+                                {% elif shift.shift_type == "Night" %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fa-solid fa-moon me-1"></i> Night Shift
+                                    </span>
+                                {% elif shift.shift_type == "OOO" %}
+                                    <span class="badge bg-danger">
+                                        <i class="fa-solid fa-ban me-1"></i> Off Duty
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fa-solid fa-question me-1"></i> Not Set
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if shift.date < today %}
+                                    <span class="badge bg-secondary">Completed</span>
+                                {% elif shift.date == today %}
+                                    <span class="badge bg-success">Today</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Upcoming</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution Chart Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">
+                <i class="fa-solid fa-chart-pie me-2"></i> Your Shift Distribution
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="shiftDistributionChart" height="250"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-center mb-3">Last 30 Days Stats</h6>
+                    
+                    <!-- Day Shifts Progress -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Day Shifts</span>
+                            <span>{{ shift_stats.total_day_shifts }} shifts</span>
+                        </div>
+                        <div class="progress">
+                            {% set day_percentage = (shift_stats.total_day_shifts / (shift_stats.total_day_shifts + shift_stats.total_night_shifts + shift_stats.total_ooo) * 100) if (shift_stats.total_day_shifts + shift_stats.total_night_shifts + shift_stats.total_ooo) > 0 else 0 %}
+                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ day_percentage }}%" aria-valuenow="{{ day_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Night Shifts Progress -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Night Shifts</span>
+                            <span>{{ shift_stats.total_night_shifts }} shifts</span>
+                        </div>
+                        <div class="progress">
+                            {% set night_percentage = (shift_stats.total_night_shifts / (shift_stats.total_day_shifts + shift_stats.total_night_shifts + shift_stats.total_ooo) * 100) if (shift_stats.total_day_shifts + shift_stats.total_night_shifts + shift_stats.total_ooo) > 0 else 0 %}
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ night_percentage }}%" aria-valuenow="{{ night_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- OOO Progress -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Days Off (OOO)</span>
+                            <span>{{ shift_stats.total_ooo }} days</span>
+                        </div>
+                        <div class="progress">
+                            {% set ooo_percentage = (shift_stats.total_ooo / (shift_stats.total_day_shifts + shift_stats.total_night_shifts + shift_stats.total_ooo) * 100) if (shift_stats.total_day_shifts + shift_stats.total_night_shifts + shift_stats.total_ooo) > 0 else 0 %}
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ ooo_percentage }}%" aria-valuenow="{{ ooo_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Shift Distribution Chart
+    var ctx = document.getElementById('shiftDistributionChart').getContext('2d');
+    var shiftDistributionChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Day Shifts', 'Night Shifts', 'Days Off'],
+            datasets: [{
+                data: [
+                    {{ shift_stats.total_day_shifts }}, 
+                    {{ shift_stats.total_night_shifts }}, 
+                    {{ shift_stats.total_ooo }}
+                ],
+                backgroundColor: [
+                    'rgba(13, 202, 240, 0.7)',    // Day - info
+                    'rgba(108, 117, 125, 0.7)',   // Night - secondary
+                    'rgba(220, 53, 69, 0.7)'      // OOO - danger
+                ],
+                borderColor: [
+                    'rgba(13, 202, 240, 1)',
+                    'rgba(108, 117, 125, 1)',
+                    'rgba(220, 53, 69, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+    
+    // Apply dark mode adjustments if needed
+    const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    if (isDarkMode) {
+        Chart.defaults.color = '#e3e3e3';
+    }
+});
+</script>
+{% endblock %}
