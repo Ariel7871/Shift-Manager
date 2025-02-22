@@ -213,15 +213,60 @@ def schedule(user_id):
 def view_schedule(user_id):
     conn = get_db_connection()
     try:
+        # Get user info
         with conn.cursor() as cursor:
             cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
             user = cursor.fetchone()
         if not user:
             flash("User not found!")
             return redirect(url_for('choose_schedule'))
+
+        # Get current and next week dates
+        current_week_start = get_current_week_start()
+        next_week_start = get_next_week_start()
+        
+        days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday']
+        
+        # Get current week schedules
+        schedules_current = {}
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT day, shift_type 
+                FROM shifts 
+                WHERE user_id = %s AND week_start = %s
+            """, (user_id, current_week_start.isoformat()))
+            current_shifts = cursor.fetchall()
+            
+        for shift in current_shifts:
+            schedules_current[shift['day']] = shift['shift_type']
+            
+        # Get next week schedules
+        schedules_next = {}
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT day, shift_type 
+                FROM shifts 
+                WHERE user_id = %s AND week_start = %s
+            """, (user_id, next_week_start.isoformat()))
+            next_shifts = cursor.fetchall()
+            
+        for shift in next_shifts:
+            schedules_next[shift['day']] = shift['shift_type']
+
+        # Format week dates for display
+        week_current = current_week_start.strftime("%d/%m/%Y")
+        week_next = next_week_start.strftime("%d/%m/%Y")
+
     finally:
         conn.close()
-    return render_template('view_schedule.html', user=user)
+
+    return render_template('view_schedule.html',
+                         user=user,
+                         days=days,
+                         schedules_current=schedules_current,
+                         schedules_next=schedules_next,
+                         week_current=week_current,
+                         week_next=week_next)
 
 # --- Export calendar as CSV file for Google Calendar ---
 @app.route('/export_calendar/<int:user_id>')
@@ -491,64 +536,9 @@ def get_schedule_data():
     
     return jsonify(data)
 
-@app.route('/view_schedule/<int:user_id>')
-def view_schedule(user_id):
-    conn = get_db_connection()
-    try:
-        # Get user info
-        with conn.cursor() as cursor:
-            cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
-            user = cursor.fetchone()
-        if not user:
-            flash("User not found!")
-            return redirect(url_for('choose_schedule'))
-
-        # Get current and next week dates
-        current_week_start = get_current_week_start()
-        next_week_start = get_next_week_start()
-        
-        days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday']
-        
-        # Get current week schedules
-        schedules_current = {}
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT day, shift_type 
-                FROM shifts 
-                WHERE user_id = %s AND week_start = %s
-            """, (user_id, current_week_start.isoformat()))
-            current_shifts = cursor.fetchall()
-            
-        for shift in current_shifts:
-            schedules_current[shift['day']] = shift['shift_type']
-            
-        # Get next week schedules
-        schedules_next = {}
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                SELECT day, shift_type 
-                FROM shifts 
-                WHERE user_id = %s AND week_start = %s
-            """, (user_id, next_week_start.isoformat()))
-            next_shifts = cursor.fetchall()
-            
-        for shift in next_shifts:
-            schedules_next[shift['day']] = shift['shift_type']
-
-        # Format week dates for display
-        week_current = current_week_start.strftime("%d/%m/%Y")
-        week_next = next_week_start.strftime("%d/%m/%Y")
-
-    finally:
-        conn.close()
-
-    return render_template('view_schedule.html',
-                         user=user,
-                         days=days,
-                         schedules_current=schedules_current,
-                         schedules_next=schedules_next,
-                         week_current=week_current,
-                         week_next=week_next)
+@app.route('/view_schedule')
+def view_schedule_global():
+    return redirect(url_for('view_all_schedule'))
 
 @app.route('/dashboard/<int:user_id>')
 def user_dashboard(user_id):
