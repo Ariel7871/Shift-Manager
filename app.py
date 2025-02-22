@@ -99,7 +99,16 @@ def get_week_start(dt):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Get all users for the dropdown menus
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM users ORDER BY name')
+            users = cursor.fetchall()
+    finally:
+        conn.close()
+    
+    return render_template('index.html', users=users)
 
 @app.route('/choose_schedule')
 def choose_schedule():
