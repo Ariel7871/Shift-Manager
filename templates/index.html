@@ -1,117 +1,141 @@
 {% extends 'base.html' %}
 {% block content %}
-<style>
-  /* Import Orbitron for a futuristic feel */
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-
-  /* Hero Section: Full-screen parallax background with dark, tech-inspired overlay */
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    background: url('https://source.unsplash.com/1600x900/?technology,abstract') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  /* Diagonal overlay with a subtle neon green accent */
-  .hero::after {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(118,185,0,0.15) 50%, rgba(0,0,0,0.85) 100%);
-    z-index: 1;
-    mix-blend-mode: multiply;
-  }
-  /* Hero content with slide-in animation */
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    animation: slideInUp 1.2s cubic-bezier(0.23, 1, 0.32, 1);
-    padding: 20px;
-    color: #e0e0e0;
-    font-family: 'Orbitron', sans-serif;
-  }
-  @keyframes slideInUp {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  /* Heading with neon green gradient text and twist animation */
-  .hero h1 {
-    font-size: 4.5rem;
-    background: -webkit-linear-gradient(45deg, #76B900, #a0d700);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 1rem;
-    text-shadow: 0 0 8px rgba(118, 185, 0, 0.8);
-    animation: twist 2s ease-in-out infinite alternate;
-  }
-  @keyframes twist {
-    from { transform: rotate(-2deg); }
-    to { transform: rotate(2deg); }
-  }
-  .hero p {
-    font-size: 1.75rem;
-    margin-bottom: 2.5rem;
-    color: #ccc;
-    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
-  }
-  /* Enhanced button styles with neon accents */
-  .hero a.btn {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    padding: 1.2rem 2.5rem;
-    font-size: 1.25rem;
-    border-radius: 50px;
-    text-transform: uppercase;
-    letter-spacing: 0.05rem;
-    border: 2px solid transparent;
-  }
-  .hero a.btn.btn-warning {
-    background-color: #ffc107;
-    color: #000;
-  }
-  .hero a.btn.btn-primary {
-    background-color: #76B900;
-    color: #fff;
-  }
-  .hero a.btn:hover {
-    transform: scale(1.08);
-    box-shadow: 0 8px 25px rgba(118, 185, 0, 0.5);
-  }
-  /* Bouncing scroll indicator */
-  .scroll-indicator {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    font-size: 2rem;
-    color: #76B900;
-    animation: bounce 2s infinite;
-  }
-  @keyframes bounce {
-    0%, 100% { transform: translate(-50%, 0); }
-    50% { transform: translate(-50%, 10px); }
-  }
-</style>
-
-<div class="hero">
-  <div class="hero-content container">
-    <h1 class="display-4">Welcome to Shift Scheduler</h1>
-    <p>Effortlessly manage shifts with futuristic precision</p>
-    <div class="d-grid gap-4 col-10 col-md-6 mx-auto">
-      <a href="{{ url_for('view_all_schedule') }}" class="btn btn-warning btn-lg">
-        <i class="fa-solid fa-users me-2"></i>View All Users' Schedules
-      </a>
-      <a href="{{ url_for('choose_schedule') }}" class="btn btn-primary btn-lg">
-        <i class="fa-solid fa-calendar-edit me-2"></i>Schedule
-      </a>
+<div class="container mt-4">
+    <!-- Welcome Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">
+                <i class="fa-solid fa-calendar-check me-2"></i> Shift Scheduler
+            </h4>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Welcome to the Shift Scheduler</h5>
+            <p class="card-text">Use this application to manage and view team shift schedules.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="{{ url_for('choose_schedule') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-calendar-plus me-1"></i> Create New Schedule
+                </a>
+                <a href="{{ url_for('view_all_schedule') }}" class="btn btn-success">
+                    <i class="fa-solid fa-users me-1"></i> View Team Schedule
+                </a>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="scroll-indicator">
-    <i class="fa-solid fa-angle-down"></i>
-  </div>
+
+    <!-- Dashboard Cards -->
+    <h5 class="mb-3">Dashboards & Analytics</h5>
+    <div class="row">
+        <!-- Team Analytics Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-3 text-center">
+                            <i class="fas fa-chart-line text-primary fa-3x"></i>
+                        </div>
+                        <div class="col-9">
+                            <h5 class="card-title">Team Analytics</h5>
+                            <p class="card-text">View shift distribution, coverage analysis, and fairness metrics</p>
+                            <a href="{{ url_for('analytics_dashboard') }}" class="btn btn-primary">View Analytics</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Personal Dashboard Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-3 text-center">
+                            <i class="fas fa-user-circle text-success fa-3x"></i>
+                        </div>
+                        <div class="col-9">
+                            <h5 class="card-title">Personal Dashboard</h5>
+                            <p class="card-text">View your upcoming shifts and personal statistics</p>
+                            <div class="dropdown">
+                                <button class="btn btn-success dropdown-toggle" type="button" id="dashboardDropdown" data-bs-toggle="dropdown">
+                                    Select User
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for user in users %}
+                                        <li><a class="dropdown-item" href="{{ url_for('user_dashboard', user_id=user.id) }}">{{ user.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Cards -->
+    <h5 class="mb-3">Quick Actions</h5>
+    <div class="row">
+        <!-- Schedule Management Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 text-primary">
+                        <i class="fa-solid fa-calendar-alt me-2"></i> Schedule Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('choose_schedule') }}" class="list-group-item list-group-item-action">
+                            <i class="fa-solid fa-calendar-plus me-2"></i> Create New Schedule
+                        </a>
+                        <a href="{{ url_for('view_all_schedule') }}" class="list-group-item list-group-item-action">
+                            <i class="fa-solid fa-users me-2"></i> View Team Schedule
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Individual Schedules Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 text-primary">
+                        <i class="fa-solid fa-user-clock me-2"></i> Individual Schedules
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Select a team member to view or update their schedule:</p>
+                    <div class="list-group">
+                        {% for user in users %}
+                        <a href="{{ url_for('view_schedule', user_id=user.id) }}" class="list-group-item list-group-item-action">
+                            <i class="fa-solid fa-user me-2"></i> {{ user.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Export Options Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 text-primary">
+                        <i class="fa-solid fa-file-export me-2"></i> Export Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Export a team member's schedule to calendar:</p>
+                    <div class="list-group">
+                        {% for user in users %}
+                        <a href="{{ url_for('export_calendar', user_id=user.id) }}" class="list-group-item list-group-item-action">
+                            <i class="fa-solid fa-calendar-alt me-2"></i> {{ user.name }}'s Calendar
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
