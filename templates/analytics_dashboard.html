@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mt-4 mb-5">
+<div class="container mt-4">
     <!-- Analytics Header -->
     <div class="card shadow mb-4">
         <div class="card-header bg-dark text-white">
@@ -11,158 +11,162 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <p class="text-muted mb-md-0">
+                    <p class="text-muted mb-0">
                         Viewing data from <strong>{{ start_date.strftime("%d/%m/%Y") }}</strong> to <strong>{{ end_date.strftime("%d/%m/%Y") }}</strong>
                     </p>
                 </div>
                 <div class="col-md-6">
                     <div class="d-flex justify-content-md-end">
                         <div class="btn-group">
-                            <a href="{{ url_for('analytics_dashboard', days=30) }}" class="btn btn-outline-primary {% if request.args.get('days', '30') == '30' %}active{% endif %}">Last 30 Days</a>
-                            <a href="{{ url_for('analytics_dashboard', days=60) }}" class="btn btn-outline-primary {% if request.args.get('days') == '60' %}active{% endif %}">Last 60 Days</a>
-                            <a href="{{ url_for('analytics_dashboard', days=90) }}" class="btn btn-outline-primary {% if request.args.get('days') == '90' %}active{% endif %}">Last 90 Days</a>
+                            <button type="button" class="btn btn-outline-primary active" id="thirtyDayBtn">Last 30 Days</button>
+                            <button type="button" class="btn btn-outline-primary" id="sixtyDayBtn">Last 60 Days</button>
+                            <button type="button" class="btn btn-outline-primary" id="ninetyDayBtn">Last 90 Days</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Summary Cards -->
+    
+    <!-- Key Metrics Row -->
     <div class="row mb-4">
         <!-- Total Shifts Card -->
-        <div class="col-md-3 mb-4">
+        <div class="col-md-3">
             <div class="card shadow h-100">
                 <div class="card-body text-center">
-                    <div class="text-primary mb-3">
-                        <i class="fas fa-calendar-check fa-2x"></i>
+                    <div class="text-primary mb-1">
+                        <i class="fa-solid fa-calendar-check fa-2x"></i>
                     </div>
-                    <h3 class="mb-1">{{ total_shifts }}</h3>
+                    <div class="display-5 mb-1 fw-bold">
+                        {{ total_shifts }}
+                    </div>
                     <div class="text-muted">Total Shifts</div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Day Shifts Card -->
-        <div class="col-md-3 mb-4">
+        <div class="col-md-3">
             <div class="card shadow h-100">
                 <div class="card-body text-center">
-                    <div class="text-warning mb-3">
-                        <i class="fas fa-sun fa-2x"></i>
+                    <div class="text-info mb-1">
+                        <i class="fa-solid fa-sun fa-2x"></i>
                     </div>
-                    <h3 class="mb-1">{{ total_day_shifts }}</h3>
+                    <div class="display-5 mb-1 fw-bold">
+                        {{ total_day_shifts }}
+                    </div>
                     <div class="text-muted">Day Shifts</div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Night Shifts Card -->
-        <div class="col-md-3 mb-4">
+        <div class="col-md-3">
             <div class="card shadow h-100">
                 <div class="card-body text-center">
-                    <div class="text-info mb-3">
-                        <i class="fas fa-moon fa-2x"></i>
+                    <div class="text-secondary mb-1">
+                        <i class="fa-solid fa-moon fa-2x"></i>
                     </div>
-                    <h3 class="mb-1">{{ total_night_shifts }}</h3>
+                    <div class="display-5 mb-1 fw-bold">
+                        {{ total_night_shifts }}
+                    </div>
                     <div class="text-muted">Night Shifts</div>
                 </div>
             </div>
         </div>
-
-        <!-- Days Off Card -->
-        <div class="col-md-3 mb-4">
+        
+        <!-- Coverage Card -->
+        <div class="col-md-3">
             <div class="card shadow h-100">
                 <div class="card-body text-center">
-                    <div class="text-danger mb-3">
-                        <i class="fas fa-ban fa-2x"></i>
+                    <div class="text-success mb-1">
+                        <i class="fa-solid fa-shield-alt fa-2x"></i>
                     </div>
-                    <h3 class="mb-1">{{ total_ooo }}</h3>
+                    <div class="display-5 mb-1 fw-bold">
+                        {{ total_ooo }}
+                    </div>
                     <div class="text-muted">Days Off</div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Distribution Chart -->
+    
+    <!-- Shift Distribution Chart -->
     <div class="card shadow mb-4">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">
-                <i class="fas fa-chart-bar me-2"></i> Shift Distribution by Team Member
+                <i class="fa-solid fa-chart-bar me-2"></i> Shift Distribution by Team Member
             </h5>
         </div>
         <div class="card-body">
-            <div style="height: 400px;">
+            <div style="height: 300px; position: relative;">
                 <canvas id="shiftDistributionChart"></canvas>
             </div>
         </div>
     </div>
-
-    <!-- Shift Details Table -->
-    <div class="card shadow">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">
-                <i class="fas fa-table me-2"></i> Detailed Shift Report
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Team Member</th>
-                            <th class="text-center">Day Shifts</th>
-                            <th class="text-center">Night Shifts</th>
-                            <th class="text-center">Days Off</th>
-                            <th class="text-center">Total</th>
-                            <th class="text-center">Fairness Score</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in shift_distribution %}
-                        <tr>
-                            <td>{{ user.name }}</td>
-                            <td class="text-center">{{ user.day_shifts }}</td>
-                            <td class="text-center">{{ user.night_shifts }}</td>
-                            <td class="text-center">{{ user.ooo }}</td>
-                            <td class="text-center">{{ user.total }}</td>
-                            <td class="text-center">
-                                <div class="d-flex align-items-center justify-content-center">
-                                    <div class="progress flex-grow-1 mx-2" style="height: 8px;">
-                                        <div class="progress-bar bg-success" role="progressbar" 
-                                             style="width: {{ user.fairness_score }}%" 
-                                             aria-valuenow="{{ user.fairness_score }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100"></div>
-                                    </div>
-                                    <span class="small">{{ "%.0f"|format(user.fairness_score) }}%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot class="table-primary">
-                        <tr>
-                            <th>Total</th>
-                            <th class="text-center">{{ total_day_shifts }}</th>
-                            <th class="text-center">{{ total_night_shifts }}</th>
-                            <th class="text-center">{{ total_ooo }}</th>
-                            <th class="text-center">{{ total_shifts }}</th>
-                            <th></th>
-                        </tr>
-                    </tfoot>
-                </table>
+    
+    <!-- Fairness and Coverage Cards -->
+    <div class="row mb-4">
+        <!-- Fairness Metrics -->
+        <div class="col-md-12">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fa-solid fa-balance-scale me-2"></i> Shift Distribution Report
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Team Member</th>
+                                    <th class="text-center">Day Shifts</th>
+                                    <th class="text-center">Night Shifts</th>
+                                    <th class="text-center">Days Off</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Fairness Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in shift_distribution %}
+                                <tr>
+                                    <td>{{ user.name }}</td>
+                                    <td class="text-center">{{ user.day_shifts }}</td>
+                                    <td class="text-center">{{ user.night_shifts }}</td>
+                                    <td class="text-center">{{ user.ooo }}</td>
+                                    <td class="text-center">{{ user.total }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ user.fairness_score }}%"></div>
+                                            </div>
+                                            <span>{{ user.fairness_score | round }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Fairness score is based on how evenly shifts are distributed among team members.
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Chart.js -->
+<!-- Chart.js Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Create the chart
+    // Get the context of the canvas element
     const ctx = document.getElementById('shiftDistributionChart').getContext('2d');
     
+    // Create the chart
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -170,19 +174,19 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Day Shifts',
                 data: [{% for user in shift_distribution %}{{ user.day_shifts }},{% endfor %}],
-                backgroundColor: 'rgba(255, 193, 7, 0.5)',
-                borderColor: 'rgba(255, 193, 7, 1)',
+                backgroundColor: 'rgba(13, 202, 240, 0.7)',
+                borderColor: 'rgba(13, 202, 240, 1)',
                 borderWidth: 1
             }, {
                 label: 'Night Shifts',
                 data: [{% for user in shift_distribution %}{{ user.night_shifts }},{% endfor %}],
-                backgroundColor: 'rgba(23, 162, 184, 0.5)',
-                borderColor: 'rgba(23, 162, 184, 1)',
+                backgroundColor: 'rgba(108, 117, 125, 0.7)',
+                borderColor: 'rgba(108, 117, 125, 1)',
                 borderWidth: 1
             }, {
                 label: 'Days Off',
                 data: [{% for user in shift_distribution %}{{ user.ooo }},{% endfor %}],
-                backgroundColor: 'rgba(220, 53, 69, 0.5)',
+                backgroundColor: 'rgba(220, 53, 69, 0.7)',
                 borderColor: 'rgba(220, 53, 69, 1)',
                 borderWidth: 1
             }]
@@ -191,7 +195,11 @@ document.addEventListener('DOMContentLoaded', function() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
+                x: {
+                    stacked: true,
+                },
                 y: {
+                    stacked: true,
                     beginAtZero: true,
                     ticks: {
                         stepSize: 1
@@ -200,10 +208,23 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             plugins: {
                 legend: {
-                    position: 'top'
+                    position: 'top',
                 }
             }
         }
+    });
+
+    // Date range buttons functionality
+    document.getElementById('thirtyDayBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("analytics_dashboard") }}?days=30';
+    });
+    
+    document.getElementById('sixtyDayBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("analytics_dashboard") }}?days=60';
+    });
+    
+    document.getElementById('ninetyDayBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("analytics_dashboard") }}?days=90';
     });
 });
 </script>
