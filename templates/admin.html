@@ -1,23 +1,175 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card shadow">
-  <div class="card-header bg-dark text-white">
-    <h3 class="mb-0"><i class="fa-solid fa-lock me-2"></i>Admin Dashboard</h3>
-  </div>
-  <div class="card-body">
-    <form method="POST">
-      <div class="mb-3">
-        <label for="username" class="form-label">Username:</label>
-        <input id="username" name="username" type="text" class="form-control" required>
-      </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Password:</label>
-        <input id="password" name="password" type="password" class="form-control" required>
-      </div>
-      <button type="submit" class="btn btn-primary">
-        <i class="fa-solid fa-right-to-bracket me-1"></i>Login
-      </button>
-    </form>
-  </div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg">
+                <!-- Card Header -->
+                <div class="card-header bg-dark text-white p-4">
+                    <div class="text-center">
+                        <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                        <h3 class="mb-0">Admin Dashboard</h3>
+                        <p class="text-muted mb-0">Secure login required</p>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-4">
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" class="needs-validation" novalidate>
+                        <!-- Username Field -->
+                        <div class="mb-4">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user me-2"></i>Username
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="username" 
+                                       name="username" 
+                                       value="admin"
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       value="7871"
+                                       required>
+                                <button class="btn btn-outline-secondary" 
+                                        type="button" 
+                                        id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Login Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-dark btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="text-center mt-4 text-muted">
+                <i class="fas fa-lock me-2"></i>
+                <small>This is a secure area. Unauthorized access is prohibited.</small>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: none;
+    }
+
+    .form-control {
+        border-left: none;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+
+    .btn-dark {
+        padding: 12px;
+    }
+
+    /* Dark mode adjustments */
+    [data-bs-theme="dark"] .card {
+        background-color: #2d2d2d;
+    }
+
+    [data-bs-theme="dark"] .card-header {
+        background-color: #212529 !important;
+    }
+
+    [data-bs-theme="dark"] .input-group-text {
+        background-color: #1a1a1a;
+        border-color: #404040;
+        color: #e0e0e0;
+    }
+
+    [data-bs-theme="dark"] .form-control {
+        background-color: #1a1a1a;
+        border-color: #404040;
+        color: #e0e0e0;
+    }
+
+    [data-bs-theme="dark"] .text-muted {
+        color: #adb5bd !important;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Add loading state to submit button
+    form.addEventListener('submit', function() {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+    });
+});
+</script>
 {% endblock %}
