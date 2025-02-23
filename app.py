@@ -707,7 +707,7 @@ def analytics_dashboard():
 @app.route('/logout')
 def logout():
     session.pop('admin', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('admin'))
 
 # Route to get all users in JSON format
 @app.route('/get_users')
@@ -802,37 +802,117 @@ def view_all_schedule():
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if request.method == 'POST':
+        username = request.form.get('username')
         password = request.form.get('password')
-        if password == 'admin123':  # Simple password for demonstration
+        if username == 'admin' and password == '7871':
             session['admin'] = True
             return redirect(url_for('admin_panel'))
         else:
-            flash('Invalid password')
-    return render_template('admin_login.html')
+            return render_template('admin.html', error='Invalid credentials')
+    return render_template('admin.html')
 
 @app.route('/admin/panel')
 def admin_panel():
     if not session.get('admin'):
         return redirect(url_for('admin'))
     
-    # Get users with pending shifts for next week
-    next_week = get_next_week_start()
     conn = get_db_connection()
     try:
+        # Get all users with their shift statistics
         with conn.cursor() as cursor:
+            # Get users
             cursor.execute("""
-                SELECT u.id, u.name, COUNT(s.id) as pending_count
-                FROM users u
-                INNER JOIN shifts s ON u.id = s.user_id
-                WHERE s.week_start = %s AND s.pending = 1
-                GROUP BY u.id, u.name
-            """, (next_week.isoformat(),))
-            pending_users = cursor.fetchall()
+                SELECT id, name FROM users
+                ORDER BY name
+            """)
+            users = cursor.fetchall()
+
+            # Get shift statistics for each user
+            current_date = date.today()
+            for user in users:
+                # Get day shifts count
+                cursor.execute("""
+                    SELECT COUNT(*) as count
+                    FROM shifts 
+                    WHERE user_id = %s 
+                    AND shift_type = 'Day'
+                    AND week_start >= %s
+                """, (user['id'], (current_date - timedelta(days=30)).isoformat()))
+                day_shifts = cursor.fetchone()
+                user['day_shifts'] = day_shifts['count'] if day_shifts else 0
+
+                # Get night shifts count
+                cursor.execute("""
+                    SELECT COUNT(*) as count
+                    FROM shifts 
+                    WHERE user_id = %s 
+                    AND shift_type = 'Night'
+                    AND week_start >= %s
+                """, (user['id'], (current_date - timedelta(days=30)).isoformat()))
+                night_shifts = cursor.fetchone()
+                user['night_shifts'] = night_shifts['count'] if night_shifts else 0
+
+                # Get days off count
+                cursor.execute("""
+                    SELECT COUNT(*) as count
+                    FROM shifts 
+                    WHERE user_id = %s 
+                    AND shift_type = 'OOO'
+                    AND week_start >= %s
+                """, (user['id'], (current_date - timedelta(days=30)).isoformat()))
+                days_off = cursor.fetchone()
+                user['days_off'] = days_off['count'] if days_off else 0
+
+                # Get last schedule date
+                cursor.execute("""
+                    SELECT week_start
+                    FROM shifts 
+                    WHERE user_id = %s 
+                    ORDER BY week_start DESC
+                    LIMIT 1
+                """, (user['id'],))
+                last_schedule = cursor.fetchone()
+                user['last_schedule'] = last_schedule['week_start'].strftime('%d/%m/%Y') if last_schedule else None
+
+            # Get pending changes
+            cursor.execute("""
+                SELECT s.*, u.name as user_name
+                FROM shifts s
+                JOIN users u ON s.user_id = u.id
+                WHERE s.pending = 1
+                ORDER BY s.week_start DESC
+            """)
+            pending_shifts = cursor.fetchall()
+
+            # Format pending changes
+            pending_changes = []
+            for shift in pending_shifts:
+                pending_changes.append({
+                    'user': shift['user_name'],
+                    'user_id': shift['user_id'],
+                    'week_start': shift['week_start'].strftime('%d/%m/%Y'),
+                    'current_shift': 'Not set',  # You might want to get the current shift from somewhere
+                    'requested_shift': shift['shift_type']
+                })
+
+            # Get active shifts count
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM shifts
+                WHERE week_start = %s
+                AND shift_type IN ('Day', 'Night')
+            """, (get_current_week_start().isoformat(),))
+            active_shifts_count = cursor.fetchone()
+            active_shifts = active_shifts_count['count'] if active_shifts_count else 0
+
     finally:
         conn.close()
-    
-    return render_template('admin_panel.html', pending_users=pending_users, next_week=next_week)
 
+    return render_template('admin_panel.html',
+                         users=users,
+                         pending_changes=pending_changes,
+                         active_shifts=active_shifts)
+                         
 @app.route('/approve_changes/<int:user_id>', methods=['POST'])
 def approve_changes(user_id):
     if not session.get('admin'):
@@ -851,6 +931,38 @@ def approve_changes(user_id):
         conn.close()
     flash("Changes approved for the user.")
     return redirect(url_for('admin_panel'))
+
+@app.route('/admin/approve_all', methods=['POST'])
+def approve_all_changes():
+    if not session.get('admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("UPDATE shifts SET pending = 0 WHERE pending = 1")
+        conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+@app.route('/admin/reject_change/<int:user_id>', methods=['POST'])
+def reject_change(user_id):
+    if not session.get('admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM shifts WHERE user_id = %s AND pending = 1", (user_id,))
+        conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
 
 # Initialize database on application startup
 with app.app_context():
