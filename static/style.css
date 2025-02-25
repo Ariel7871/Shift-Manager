@@ -438,98 +438,225 @@ html.color-theme-in-transition *:after {
 }
 
 /* Table View Styles */
+.table-container {
+  max-height: 70vh;
+  overflow: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+/* Improved schedule table */
 .schedule-table {
-    border-collapse: separate;
-    border-spacing: 0;
-    background: white;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
 }
 
-.schedule-table th,
-.schedule-table td {
-    border: 1px solid #dee2e6;
-    padding: 0.75rem;
-    vertical-align: middle;
+/* Fixed header */
+.schedule-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
+.schedule-table th {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 10px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Improved fixed column */
 .fixed-column {
-    position: sticky;
-    left: 0;
-    background: white;
-    z-index: 1;
-    border-right: 2px solid #dee2e6 !important;
-    font-weight: 500;
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 5;
+  border-right: 2px solid #dee2e6 !important;
+  font-weight: 500;
+  box-shadow: 1px 0 5px rgba(0, 0, 0, 0.05);
 }
 
-.date-column {
-    min-width: 100px;
+/* Hover effects */
+.schedule-table tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.05) !important;
 }
 
+/* Cell styling */
+.schedule-table td {
+  border: 1px solid #dee2e6;
+  padding: 6px 10px;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+/* Better date header formatting */
 .date-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .day-name {
-    font-weight: bold;
-    margin-bottom: 0.25rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: #495057;
 }
 
 .date-number {
-    font-size: 0.875rem;
-    color: #6c757d;
+  font-size: 0.8rem;
+  color: #6c757d;
 }
 
+/* Enhanced shift cell styling */
 .shift-cell {
-    font-weight: 500;
-    transition: all 0.2s ease;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 80px;
 }
 
 .shift-day {
-    background-color: #e3f2fd !important;
-    color: #0d6efd;
+  background-color: #e3f2fd !important;
+  color: #0d6efd;
+  border-left: 3px solid #0d6efd;
 }
 
 .shift-night {
-    background-color: #e9ecef !important;
-    color: #495057;
+  background-color: #e9ecef !important;
+  color: #495057;
+  border-left: 3px solid #495057;
 }
 
 .shift-ooo {
-    background-color: #ffebee !important;
-    color: #dc3545;
+  background-color: #ffebee !important;
+  color: #dc3545;
+  border-left: 3px solid #dc3545;
 }
 
+/* Today cell highlight */
 .today {
-    background-color: #fff8e1 !important;
+  background-color: #fff8e1 !important;
+  position: relative;
+}
+
+.today::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 8px 8px 0;
+  border-color: transparent #ffc107 transparent transparent;
+}
+
+/* Weekend columns styling */
+.weekend-column {
+  background-color: #f8f9fa;
 }
 
 /* Dark mode adjustments */
-[data-bs-theme="dark"] .schedule-table {
-    background: #2d2d2d;
+[data-bs-theme="dark"] .table-container {
+  background: #2d2d2d;
+}
+
+[data-bs-theme="dark"] .schedule-table th {
+  background-color: #343a40;
+  border-color: #444;
+  color: #e0e0e0;
 }
 
 [data-bs-theme="dark"] .fixed-column {
-    background: #2d2d2d;
+  background: #2d2d2d;
+  border-right-color: #444 !important;
+}
+
+[data-bs-theme="dark"] .schedule-table td {
+  border-color: #444;
+}
+
+[data-bs-theme="dark"] .schedule-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 [data-bs-theme="dark"] .shift-day {
-    background-color: rgba(13, 110, 253, 0.15) !important;
-    color: #89cff0;
+  background-color: rgba(13, 110, 253, 0.15) !important;
+  color: #89cff0;
 }
 
 [data-bs-theme="dark"] .shift-night {
-    background-color: rgba(73, 80, 87, 0.15) !important;
-    color: #adb5bd;
+  background-color: rgba(73, 80, 87, 0.15) !important;
+  color: #adb5bd;
 }
 
 [data-bs-theme="dark"] .shift-ooo {
-    background-color: rgba(220, 53, 69, 0.15) !important;
-    color: #ff6b6b;
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  color: #ff6b6b;
 }
 
 [data-bs-theme="dark"] .today {
-    background-color: rgba(255, 248, 225, 0.1) !important;
+  background-color: rgba(255, 248, 225, 0.1) !important;
+}
+
+[data-bs-theme="dark"] .day-name {
+  color: #e0e0e0;
+}
+
+[data-bs-theme="dark"] .date-number {
+  color: #adb5bd;
+}
+
+/* Enhance scrollbars for a more Excel-like look */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+[data-bs-theme="dark"] .table-container::-webkit-scrollbar-track {
+  background: #333;
+}
+
+[data-bs-theme="dark"] .table-container::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+/* Resizable columns - optional feature for Excel-like feel */
+.resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  user-select: none;
+  background-color: transparent;
+}
+
+.resize-handle:hover, .resize-handle.active {
+  background-color: rgba(0, 123, 255, 0.4);
+}
+
+/* Grid lines to enhance Excel feel */
+.schedule-table th, .schedule-table td {
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.05);
 }
 
 /* Loading indicator */
