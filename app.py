@@ -725,8 +725,19 @@ def get_users():
 @app.route('/view_all_schedule')
 def view_all_schedule():
     from collections import defaultdict
-    start_date = date.today()
-    end_date = start_date + timedelta(days=30)
+    
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 30, type=int)  # Default to 30 days per page
+    
+    # Calculate date range for the current page
+    start_date = date.today() - timedelta(days=(page-1) * per_page)
+    end_date = start_date + timedelta(days=per_page - 1)
+    
+    # For page 1, extend the end date to include future dates
+    if page == 1:
+        end_date = max(end_date, date.today() + timedelta(days=30))
+    
     allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
     dates = []
     current = start_date
@@ -785,6 +796,11 @@ def view_all_schedule():
             for d in dates:
                 if get_week_start(d) == week_start and d.strftime("%A") == day_name:
                     user_schedules[name][d] = shift['shift_type']
+        
+        # Get total number of pages
+        # Estimate about 30 days per month for 12 months (1 year)
+        total_pages = 12  # 1 year of data divided into monthly pages
+        
     finally:
         conn.close()
 
@@ -795,8 +811,130 @@ def view_all_schedule():
         user_schedules=user_schedules,
         today=date.today(),
         dates=dates,
-        month_dates=month_dates
+        month_dates=month_dates,
+        page=page,
+        total_pages=total_pages,
+        has_next=page < total_pages,
+        has_prev=page > 1
     )
+
+@app.route('/api/schedule_data')
+def api_schedule_data():
+    """API endpoint to get schedule data for a specific page"""
+    from collections import defaultdict
+    
+    # Get pagination parameters
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 30, type=int)  # Default to 30 days per page
+    
+    # Calculate date range for the current page
+    start_date = date.today() - timedelta(days=(page-1) * per_page)
+    end_date = start_date + timedelta(days=per_page - 1)
+    
+    # For page 1, extend the end date to include future dates
+    if page == 1:
+        end_date = max(end_date, date.today() + timedelta(days=30))
+    
+    allowed_days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+    dates = []
+    date_objs = []
+    current = start_date
+    while current <= end_date:
+        if current.strftime("%A") in allowed_days:
+            dates.append({
+                "date": current.isoformat(),
+                "formatted_date": current.strftime("%d/%m/%Y"),
+                "day": current.strftime("%A"),
+                "is_today": current == date.today()
+            })
+            date_objs.append(current)
+        current += timedelta(days=1)
+    
+    # Group dates by month for template rendering
+    month_dates = defaultdict(list)
+    for d in date_objs:
+        month_name = d.strftime("%B %Y")
+        month_dates[month_name].append({
+            "date": d.isoformat(),
+            "formatted_date": d.strftime("%d/%m/%Y"),
+            "day": d.strftime("%A"),
+            "is_today": d == date.today()
+        })
+    
+    # Build user schedules
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM users ORDER BY name')
+            users = cursor.fetchall()
+            
+        # Initialize schedules with default values
+        user_schedules = {user['name']: {} for user in users}
+        for user_name in user_schedules:
+            for d in date_objs:
+                formatted_date = d.strftime("%d/%m/%Y")
+                # Default to 'Day' for Sundays, 'Not set' for others
+                if d.strftime("%A") == "Sunday":
+                    user_schedules[user_name][formatted_date] = "Day"
+                else:
+                    user_schedules[user_name][formatted_date] = "Not set"
+        
+        # Fetch all shifts in one query with date ranges
+        min_date = min(date_objs)
+        max_date = max(date_objs)
+        min_week_start = get_week_start(min_date).isoformat()
+        max_week_start = get_week_start(max_date).isoformat()
+        
+        with conn.cursor() as cursor:
+            # Get all shifts for all users in the date range in a single query
+            cursor.execute("""
+                SELECT s.user_id, s.week_start, s.day, s.shift_type, u.name 
+                FROM shifts s 
+                JOIN users u ON s.user_id = u.id
+                WHERE s.week_start BETWEEN %s AND %s
+            """, (min_week_start, max_week_start))
+            
+            shifts = cursor.fetchall()
+            
+        # Process all shifts - override the defaults with actual shift values
+        for shift in shifts:
+            week_start = shift['week_start']
+            name = shift['name']
+            day_name = shift['day']
+            
+            # Find matching dates for this shift
+            for d in date_objs:
+                if get_week_start(d) == week_start and d.strftime("%A") == day_name:
+                    formatted_date = d.strftime("%d/%m/%Y")
+                    user_schedules[name][formatted_date] = shift['shift_type']
+        
+        # Get total number of pages
+        # Estimate about 30 days per month for 12 months (1 year)
+        total_pages = 12  # 1 year of data divided into monthly pages
+    finally:
+        conn.close()
+
+    # Prepare pagination info
+    pagination = {
+        "current_page": page,
+        "total_pages": total_pages,
+        "has_next": page < total_pages,
+        "has_prev": page > 1
+    }
+
+    # Format date range for display
+    date_range = f"{date_objs[0].strftime('%d %b %Y')} - {date_objs[-1].strftime('%d %b %Y')}"
+
+    # Return JSON response
+    return jsonify({
+        "dates": dates,
+        "month_dates": month_dates,
+        "users": users,
+        "user_schedules": user_schedules,
+        "today": date.today().isoformat(),
+        "pagination": pagination,
+        "date_range": date_range
+    })
 
 # --- Admin routes ---
 @app.route('/admin', methods=['GET', 'POST'])
