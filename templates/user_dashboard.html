@@ -164,11 +164,89 @@
 
 <!-- Chart.js Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
+<!-- Function to configure Chart.js for the current theme -->
 <script>
+function configureChartsForTheme() {
+    const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    
+    // Set global defaults for all charts
+    if (isDarkMode) {
+        Chart.defaults.color = '#e3e3e3';  // Text color
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';  // Grid lines
+        
+        // Custom colors for dark mode
+        window.darkModeChartColors = {
+            primary: 'rgba(77, 148, 255, 0.7)',
+            secondary: 'rgba(108, 117, 125, 0.7)',
+            success: 'rgba(40, 167, 69, 0.7)',
+            danger: 'rgba(220, 53, 69, 0.7)',
+            warning: 'rgba(255, 193, 7, 0.7)',
+            info: 'rgba(23, 162, 184, 0.7)',
+            
+            primaryBorder: 'rgba(77, 148, 255, 1)',
+            secondaryBorder: 'rgba(108, 117, 125, 1)',
+            successBorder: 'rgba(40, 167, 69, 1)',
+            dangerBorder: 'rgba(220, 53, 69, 1)',
+            warningBorder: 'rgba(255, 193, 7, 1)',
+            infoBorder: 'rgba(23, 162, 184, 1)',
+            
+            background: '#2d2d2d'
+        };
+    } else {
+        Chart.defaults.color = '#666';  // Text color
+        Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.1)';  // Grid lines
+        
+        // Custom colors for light mode
+        window.darkModeChartColors = {
+            primary: 'rgba(13, 110, 253, 0.7)',
+            secondary: 'rgba(108, 117, 125, 0.7)',
+            success: 'rgba(25, 135, 84, 0.7)',
+            danger: 'rgba(220, 53, 69, 0.7)',
+            warning: 'rgba(255, 193, 7, 0.7)',
+            info: 'rgba(13, 202, 240, 0.7)',
+            
+            primaryBorder: 'rgba(13, 110, 253, 1)',
+            secondaryBorder: 'rgba(108, 117, 125, 1)',
+            successBorder: 'rgba(25, 135, 84, 1)',
+            dangerBorder: 'rgba(220, 53, 69, 1)',
+            warningBorder: 'rgba(255, 193, 7, 1)',
+            infoBorder: 'rgba(13, 202, 240, 1)',
+            
+            background: '#ffffff'
+        };
+    }
+    
+    // Update any existing charts
+    if (window.shiftDistributionChart) {
+        updateChartDatasets(window.shiftDistributionChart);
+        window.shiftDistributionChart.update();
+    }
+}
+
+// Helper function to update chart datasets with theme colors
+function updateChartDatasets(chart) {
+    if (!chart || !chart.data || !chart.data.datasets) return;
+    
+    chart.data.datasets.forEach((dataset, index) => {
+        if (dataset.themeColorKey) {
+            dataset.backgroundColor = window.darkModeChartColors[dataset.themeColorKey];
+            dataset.borderColor = window.darkModeChartColors[dataset.themeColorKey + 'Border'];
+        } else if (dataset.themeColorKeys) {
+            // For pie charts with multiple colors in a single dataset
+            dataset.backgroundColor = dataset.themeColorKeys.map(key => window.darkModeChartColors[key]);
+            dataset.borderColor = dataset.themeColorKeys.map(key => window.darkModeChartColors[key + 'Border']);
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Configure charts for the current theme
+    configureChartsForTheme();
+    
     // Shift Distribution Chart
-    var ctx = document.getElementById('shiftDistributionChart').getContext('2d');
-    var shiftDistributionChart = new Chart(ctx, {
+    const ctx = document.getElementById('shiftDistributionChart').getContext('2d');
+    window.shiftDistributionChart = new Chart(ctx, {
         type: 'pie',
         data: {
             labels: ['Day Shifts', 'Night Shifts', 'Days Off'],
@@ -179,16 +257,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     {{ shift_stats.total_ooo }}
                 ],
                 backgroundColor: [
-                    'rgba(13, 202, 240, 0.7)',    // Day - info
-                    'rgba(108, 117, 125, 0.7)',   // Night - secondary
-                    'rgba(220, 53, 69, 0.7)'      // OOO - danger
+                    window.darkModeChartColors.info,
+                    window.darkModeChartColors.secondary,
+                    window.darkModeChartColors.danger
                 ],
                 borderColor: [
-                    'rgba(13, 202, 240, 1)',
-                    'rgba(108, 117, 125, 1)',
-                    'rgba(220, 53, 69, 1)'
+                    window.darkModeChartColors.infoBorder,
+                    window.darkModeChartColors.secondaryBorder,
+                    window.darkModeChartColors.dangerBorder
                 ],
-                borderWidth: 1
+                borderWidth: 1,
+                themeColorKeys: ['info', 'secondary', 'danger']
             }]
         },
         options: {
@@ -201,11 +280,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Apply dark mode adjustments if needed
-    const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-    if (isDarkMode) {
-        Chart.defaults.color = '#e3e3e3';
-    }
+    // Observer to detect theme changes
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'data-bs-theme') {
+                configureChartsForTheme();
+            }
+        });
+    });
+    
+    // Start observing theme changes
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-bs-theme']
+    });
 });
 </script>
 {% endblock %}
