@@ -7,6 +7,34 @@
                 <i class="fa-solid fa-calendar-days me-2"></i>Monthly Schedule (Next 30 Days)
             </h4>
         </div>
+        
+        <!-- Date Range Title -->
+        <div class="bg-light p-3 mb-3 rounded">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
+                    Viewing Schedule: 
+                    <span class="text-primary">
+                        {{ dates[0].strftime("%d %b %Y") }} - {{ dates[-1].strftime("%d %b %Y") }}
+                    </span>
+                </h5>
+                <div class="d-flex align-items-center">
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="includeHistoricalData">
+                        <label class="form-check-label" for="includeHistoricalData">Show Historical Data</label>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('view_all_schedule', page=1) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-calendar-day me-1"></i>Current
+                        </a>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#jumpToDateModal">
+                            <i class="fas fa-calendar-week me-1"></i>Jump to Date
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="card-body">
             <!-- Export Button -->
             <div class="d-flex justify-content-end mb-3">
@@ -85,6 +113,80 @@
                         </table>
                     </div>
                 {% endfor %}
+                
+                <!-- Pagination Controls -->
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Schedule navigation">
+                        <ul class="pagination">
+                            <li class="page-item {{ 'disabled' if not has_prev }}">
+                                <a class="page-link" href="{{ url_for('view_all_schedule', page=page-1) if has_prev else '#' }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            
+                            {% if page > 2 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('view_all_schedule', page=1) }}">1</a>
+                                </li>
+                                {% if page > 3 %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('view_all_schedule', page=page-1) }}">{{ page-1 }}</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">{{ page }}</span>
+                            </li>
+                            
+                            {% if page < total_pages %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('view_all_schedule', page=page+1) }}">{{ page+1 }}</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% if page < total_pages-1 %}
+                                {% if page < total_pages-2 %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('view_all_schedule', page=total_pages) }}">{{ total_pages }}</a>
+                                </li>
+                            {% endif %}
+                            
+                            <li class="page-item {{ 'disabled' if not has_next }}">
+                                <a class="page-link" href="{{ url_for('view_all_schedule', page=page+1) if has_next else '#' }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <!-- Page Information -->
+                <div class="text-center text-muted mt-2">
+                    <small>Viewing page {{ page }} of {{ total_pages }}</small>
+                </div>
+                
+                <!-- Loading indicator for previous data -->
+                <div id="loadingPreviousData" class="position-fixed top-0 start-0 w-100 h-100 d-none">
+                    <div class="w-100 h-100 bg-dark opacity-50"></div>
+                    <div class="position-absolute top-50 start-50 translate-middle bg-white p-4 rounded-3 shadow-lg text-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="mb-2">Loading Historical Data</h5>
+                        <p class="mb-0 text-muted">Please wait while we retrieve your past schedules...</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Table View -->
@@ -173,6 +275,31 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Jump to Date Modal -->
+<div class="modal fade" id="jumpToDateModal" tabindex="-1" aria-labelledby="jumpToDateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jumpToDateModalLabel">Jump to Specific Date</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="jumpToDateForm" action="{{ url_for('view_all_schedule') }}" method="GET">
+                    <div class="mb-3">
+                        <label for="jumpToDate" class="form-label">Select Date</label>
+                        <input type="date" class="form-control" id="jumpToDate" name="target_date" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Find Schedule
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -298,6 +425,17 @@
     transition: opacity 0.3s ease;
 }
 
+/* Highlight styles for jumping to a date */
+@keyframes pulse-highlight {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+.highlight-cell {
+    animation: pulse-highlight 2s infinite;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .week-tabs {
@@ -380,6 +518,65 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Adjust for mobile
     adjustForMobile();
+    
+    // Set up event listeners for the Jump to Date form
+    const jumpToDateForm = document.getElementById('jumpToDateForm');
+    if (jumpToDateForm) {
+        jumpToDateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const targetDate = document.getElementById('jumpToDate').value;
+            if (!targetDate) return;
+            
+            // Convert the date to a timestamp and calculate the appropriate page
+            const selectedDate = new Date(targetDate);
+            const today = new Date();
+            
+            // Calculate days difference
+            const daysDiff = Math.floor((today - selectedDate) / (1000 * 60 * 60 * 24));
+            
+            // Calculate page number (assuming 30 days per page)
+            let targetPage = 1; // Default to current page
+            
+            if (daysDiff > 0) {
+                targetPage = Math.floor(daysDiff / 30) + 1;
+            }
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('jumpToDateModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Show loading indicator
+            document.getElementById('loadingPreviousData').classList.remove('d-none');
+            
+            // Redirect to the correct page
+            window.location.href = `{{ url_for('view_all_schedule') }}?page=${targetPage}&highlight_date=${targetDate}`;
+        });
+    }
+    
+    // Function to highlight a specific date from URL parameter
+    highlightJumpedDate();
+    
+    // Set up pagination AJAX loading
+    document.querySelectorAll('.pagination .page-link').forEach(link => {
+        const href = link.getAttribute('href');
+        
+        if (href && href !== '#') {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Show loading indicator for historical data
+                if (href.includes('page=') && !href.includes('page=1')) {
+                    document.getElementById('loadingPreviousData').classList.remove('d-none');
+                }
+                
+                // Redirect to the page
+                window.location.href = href;
+            });
+        }
+    });
 });
 
 // Load calendar data for day cards
@@ -526,6 +723,42 @@ function adjustForMobile() {
         
         document.querySelectorAll('.btn-group .btn').forEach(btn => {
             btn.style.padding = '0.6rem 0.5rem';
+        });
+    }
+}
+
+// Function to highlight a specific date from URL parameter
+function highlightJumpedDate() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightDate = urlParams.get('highlight_date');
+    
+    if (highlightDate) {
+        const formattedDate = new Date(highlightDate).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).replace(/\//g, '/');
+        
+        // Find the date in the table and highlight it
+        document.querySelectorAll('td').forEach(cell => {
+            if (cell.textContent.trim() === formattedDate) {
+                // Scroll the date into view
+                cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Add highlight animation
+                cell.classList.add('highlight-cell');
+                
+                // Add a flash effect
+                setTimeout(() => {
+                    cell.style.backgroundColor = 'rgba(255, 193, 7, 0.2)';
+                    cell.style.transition = 'background-color 0.5s ease';
+                    
+                    setTimeout(() => {
+                        cell.style.backgroundColor = '';
+                        cell.style.transition = 'background-color 1.5s ease';
+                    }, 1500);
+                }, 500);
+            }
         });
     }
 }
