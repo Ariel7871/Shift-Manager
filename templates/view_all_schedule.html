@@ -190,66 +190,246 @@
             </div>
 
             <!-- Table View -->
-            <div id="tableView" class="view-section" style="display: none;">
-                <div class="table-responsive">
-                    <table class="table table-bordered schedule-table">
-                        <thead>
-                            <tr>
-                                <th class="fixed-column">Team Member</th>
-                                {% for month, dates in month_dates.items() %}
-                                    {% for d in dates %}
-                                        <th class="date-column text-center {% if d == today %}today{% endif %}">
-                                            <div class="date-header">
-                                                <div class="day-name">{{ d.strftime("%a") }}</div>
-                                                <div class="date-number">{{ d.strftime("%d/%m") }}</div>
-                                            </div>
-                                        </th>
-                                    {% endfor %}
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                <td class="fixed-column">{{ user['name'] }}</td>
-                                {% for month, dates in month_dates.items() %}
-                                    {% for d in dates %}
-                                        {% set shift = user_schedules[user['name']][d] %}
-                                        <td class="text-center shift-cell 
-                                            {% if shift == 'Day' %}shift-day
-                                            {% elif shift == 'Night' %}shift-night
-                                            {% elif shift == 'OOO' %}shift-ooo
-                                            {% endif %}">
-                                            {{ shift if shift != 'Not set' else '' }}
-                                        </td>
-                                    {% endfor %}
-                                {% endfor %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Calendar View -->
-            <div id="calendarView" class="view-section" style="display: none;">
-                <!-- Navigation arrows -->
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button class="btn btn-sm btn-outline-secondary prev-day">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <h5 class="mb-0 current-date">February 2025</h5>
-                    <button class="btn btn-sm btn-outline-secondary next-day">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                
-                <!-- Day cards will be inserted here -->
-                <div id="dayCardsContainer" class="mb-4"></div>
-            </div>
+			<div id="tableView" class="view-section" style="display: none;">
+				<div class="mb-3">
+					<div class="d-flex justify-content-between align-items-center">
+						<div class="d-flex align-items-center">
+							<h5 class="mb-0 me-3">Team Schedule</h5>
+							<div class="badge bg-primary rounded-pill">Excel View</div>
+						</div>
+						<div class="btn-group">
+							<button class="btn btn-sm btn-outline-secondary" id="exportExcelBtn">
+								<i class="fas fa-file-excel me-1"></i>Export Excel
+							</button>
+							<button class="btn btn-sm btn-outline-secondary" id="printTableBtn">
+								<i class="fas fa-print me-1"></i>Print
+							</button>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Excel-like toolbar -->
+				<div class="excel-toolbar mb-3 p-2 bg-light rounded border d-flex align-items-center">
+					<div class="me-3">
+						<select class="form-select form-select-sm" id="filterTeamMember">
+							<option value="">All Team Members</option>
+							{% for user in users %}
+								<option value="{{ user['name'] }}">{{ user['name'] }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="me-3">
+						<select class="form-select form-select-sm" id="filterShiftType">
+							<option value="">All Shifts</option>
+							<option value="Day">Day Shifts</option>
+							<option value="Night">Night Shifts</option>
+							<option value="OOO">Out of Office</option>
+						</select>
+					</div>
+					<div class="btn-group btn-group-sm me-3">
+						<button class="btn btn-outline-secondary" id="btnColorDay">
+							<i class="fas fa-sun text-warning me-1"></i>Day
+						</button>
+						<button class="btn btn-outline-secondary" id="btnColorNight">
+							<i class="fas fa-moon text-muted me-1"></i>Night
+						</button>
+						<button class="btn btn-outline-secondary" id="btnColorOOO">
+							<i class="fas fa-ban text-danger me-1"></i>OOO
+						</button>
+					</div>
+					<div class="ms-auto">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text">
+								<i class="fas fa-search"></i>
+							</span>
+							<input type="text" class="form-control" id="searchTable" placeholder="Search...">
+						</div>
+					</div>
+				</div>
+    
+    <!-- This div will be transformed into the table-container -->
+    <div class="table-responsive">
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th class="fixed-column">Team Member</th>
+                    {% for month, dates in month_dates.items() %}
+                        {% for d in dates %}
+                            <th class="date-column text-center {% if d == today %}today{% endif %}">
+                                <div class="date-header">
+                                    <div class="day-name">{{ d.strftime("%a") }}</div>
+                                    <div class="date-number">{{ d.strftime("%d/%m") }}</div>
+                                </div>
+                            </th>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td class="fixed-column">{{ user['name'] }}</td>
+                    {% for month, dates in month_dates.items() %}
+                        {% for d in dates %}
+                            {% set shift = user_schedules[user['name']][d] %}
+                            <td class="text-center shift-cell 
+                                {% if shift == 'Day' %}shift-day
+                                {% elif shift == 'Night' %}shift-night
+                                {% elif shift == 'OOO' %}shift-ooo
+                                {% endif %}
+                                {% if d.strftime('%A') in ['Saturday', 'Sunday'] %}weekend-column{% endif %}"
+                                data-date="{{ d.strftime('%Y-%m-%d') }}"
+                                data-user="{{ user['name'] }}"
+                                data-shift="{{ shift }}">
+                                <span class="shift-text">{{ shift if shift != 'Not set' else '' }}</span>
+                            </td>
+                        {% endfor %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Excel-like status bar at the bottom -->
+    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded border mt-3">
+        <div class="small text-muted">
+            <i class="fas fa-users me-1"></i> {{ users|length }} team members
+        </div>
+        <div class="small text-muted">
+            <i class="fas fa-calendar-day me-1"></i> {{ dates|length }} dates
+        </div>
+        <div class="small text-muted">
+            <span id="dayCount" class="badge bg-primary me-1">0</span> Day shifts
+            <span id="nightCount" class="badge bg-secondary me-1">0</span> Night shifts
+            <span id="oooCount" class="badge bg-danger me-1">0</span> OOO days
         </div>
     </div>
 </div>
+
+<script>
+// Count shift types and update the status bar
+function updateShiftCounts() {
+    const dayShifts = document.querySelectorAll('.shift-day').length;
+    const nightShifts = document.querySelectorAll('.shift-night').length;
+    const oooShifts = document.querySelectorAll('.shift-ooo').length;
+    
+    document.getElementById('dayCount').textContent = dayShifts;
+    document.getElementById('nightCount').textContent = nightShifts;
+    document.getElementById('oooCount').textContent = oooShifts;
+}
+
+// Filter table
+function filterTable() {
+    const userFilter = document.getElementById('filterTeamMember').value;
+    const shiftFilter = document.getElementById('filterShiftType').value;
+    const searchText = document.getElementById('searchTable').value.toLowerCase();
+    
+    const rows = document.querySelectorAll('.schedule-table tbody tr');
+    
+    rows.forEach(row => {
+        const userName = row.querySelector('.fixed-column').textContent;
+        let shouldShow = true;
+        
+        // User filter
+        if (userFilter && userName !== userFilter) {
+            shouldShow = false;
+        }
+        
+        // Shift filter
+        if (shiftFilter && shouldShow) {
+            const hasShiftType = row.querySelector(`.shift-${shiftFilter.toLowerCase()}`);
+            if (!hasShiftType) {
+                shouldShow = false;
+            }
+        }
+        
+        // Search text
+        if (searchText && shouldShow) {
+            if (!userName.toLowerCase().includes(searchText)) {
+                shouldShow = false;
+            }
+        }
+        
+        row.style.display = shouldShow ? '' : 'none';
+    });
+}
+
+// Print table view
+function printTableView() {
+    const tableView = document.getElementById('tableView');
+    const printWindow = window.open('', '_blank');
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Team Schedule</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/cosmo/bootstrap.min.css" rel="stylesheet">
+            <style>
+                body { padding: 20px; }
+                .schedule-table { border-collapse: collapse; width: 100%; }
+                .schedule-table th, .schedule-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                .shift-day { background-color: #e3f2fd; }
+                .shift-night { background-color: #e9ecef; }
+                .shift-ooo { background-color: #ffebee; }
+                @media print {
+                    body { padding: 0; }
+                    .print-header { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-header mb-4">
+                <h1>Team Schedule</h1>
+                <button onclick="window.print()" class="btn btn-primary">Print</button>
+            </div>
+            ${tableView.querySelector('.table-responsive').outerHTML}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize shift counts when table view is shown
+    document.getElementById('tableViewBtn').addEventListener('click', function() {
+        setTimeout(updateShiftCounts, 100);
+    });
+    
+    // Setup filter events
+    document.getElementById('filterTeamMember')?.addEventListener('change', filterTable);
+    document.getElementById('filterShiftType')?.addEventListener('change', filterTable);
+    document.getElementById('searchTable')?.addEventListener('input', filterTable);
+    
+    // Setup print button
+    document.getElementById('printTableBtn')?.addEventListener('click', printTableView);
+    
+    // Setup export button (placeholder)
+    document.getElementById('exportExcelBtn')?.addEventListener('click', function() {
+        alert('Excel export functionality would be implemented here');
+    });
+    
+    // Toggle shift colors
+    document.getElementById('btnColorDay')?.addEventListener('click', function() {
+        document.querySelectorAll('.shift-day').forEach(cell => {
+            cell.classList.toggle('bg-light');
+        });
+    });
+    
+    document.getElementById('btnColorNight')?.addEventListener('click', function() {
+        document.querySelectorAll('.shift-night').forEach(cell => {
+            cell.classList.toggle('bg-light');
+        });
+    });
+    
+    document.getElementById('btnColorOOO')?.addEventListener('click', function() {
+        document.querySelectorAll('.shift-ooo').forEach(cell => {
+            cell.classList.toggle('bg-light');
+        });
+    });
+});
+</script>
 
 <!-- Export Calendar Modal -->
 <div class="modal fade" id="exportCalendarModal" tabindex="-1" aria-labelledby="exportCalendarModalLabel" aria-hidden="true">
@@ -627,6 +807,189 @@ function loadCalendarData() {
         }
     });
 }
+
+// Function to enhance the Table View
+function enhanceTableView() {
+  // Wrap table in a container for better scrolling
+  const tableView = document.getElementById('tableView');
+  if (!tableView) return;
+  
+  // Find the table element
+  const table = tableView.querySelector('.schedule-table');
+  if (!table) return;
+  
+  // Create container if not already wrapped
+  let tableContainer = table.parentElement;
+  if (!tableContainer.classList.contains('table-container')) {
+    tableContainer = document.createElement('div');
+    tableContainer.className = 'table-container';
+    table.parentNode.insertBefore(tableContainer, table);
+    tableContainer.appendChild(table);
+  }
+  
+  // Add weekend class to Saturday and Sunday columns
+  const headerCells = table.querySelectorAll('thead tr th');
+  headerCells.forEach(cell => {
+    const dayName = cell.querySelector('.day-name')?.textContent;
+    if (dayName === 'Sat' || dayName === 'Sun') {
+      const columnIndex = Array.from(headerCells).indexOf(cell);
+      // Add weekend class to all cells in this column
+      table.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (columnIndex > 0 && columnIndex < cells.length) {
+          cells[columnIndex].classList.add('weekend-column');
+        }
+      });
+      cell.classList.add('weekend-column');
+    }
+  });
+  
+  // Add dropdown filters for team members (optional Excel-like feature)
+  const firstRowCell = table.querySelector('tbody tr:first-child td.fixed-column');
+  if (firstRowCell) {
+    const filterButton = document.createElement('button');
+    filterButton.className = 'filter-button';
+    filterButton.innerHTML = '<i class="fas fa-filter"></i>';
+    filterButton.style.position = 'absolute';
+    filterButton.style.right = '5px';
+    filterButton.style.top = '5px';
+    filterButton.style.background = 'transparent';
+    filterButton.style.border = 'none';
+    filterButton.style.color = '#6c757d';
+    filterButton.style.cursor = 'pointer';
+    
+    firstRowCell.style.position = 'relative';
+    firstRowCell.appendChild(filterButton);
+    
+    // Add click event for filter dropdown (implementation would go here)
+    filterButton.addEventListener('click', function(e) {
+      e.stopPropagation();
+      alert('Filter functionality would appear here');
+    });
+  }
+  
+  // Add Excel-like double-click-to-edit simulation (visual only)
+  table.querySelectorAll('.shift-cell').forEach(cell => {
+    cell.addEventListener('dblclick', function() {
+      // Here you could implement editing functionality
+      // For now, just add a visual indication
+      this.style.boxShadow = 'inset 0 0 0 2px #0d6efd';
+      setTimeout(() => {
+        this.style.boxShadow = '';
+      }, 500);
+    });
+  });
+  
+  // Optional: implement column resizing functionality
+  addResizableColumns(table);
+}
+
+// Function to make table columns resizable like in Excel
+function addResizableColumns(table) {
+  const headers = table.querySelectorAll('th');
+  
+  headers.forEach(header => {
+    // Skip the first fixed column to prevent issues
+    if (header.classList.contains('fixed-column')) return;
+    
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'resize-handle';
+    header.appendChild(resizeHandle);
+    
+    let startX, startWidth;
+    
+    resizeHandle.addEventListener('mousedown', function(e) {
+      startX = e.pageX;
+      startWidth = header.offsetWidth;
+      resizeHandle.classList.add('active');
+      
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', stopResize);
+      
+      e.preventDefault(); // Prevent text selection during resize
+    });
+    
+    function resize(e) {
+      const width = startWidth + (e.pageX - startX);
+      if (width > 50) { // Minimum width
+        header.style.width = `${width}px`;
+        header.style.minWidth = `${width}px`;
+      }
+    }
+    
+    function stopResize() {
+      resizeHandle.classList.remove('active');
+      document.removeEventListener('mousemove', resize);
+      document.removeEventListener('mouseup', stopResize);
+    }
+  });
+}
+
+// Add conditional formatting based on pattern detection
+function addConditionalFormatting() {
+  const table = document.querySelector('.schedule-table');
+  if (!table) return;
+  
+  // Find consecutive day shifts
+  const rows = table.querySelectorAll('tbody tr');
+  rows.forEach(row => {
+    const cells = Array.from(row.querySelectorAll('.shift-cell'));
+    let consecutiveDayCount = 0;
+    
+    cells.forEach((cell, index) => {
+      if (cell.classList.contains('shift-day')) {
+        consecutiveDayCount++;
+        
+        // Highlight cells with 3+ consecutive day shifts
+        if (consecutiveDayCount >= 3) {
+          cell.style.position = 'relative';
+          
+          // Don't add the indicator multiple times
+          if (!cell.querySelector('.consecutive-indicator')) {
+            const indicator = document.createElement('div');
+            indicator.className = 'consecutive-indicator';
+            indicator.style.position = 'absolute';
+            indicator.style.top = '2px';
+            indicator.style.right = '2px';
+            indicator.style.width = '6px';
+            indicator.style.height = '6px';
+            indicator.style.borderRadius = '50%';
+            indicator.style.backgroundColor = '#ffc107';
+            indicator.title = consecutiveDayCount + ' consecutive day shifts';
+            
+            cell.appendChild(indicator);
+          }
+        }
+      } else {
+        consecutiveDayCount = 0;
+      }
+    });
+  });
+}
+
+// Initialize all enhancements when view is switched to Table View
+document.addEventListener('DOMContentLoaded', function() {
+  // Get all view buttons
+  const tableViewBtn = document.getElementById('tableViewBtn');
+  if (tableViewBtn) {
+    tableViewBtn.addEventListener('click', function() {
+      // Wait a tiny bit for the view to render
+      setTimeout(() => {
+        enhanceTableView();
+        addConditionalFormatting();
+      }, 50);
+    });
+  }
+  
+  // If Table View is the initial view, enhance it
+  if (document.getElementById('tableView') && 
+      !document.getElementById('tableView').style.display === 'none') {
+    setTimeout(() => {
+      enhanceTableView();
+      addConditionalFormatting();
+    }, 50);
+  }
+});
 
 // Update the day cards in the calendar view
 function updateDayCards(data) {
